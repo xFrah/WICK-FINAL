@@ -90,6 +90,7 @@ output_details = interpreter.get_output_details()
 # model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
 last_red = None
 last_thing = None
+os.system("sudo chmod 666 /dev/ttymxc2")
 arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
 change_color("white", arduino)
 arduino.close()
