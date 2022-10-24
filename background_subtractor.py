@@ -87,8 +87,8 @@ while True:
     cv.putText(frame, str(capture.get(cv.CAP_PROP_POS_FRAMES)), (15, 15),
                cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
-    cv.imshow('Frame', frame)
-    cv.imshow('FG Mask', fgMask)
+    #cv.imshow('Frame', frame)
+    #cv.imshow('FG Mask', fgMask)
     #_, white_only = cv.threshold(fgMask, 250, 255, cv.THRESH_BINARY)
     #fgMask_new = cv.erode(fgMask, kernel, iterations=2)
     #cv.imshow('FG Mask New', fgMask_new)
@@ -144,7 +144,8 @@ while True:
                         continue
                     letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
                     try:
-                        cv.imshow("asd" + str(i), letter)
+                        #cv.imshow("asd" + str(i), letter)
+                        pass
                     except:
                         print("Failed to show image")
                         continue
