@@ -151,7 +151,7 @@ while True:
                         continue
                     i += 1
                     im = r"C:/Users/fdimo/Desktop/WICK/" + datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"
-                    imageio.imsave(im, letter)
+                    #imageio.imsave(im, letter)
                     image = cv2.imread(im)
                     orig = image.copy()
 
