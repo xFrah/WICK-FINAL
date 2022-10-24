@@ -48,9 +48,9 @@ def get_average_vertex(v_buffer):
 
 
 def change_color(color, arduino):
-    asd = {"white": b"34\r\n",
-           "red": b"23\r\n",
-           "green": b"12\r\n",
+    asd = {"white": b"34",
+           "red": b"23",
+           "green": b"12",
            }
     while True:
         bi = asd[color]
@@ -95,7 +95,7 @@ last_red = None
 last_thing = None
 os.system("sudo chmod 666 /dev/ttymxc2")
 arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-change_color("green", arduino)
+change_color("white", arduino)
 arduino.close()
 
 while True:
