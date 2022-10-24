@@ -55,6 +55,7 @@ def change_color(color, arduino):
     while True:
         bi = asd[color]
         arduino.write(bi)
+        print(bi)
         line = arduino.readline()
         print(line)
         if bi in line:
@@ -94,7 +95,7 @@ last_red = None
 last_thing = None
 os.system("sudo chmod 666 /dev/ttymxc2")
 arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-change_color("green", arduino)
+change_color("white", arduino)
 arduino.close()
 
 while True:
