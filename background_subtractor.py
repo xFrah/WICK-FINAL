@@ -56,6 +56,7 @@ def change_color(color, arduino):
         bi = asd[color]
         arduino.write(bi)
         line = arduino.readline()
+        print(line)
         if bi in line:
             print(f"Color changed to {color}")
             break
