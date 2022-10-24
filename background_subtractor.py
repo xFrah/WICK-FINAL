@@ -48,9 +48,9 @@ def get_average_vertex(v_buffer):
 
 
 def change_color(color, arduino):
-    asd = {"white": b"34\r\n",
-           "red": b"23\r\n",
-           "green": b"12\r\n",
+    asd = {"white": b"34\r",
+           "red": b"23\r",
+           "green": b"12\r",
            }
     while True:
         bi = asd[color]
