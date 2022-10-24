@@ -95,7 +95,7 @@ last_red = None
 last_thing = None
 os.system("sudo chmod 666 /dev/ttymxc2")
 arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-change_color("white", arduino)
+change_color("green", arduino)
 arduino.close()
 
 while True:
