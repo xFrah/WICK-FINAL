@@ -6,9 +6,10 @@ from uuid import uuid4
 
 import cv2
 import imageio
-#from tensorflow.keras.models import load_model
+import serial
+# from tensorflow.keras.models import load_model
 import tflite_runtime.interpreter as tflite
-#import tensorflow as tf
+import tensorflow as tf
 
 import numpy as np
 import time
@@ -45,6 +46,20 @@ def get_average_vertex(v_buffer):
     return avg_v, max([math.dist(avg_v, v) for v in v_buffer])
 
 
+def change_color(color, arduino):
+    asd = {"white": b"34\r\n",
+           "red": b"23\r\n",
+           "green": b"12\r\n",
+           }
+    while True:
+        bi = asd[color]
+        arduino.write(bi)
+        line = arduino.readline()
+        if bi in line:
+            print(f"Color changed to {color}")
+            break
+
+
 def push_vertex_buffer(vertex, v_b):
     del v_b[0]
     v_b.append(vertex)
@@ -60,8 +75,8 @@ capture = cv.VideoCapture(0)
 time.sleep(2)
 kernel = np.ones((2, 2), np.uint8)
 
-#backSub.setShadowThreshold(0.75)
-#print(backSub.getShadowThreshold())
+# backSub.setShadowThreshold(0.75)
+# print(backSub.getShadowThreshold())
 
 # load the trained convolutional neural network
 print("[INFO] loading network...")
@@ -73,6 +88,11 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 # model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
+last_red = None
+last_thing = None
+arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
+change_color("white", arduino)
+arduino.close()
 
 while True:
     ret, frame = capture.read()
@@ -83,17 +103,24 @@ while True:
 
     fgMask = backSub.apply(frame)
 
+    if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
+        continue
+    elif last_thing:
+        last_thing = None
+        print("Ready again")
+
     cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
     cv.putText(frame, str(capture.get(cv.CAP_PROP_POS_FRAMES)), (15, 15),
                cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
-    #cv.imshow('Frame', frame)
-    #cv.imshow('FG Mask', fgMask)
-    #_, white_only = cv.threshold(fgMask, 250, 255, cv.THRESH_BINARY)
-    #fgMask_new = cv.erode(fgMask, kernel, iterations=2)
-    #cv.imshow('FG Mask New', fgMask_new)
+    cv.imshow('Frame', frame)
+    cv.imshow('FG Mask', fgMask)
+    # _, white_only = cv.threshold(fgMask, 250, 255, cv.THRESH_BINARY)
+    # fgMask_new = cv.erode(fgMask, kernel, iterations=2)
+    # cv.imshow('FG Mask New', fgMask_new)
     # Finding contours of white square:
     conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
 
     # for cnt in conts:
     if not conts:
@@ -128,15 +155,18 @@ while True:
             if not moving:
                 moving = True
                 print("Motion session started")
+                arduino.open()
     dist = (datetime.datetime.now() - last_movement).microseconds
     if dist > 500000:
         if moving:
             moving = False
             print("Detection finished")
-            print(rectangles)
+            rectangles = rectangles[int(len(rectangles)*0.7):]
             if rectangles:
                 what = cv.groupRectangles(rectangles + rectangles, groupThreshold=50, eps=0.2)
                 i = 0
+                c = 0
+                d = 0
                 for r in what[0]:
                     avg_v1_x, avg_v1_y, avg_v2_x, avg_v2_y = r
                     if avg_v2_x - avg_v1_x > 200:
@@ -144,7 +174,7 @@ while True:
                         continue
                     letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
                     try:
-                        #cv.imshow("asd" + str(i), letter)
+                        cv.imshow("asd" + str(i), letter)
                         pass
                     except:
                         print("Failed to show image")
@@ -177,11 +207,15 @@ while True:
                     output_data = interpreter.get_tensor(output_details[0]['index'])
                     output_data = output_data[0]
                     print(output_data)
-                    #print(class_names[np.argmax(output_data[0])])
+                    # print(class_names[np.argmax(output_data[0])])
 
                     # build the label
                     notSanta, santa = output_data
                     label = "Santa" if santa > notSanta else "Not Santa"
+                    if label == "Santa":
+                        c += 1
+                    else:
+                        d += 1
                     proba = santa if santa > notSanta else notSanta
                     label = "{}: {:.2f}%".format(label, proba * 100)
 
@@ -199,5 +233,16 @@ while True:
                 print(what[0])
                 rectangles = []
                 what = []
+                if d != 0:
+                    change_color("red", arduino)
+                    time.sleep(2)
+                    change_color("white", arduino)
+                    last_thing = datetime.datetime.now()
+                elif c != 0:
+                    change_color("green", arduino)
+                    time.sleep(2)
+                    change_color("white", arduino)
+                    last_thing = datetime.datetime.now()
+            arduino.close()
         else:
             still_frame = frame
