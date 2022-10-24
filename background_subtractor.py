@@ -9,7 +9,7 @@ import imageio
 import serial
 # from tensorflow.keras.models import load_model
 import tflite_runtime.interpreter as tflite
-import tensorflow as tf
+#import tensorflow as tf
 
 import numpy as np
 import time
