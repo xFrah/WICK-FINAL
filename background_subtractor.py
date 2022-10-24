@@ -98,7 +98,7 @@ arduino.close()
 
 while True:
     ret, frame = capture.read()
-    cv2.imwrite(datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png", frame)
+    # cv2.imwrite(datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png", frame)
     if frame is None:
         break
 
