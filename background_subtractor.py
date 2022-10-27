@@ -3,6 +3,8 @@ from __future__ import print_function
 import datetime
 import optical_flow
 import math
+import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
 from uuid import uuid4
 
 import cv2
@@ -25,27 +27,27 @@ still_frame = None
 moving = False
 rectangles = []
 
+# function to plot a set of y coordinates
+def plot_y(y):
+    plt.plot(y)
+    plt.show()
 
-def distribute(center, length, limit):
-    result = [0, 0]
-    length /= 2
-    if center > length:
-        result[0] = center - length
-        if limit - center > length:
-            result[1] = center + length
-        else:
-            result[1] = limit
-            result[0] -= length - (limit - center)
-    else:
-        result[0] = 0
-        result[1] = length * 2
-    return result
+# function to check if contour is in the center of the image with threshold
+def is_in_center(cnt, frame, threshold):
+    x, y, w, h = cv.boundingRect(cnt)
+    return frame.shape[1] / 2 - threshold < x < frame.shape[1] / 2 + threshold and frame.shape[0] / 2 - threshold < y < \
+           frame.shape[0] / 2 + threshold
 
 
-def get_average_vertex(v_buffer):
-    temp_x, temp_y = zip(*v_buffer)
-    avg_v = int(sum(temp_x) / len(v_buffer)), int(sum(temp_y) / len(v_buffer))
-    return avg_v, max([math.dist(avg_v, v) for v in v_buffer])
+# function that applies mask to image
+def apply_mask(frame, mask):
+    return cv.bitwise_and(frame, frame, mask=mask)
+
+
+# function to check if a contour is on the edge of the image
+def is_on_edge(cnt, frame):
+    x, y, w, h = cv.boundingRect(cnt)
+    return x == 0 or y == 0 or x + w == frame.shape[1] or y + h == frame.shape[0]
 
 
 def change_color(color, arduino):
@@ -67,18 +69,24 @@ def push_vertex_buffer(vertex, v_b):
     v_b.append(vertex)
 
 
+def get_white_mask(frame):
+    mask = np.zeros(frame.shape[:2], np.uint8)
+    mask[frame == 255] = 255
+    return mask
+
+
 # print(distribute(900, 500, 1000))
 
 if 0:
     backSub = cv.createBackgroundSubtractorMOG2(history=150, varThreshold=0)
 else:
-    backSub = cv.createBackgroundSubtractorKNN(dist2Threshold=1200)
+    backSub = cv.createBackgroundSubtractorKNN(dist2Threshold=1200, detectShadows=True)
 capture = cv.VideoCapture(0)
 time.sleep(2)
 kernel = np.ones((2, 2), np.uint8)
 
-# backSub.setShadowThreshold(0.75)
-# print(backSub.getShadowThreshold())
+backSub.setShadowThreshold(0.05)
+print(backSub.getShadowThreshold())
 
 # load the trained convolutional neural network
 print("[INFO] loading network...")
@@ -106,7 +114,9 @@ while True:
     cv.waitKey(1) & 0xff
 
     fgMask = backSub.apply(frame)
-
+    fgMask = get_white_mask(fgMask)
+    # blur_map = blur_detector.detectBlur(grayscale(frame), downsampling_factor=4, num_scales=4, scale_start=2,
+    #                                    num_iterations_RF_filter=3)
     # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
     #     continue
     # elif last_thing:
@@ -129,122 +139,79 @@ while True:
     if not conts:
         continue
     for cnt in conts:
-        area = cv.contourArea(cnt)
-        if area > 400:
-            # x1, y1, w, h = cv.boundingRect(cnt)
-            moving = True
+        if cv.contourArea(cnt) > 600 and not is_on_edge(cnt, frame):
             print("Motion session started")
-            optical_flow.follow(frame, capture, cnt, fgMask, backSub)
-
-            # last_movement = datetime.datetime.now()
-            # x2 = x1 + w  # (x1, y1) = top-left vertex
-            # y2 = y1 + h  # (x2, y2) = bottom-right vertex
-            # rect = cv.rectangle(fgMask_new, (x1, y1), (x2, y2), (255, 0, 0), 2)
-            # side_length = w if w > h else h
-            # xC, yC = x1 + (w / 2), y1 + (h / 2)
-
-            # x1, x2 = distribute(xC, side_length, len(frame[0]))
-            # y1, y2 = distribute(yC, side_length, len(frame))
-
-            # rectangles.append((int(x1), int(y1), int(x2), int(y2)))
-
-            # push_vertex_buffer((x1, y1), buffer_v1)
-            # push_vertex_buffer((x2, y2), buffer_v2)
+            area_buffer = optical_flow.follow(frame, capture, cnt, fgMask, backSub)
+            try:
+                area_y = savgol_filter(area_buffer, len(area_buffer) - (0 if len(area_buffer) % 2 else 1), 3)
+                plot_y(area_y)
+            except ValueError:
+                print("Shit happened")
+                continue
+            # i += 1
+            # im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"
+            # imageio.imsave(im, letter)
+            # image = cv2.imread(im)
+            # orig = image.copy()
             #
-            # (avg_v1_x, avg_v1_y), dev1 = get_average_vertex(buffer_v1)
-            # (avg_v2_x, avg_v2_y), dev2 = get_average_vertex(buffer_v2)
+            # # pre-process the image for classification
+            # image = cv2.resize(image, (28, 28))
+            # image = image.astype("float32") / 255.0
+            # image = np.array(image)
+            # image = np.expand_dims(image, axis=0)
             #
-            # if dev1 < 20 and dev2 < 20:
-            #     letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
-            #     rectangles.append((avg_v1_x, avg_v1_y, avg_v2_x, avg_v2_y))
-            #     cv.imshow("asd", letter)
-    # dist = (datetime.datetime.now() - last_movement).microseconds
-    # if dist > 500000:
-    #     if moving:
-    #         moving = False
-    #         print("Detection finished")
-    #         rectangles = rectangles[int(len(rectangles) * 0.7):]
-    #         if rectangles:
-    #             what = cv.groupRectangles(rectangles + rectangles, groupThreshold=50, eps=0.2)
-    #             i = 0
-    #             c = 0
-    #             d = 0
-    #             for r in what[0]:
-    #                 avg_v1_x, avg_v1_y, avg_v2_x, avg_v2_y = r
-    #                 if avg_v2_x - avg_v1_x > 200:
-    #                     print(f"Discarded with side_length = {avg_v2_x - avg_v1_x}")
-    #                     continue
-    #                 letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
-                    # try:
-                    #     # cv.imshow("asd" + str(i), letter)
-                    #     pass
-                    # except:
-                    #     print("Failed to show image")
-                    #     continue
-                    # i += 1
-                    # im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"
-                    # imageio.imsave(im, letter)
-                    # image = cv2.imread(im)
-                    # orig = image.copy()
-                    #
-                    # # pre-process the image for classification
-                    # image = cv2.resize(image, (28, 28))
-                    # image = image.astype("float32") / 255.0
-                    # image = np.array(image)
-                    # image = np.expand_dims(image, axis=0)
-                    #
-                    # # classify the input image
-                    # # (notSanta, santa) = model.predict(image)[0]
-                    #
-                    # # Test the model on random input data.
-                    # input_shape = input_details[0]['shape']
-                    #
-                    # interpreter.set_tensor(input_details[0]['index'], image)
-                    #
-                    # # class_names = ["Not Santa", "Santa"]
-                    # interpreter.invoke()
-                    #
-                    # # The function `get_tensor()` returns a copy of the tensor data.
-                    # # Use `tensor()` in order to get a pointer to the tensor.
-                    # output_data = interpreter.get_tensor(output_details[0]['index'])
-                    # output_data = output_data[0]
-                    # print(output_data)
-                    # # print(class_names[np.argmax(output_data[0])])
-                    #
-                    # # build the label
-                    # notSanta, santa = output_data
-                    # label = "Santa" if santa > notSanta else "Not Santa"
-                    # if label == "Santa":
-                    #     c += 1
-                    # else:
-                    #     d += 1
-                    # proba = santa if santa > notSanta else notSanta
-                    # label = "{}: {:.2f}%".format(label, proba * 100)
-                    #
-                    # print(label)
+            # # classify the input image
+            # # (notSanta, santa) = model.predict(image)[0]
+            #
+            # # Test the model on random input data.
+            # input_shape = input_details[0]['shape']
+            #
+            # interpreter.set_tensor(input_details[0]['index'], image)
+            #
+            # # class_names = ["Not Santa", "Santa"]
+            # interpreter.invoke()
+            #
+            # # The function `get_tensor()` returns a copy of the tensor data.
+            # # Use `tensor()` in order to get a pointer to the tensor.
+            # output_data = interpreter.get_tensor(output_details[0]['index'])
+            # output_data = output_data[0]
+            # print(output_data)
+            # # print(class_names[np.argmax(output_data[0])])
+            #
+            # # build the label
+            # notSanta, santa = output_data
+            # label = "Santa" if santa > notSanta else "Not Santa"
+            # if label == "Santa":
+            #     c += 1
+            # else:
+            #     d += 1
+            # proba = santa if santa > notSanta else notSanta
+            # label = "{}: {:.2f}%".format(label, proba * 100)
+            #
+            # print(label)
 
-                    # # draw the label on the image
-                    # output = imutils.resize(orig, width=400)
-                    # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
-                    #             0.7, (0, 255, 0), 2)
-                    #
-                    # # show the output image
-                    # cv2.imshow("Output", output)
-                    # cv.waitKey(1) & 0xff
+            # # draw the label on the image
+            # output = imutils.resize(orig, width=400)
+            # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.7, (0, 255, 0), 2)
+            #
+            # # show the output image
+            # cv2.imshow("Output", output)
+            # cv.waitKey(1) & 0xff
 
-                # print(what[0])
-                # rectangles = []
-                # what = []
-                # if d != 0:
-                #     change_color("red", arduino)
-                #     time.sleep(2)
-                #     change_color("white", arduino)
-                #     last_thing = datetime.datetime.now()
-                # elif c != 0:
-                #     change_color("green", arduino)
-                #     time.sleep(2)
-                #     change_color("white", arduino)
-                #     last_thing = datetime.datetime.now()
+            # print(what[0])
+            # rectangles = []
+            # what = []
+            # if d != 0:
+            #     change_color("red", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
+            # elif c != 0:
+            #     change_color("green", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
             # arduino.close()
         # else:
         #     still_frame = frame
