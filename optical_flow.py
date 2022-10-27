@@ -7,6 +7,51 @@ import cv2 as cv
 import imageio
 
 
+# function that shifts a rectangle if it is on the edge of the image
+def shift_rect(rect, frame):
+    x, y, w, h = rect
+    if x == 0:
+        x += 10
+    if y == 0:
+        y += 10
+    if x + w == frame.shape[1]:
+        x -= 10
+    if y + h == frame.shape[0]:
+        y -= 10
+    return x, y, w, h
+
+
+# function that makes a rectangle bigger
+def make_rect_bigger(rect, frame):
+    x, y, w, h = rect
+    if x > 0:
+        x -= 10
+    if y > 0:
+        y -= 10
+    if x + w < frame.shape[1]:
+        w += 10
+    if y + h < frame.shape[0]:
+        h += 10
+    return x, y, w, h
+
+
+# get image inside bounding rectangle
+def get_sub_image(frame, x, y, w, h):
+    return frame[y:y + h, x:x + w]
+
+
+# find the bounding rectangle of set of points
+def get_bounding_rect(points):
+    x, y, w, h = cv.boundingRect(points)
+    return x, y, w, h
+
+
+# function to erode frame
+def erode(frame):
+    kernel = np.ones((5, 5), np.uint8)
+    return cv.erode(frame, kernel, iterations=1)
+
+
 # function to count white pixels in frame
 def count_white_pixels(frame):
     return np.sum(frame == 255)
@@ -43,16 +88,12 @@ def save_images(frames, sub_frames, uuid):
         imageio.imwrite(uuid_sub + str(i) + 'sub.png', sub_frames[i])
 
 
-def follow(old_frame, cap, first_cnt, mask, backSub):
-    area_buffer = []
+def follow(frames, old_frame, first_cnt):
     start = datetime.datetime.now()
-    session_uuid = start.strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
-    session_frames = [old_frame]
-    sub_frames = [mask]
 
     # params for ShiTomasi corner detection
     feature_params = dict(maxCorners=100,
-                          qualityLevel=0.3,
+                          qualityLevel=0.2,
                           minDistance=7,
                           blockSize=7)
 
@@ -64,30 +105,13 @@ def follow(old_frame, cap, first_cnt, mask, backSub):
     # Create some random colors
     color = np.random.randint(0, 255, (100, 3))
 
-    # Take first frame and find corners in it
-    # ret, old_frame = cap.read()
     old_gray = cv.cvtColor(old_frame, cv.COLOR_BGR2GRAY)
-    p0 = cv.goodFeaturesToTrack(old_gray, mask=get_mask(old_frame, first_cnt), **feature_params)
-    if p0 is None or len(p0) == 0:
-        try:
-            print(F"Motion finished, FPS: {len(session_frames) / (datetime.datetime.now() - start).seconds}")
-            # save_images(session_frames, sub_frames, session_uuid)
-        except ZeroDivisionError:
-            print('Session discarded')
-        return area_buffer
+    p0 = cv.goodFeaturesToTrack(old_gray, mask=erode(get_mask(old_frame, first_cnt)), **feature_params)
 
     # Create a mask image for drawing purposes
     mask = np.zeros_like(old_frame)
-
-    while 1:
-        ret, frame = cap.read()
-        fgMask = backSub.apply(frame)
-        fgMask = get_white_mask(fgMask)
-        session_frames.append(frame)
-        sub_frames.append(fgMask)
-        if not ret:
-            print('No frames grabbed!')
-            break
+    new_frames = []
+    for frame in frames:
 
         frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
@@ -105,25 +129,10 @@ def follow(old_frame, cap, first_cnt, mask, backSub):
             c, d = old.ravel()
             mask = cv.line(mask, (int(a), int(b)), (int(c), int(d)), color[i].tolist(), 2)
             frame = cv.circle(frame, (int(a), int(b)), 5, color[i].tolist(), -1)
-        img = cv.add(frame, mask)
-
-        cv.imshow('Frame', img)
-        cv.imshow('FG Mask', fgMask)
-        k = cv.waitKey(30) & 0xff
-        if k == 27:
-            break
+        new_frames.append(cv.add(frame, mask))
 
         # Now update the previous frame and previous points
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1, 1, 2)
-
-        conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        max_contour = max(conts, key=cv.contourArea)
-        area_buffer.append(count_white_pixels(fgMask))
-        if cv.contourArea(max_contour) < 200:
-            try:
-                print(F"Motion finished, FPS: {len(session_frames) / (datetime.datetime.now() - start).seconds}")
-                #save_images(session_frames, sub_frames, session_uuid)
-            except ZeroDivisionError:
-                print('Session discarded')
-            return area_buffer
+    print(f"Optical flow processed {len(frames)} frames in {(datetime.datetime.now() - start).seconds}")
+    return new_frames, get_sub_image(frame, *shift_rect(make_rect_bigger(get_bounding_rect(good_new), frame), frame))
