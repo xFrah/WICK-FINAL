@@ -1,18 +1,13 @@
 from __future__ import print_function
 
 import datetime
+from helpers import *
 import optical_flow
-import math
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter, find_peaks
 from uuid import uuid4
 import ruptures as rpt
+from sklearn.cluster import DBSCAN
 
-import cv2
-import imageio
 # import serial
-import os
 # from tensorflow.keras.models import load_model
 # import tflite_runtime.interpreter as tflite
 # import tensorflow as tf
@@ -29,113 +24,16 @@ still_frame = None
 moving = False
 rectangles = []
 
-
-# function to join two numpy arrays
-def join_arrays(arr1, arr2):
-    return np.concatenate((arr1, arr2))
-
-
-# function to find first peak using scipy.signal.find_peaks
-def find_first_peak(y):
-    peaks, _ = find_peaks(y)
-    return peaks[0]
-
-
-def find_local_minimas(y):
-    peaks, _ = find_peaks(y * -1)
-    return peaks
-
-
-# function to count white pixels in frame
-def count_white_pixels(frame):
-    return np.sum(frame == 255)
-
-
-# function to plot a set of y coordinates
-def plot_y(y, first_peak, minimas):
-    plt.plot(y)
-    first_peak = first_peak[0][0]
-    # plot vertical line at x
-    plt.axvline(x=first_peak, color='r')
-    # for bk in bkps:
-    #    plt.axvline(x=bk, color='g')
-    for bk in minimas:
-        plt.axvline(x=bk, color='b')
-    plt.show()
-
-
-# function that creates a directory with specified name in the current working directory
-def create_dir(name):
-    if not os.path.exists(name):
-        os.makedirs(name)
-
-
-# function that creates a directory and saves a list of images in it
-def save_images(frames, sub_frames, uuid):
-    create_dir(uuid)
-    create_dir(uuid + "sub")
-    uuid_sub = uuid + "sub/"
-    uuid = uuid + "/"
-    for i in range(len(frames)):
-        imageio.imwrite(uuid + str(i) + '.png', frames[i])
-        imageio.imwrite(uuid_sub + str(i) + 'sub.png', sub_frames[i])
-
-
-# function to check if contour is in the center of the image with threshold
-def is_in_center(cnt, frame, threshold):
-    x, y, w, h = cv.boundingRect(cnt)
-    return frame.shape[1] / 2 - threshold < x < frame.shape[1] / 2 + threshold and frame.shape[0] / 2 - threshold < y < \
-           frame.shape[0] / 2 + threshold
-
-
-# function that applies mask to image
-def apply_mask(frame, mask):
-    return cv.bitwise_and(frame, frame, mask=mask)
-
-
-# function to check if a contour is on the edge of the image
-def is_on_edge(cnt, frame):
-    x, y, w, h = cv.boundingRect(cnt)
-    return x == 0 or y == 0 or x + w == frame.shape[1] or y + h == frame.shape[0]
-
-
-def change_color(color, arduino):
-    asd = {"white": b"34",
-           "red": b"23",
-           "green": b"12",
-           }
-    while True:
-        bi = asd[color]
-        arduino.write(bi)
-        line = arduino.readline()
-        if bi in line:
-            print(f"Color changed to {color}")
-            break
-
-
-def push_vertex_buffer(vertex, v_b):
-    del v_b[0]
-    v_b.append(vertex)
-
-
-def get_white_mask(frame):
-    mask = np.zeros(frame.shape[:2], np.uint8)
-    mask[frame == 255] = 255
-    return mask
-
-
-# save array of images as gif
-def save_gif(frames):
-    imageio.mimsave(str(uuid4()) + '.gif', frames)
-
-
 # print(distribute(900, 500, 1000))
 
 if 0:
     backSub = cv.createBackgroundSubtractorMOG2(history=150, varThreshold=0)
 else:
-    backSub = cv.createBackgroundSubtractorKNN(dist2Threshold=1200, detectShadows=True)
+    backSub = cv.createBackgroundSubtractorKNN(detectShadows=True)
 capture = cv.VideoCapture(0)
+width, height = rescale_frame(640, 480, 50)
+capture.set(cv.CAP_PROP_FRAME_WIDTH, width)
+capture.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 time.sleep(2)
 kernel = np.ones((2, 2), np.uint8)
 
@@ -162,6 +60,7 @@ last_thing = None
 # model = rpt.Dynp(model="l1")
 
 while True:
+
     ret, frame = capture.read()
     if frame is None:
         break
@@ -189,7 +88,7 @@ while True:
         continue
     cnt = max(conts, key=cv.contourArea)
     area = cv.contourArea(cnt)
-    if area > 600 and not is_on_edge(cnt, frame):
+    if area > 200:
         print("Motion session started")
         area_buffer = []
         fr1 = []
@@ -204,15 +103,22 @@ while True:
             ret, frame = capture.read()
             fgMask = backSub.apply(frame)
             fgMask = get_white_mask(fgMask)
-            area_buffer.append(count_white_pixels(fgMask))
-            fr1.append(frame)
-            fr2.append(fgMask)
             conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-            if conts and cv.contourArea(max(conts, key=cv.contourArea)) > 200:
-                last_movement = datetime.datetime.now()
+            if conts:
+                biggest_contour = max(conts, key=cv.contourArea)
+                if not is_on_edge(biggest_contour, frame):
+                    area_buffer.append(count_white_pixels(fgMask))
+                    fr1.append(frame)
+                    fr2.append(fgMask)
+                if cv.contourArea(biggest_contour) > 200:
+                    last_movement = datetime.datetime.now()
         stop = datetime.datetime.now()
         delta = (stop - start).seconds
-        print(f"FPS: {int(len(fr1) / delta)}")
+        try:
+            print(f"FPS: {int(len(fr1) / delta)}")
+        except ZeroDivisionError:
+            print("Session too short")
+            continue
 
         # area_y = savgol_filter(area_buffer, len(area_buffer) - (0 if len(area_buffer) % 2 else 1), 3)
         # area_y = join_arrays(np.array(
@@ -226,17 +132,18 @@ while True:
             # minimas = find_local_minimas(area_y)
             # plot_y(area_y, fp, minimas)
             # print(breaks)
-            min_index = np.argmin(area_buffer[:10])
+            min_index = np.argmin(area_buffer[1:5])
             # index = area_buffer.index(min(area_buffer))
             cv.imshow('Frame1', fr1[min_index])
             cv.imshow('Frame2', fr2[min_index])
             cv.waitKey(1) & 0xff
-            save_images(fr1[:10], fr2[:10], str(uuid4()))
+            save_images(fr1[1:5], fr2[1:5], str(uuid4()))
         except IndexError:
             print("No peaks found")
         new_frames, points = optical_flow.follow(fr1[min_index + 1:], fr1[min_index],
                             max(cv.findContours(fr2[min_index], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea))
         cv.imshow("Bounded points", points)
+        cv.waitKey(1) & 0xff
         save_gif(new_frames)
         print("Gif printed")
         save_images(fr1[min_index:], fr2[min_index:], str(uuid4()))
