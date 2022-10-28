@@ -3,9 +3,12 @@ from __future__ import print_function
 import datetime
 from helpers import *
 import optical_flow
+from tracking import track
 from uuid import uuid4
 import ruptures as rpt
 from sklearn.cluster import DBSCAN
+from scipy.signal import savgol_filter
+from kalman import kalman_tracking
 
 # import serial
 # from tensorflow.keras.models import load_model
@@ -26,10 +29,10 @@ rectangles = []
 
 # print(distribute(900, 500, 1000))
 
-if 0:
-    backSub = cv.createBackgroundSubtractorMOG2(history=150, varThreshold=0)
+if 1:
+    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
 else:
-    backSub = cv.createBackgroundSubtractorKNN(detectShadows=True)
+    backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
 capture = cv.VideoCapture(0)
 width, height = rescale_frame(640, 480, 50)
 capture.set(cv.CAP_PROP_FRAME_WIDTH, width)
@@ -37,7 +40,7 @@ capture.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 time.sleep(2)
 kernel = np.ones((2, 2), np.uint8)
 
-backSub.setShadowThreshold(0.05)
+#backSub.setShadowThreshold(0.05)
 print(backSub.getShadowThreshold())
 
 # load the trained convolutional neural network
@@ -58,7 +61,7 @@ last_thing = None
 # arduino.close()
 
 # model = rpt.Dynp(model="l1")
-
+asd = None
 while True:
 
     ret, frame = capture.read()
@@ -77,7 +80,8 @@ while True:
     #     print("Ready again")
 
     cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
-
+    if asd is not None:
+        cv.imshow("snapframe", asd)
     cv.imshow('Frame', frame)
     cv.imshow('FG Mask', fgMask)
 
@@ -110,8 +114,12 @@ while True:
                     area_buffer.append(count_white_pixels(fgMask))
                     fr1.append(frame)
                     fr2.append(fgMask)
-                if cv.contourArea(biggest_contour) > 200:
+                if cv.contourArea(biggest_contour) > 100:
                     last_movement = datetime.datetime.now()
+        # morphological open frames in list with opencv
+        # for i in range(len(fr2)):
+        #    fr2[i] = morphological_top_hat(fr2[i])
+        fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
         stop = datetime.datetime.now()
         delta = (stop - start).seconds
         try:
@@ -127,26 +135,50 @@ while True:
         # y = np.array(area_y.tolist())
         # model.fit(y)
         # breaks = model.predict(n_bkps=2)
-        try:
-            # fp = find_peaks(area_y)
-            # minimas = find_local_minimas(area_y)
-            # plot_y(area_y, fp, minimas)
-            # print(breaks)
-            min_index = np.argmin(area_buffer[1:5])
-            # index = area_buffer.index(min(area_buffer))
-            cv.imshow('Frame1', fr1[min_index])
-            cv.imshow('Frame2', fr2[min_index])
-            cv.waitKey(1) & 0xff
-            save_images(fr1[1:5], fr2[1:5], str(uuid4()))
-        except IndexError:
-            print("No peaks found")
-        new_frames, points = optical_flow.follow(fr1[min_index + 1:], fr1[min_index],
-                            max(cv.findContours(fr2[min_index], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea))
-        cv.imshow("Bounded points", points)
+        #try:
+        #    fp = find_peaks(area_y)[0][-1] - 10
+        #except IndexError:
+        #    print("No peaks found")
+        #    fp = len(area_y) // 2
+        # minimas = find_local_minimas(area_y)
+        # plot_y(area_y, fp)
+        min_index = np.argmax(area_buffer[1:5])
+
+        snap = max(cv.findContours(fr2[min_index], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea)
+        # take bounding rectangle of snap
+        # cv.imshow("snap", snap)
+
+        rect = cv.boundingRect(snap)
+        track(fr1[min_index:], rect)
+        # x, y, w, h = rect
+        # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
+
+
+
+        #snap_cropped = get_sub_image(fr1[fp], *rect)
+        #cv.imshow('ERERER', errrr)
+        # cv.imshow('ERERER2', errrr)
+        #cv.imshow('Snapshot', snap_cropped)
+        #cv.imshow('Frame2', fr2[min_index])
+        #cv.waitKey(1) & 0xff
+        #fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
+        #save_images(fr1[1:5], fr2[1:5], str(uuid4()))
+
+        # eroded = erode(fr2[min_index])
+
+        # new_frames, points = optical_flow.follow(fr1[min_index + 1:], fr1[min_index], max(cv.findContours(eroded,
+        # cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea))
+        # cv.imshow("Bounded points", points)
+        #cv.imshow("Eroded", eroded)ì
+        cv.imshow('Frame', frame)
+        cv.imshow('FG Mask', fgMask)
+        asd = fr2[min_index]
+        cv.imshow("snapframe", asd)
         cv.waitKey(1) & 0xff
-        save_gif(new_frames)
-        print("Gif printed")
-        save_images(fr1[min_index:], fr2[min_index:], str(uuid4()))
+
+        #save_gif(new_frames)
+        #print("Gif printed")
+        save_images(fr1, fr2, str(uuid4()))
 
         # i += 1
         # im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"

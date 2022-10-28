@@ -14,7 +14,7 @@ def follow(frames, old_frame, first_cnt):
                           blockSize=4)
 
     # Parameters for lucas kanade optical flow
-    lk_params = dict(winSize=(40, 40),
+    lk_params = dict(winSize=(60, 60),
                      maxLevel=2,
                      criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 0.03))
 

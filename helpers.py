@@ -5,7 +5,6 @@ import cv2 as cv
 import imageio
 import numpy as np
 
-
 # function to join two numpy arrays
 from matplotlib import pyplot as plt
 from scipy.signal import find_peaks
@@ -32,15 +31,14 @@ def count_white_pixels(frame):
 
 
 # function to plot a set of y coordinates
-def plot_y(y, first_peak, minimas):
+def plot_y(y, first_peak):
     plt.plot(y)
-    first_peak = first_peak[0][0]
     # plot vertical line at x
     plt.axvline(x=first_peak, color='r')
     # for bk in bkps:
     #    plt.axvline(x=bk, color='g')
-    for bk in minimas:
-        plt.axvline(x=bk, color='b')
+    # for bk in minimas:
+    #    plt.axvline(x=bk, color='b')
     plt.show()
 
 
@@ -100,8 +98,14 @@ def push_vertex_buffer(vertex, v_b):
 
 def get_white_mask(frame):
     mask = np.zeros(frame.shape[:2], np.uint8)
-    mask[frame == 255] = 255
+    mask[frame != 0] = 255
     return mask
+
+
+# function to perform morphological top hat
+def morphological_top_hat(frame):
+    kernel = np.ones((5, 5), np.uint8)
+    return cv.morphologyEx(frame, cv.MORPH_TOPHAT, kernel)
 
 
 # save array of images as gif
@@ -118,6 +122,7 @@ def rescale_frame(old_width, old_height, percent=50):
     # resize image
     # return cv.resize(frame, dim, interpolation=cv.INTER_AREA)
     return dim
+
 
 # function that shifts a rectangle if it is on the edge of the image
 def shift_rect(rect, frame):
