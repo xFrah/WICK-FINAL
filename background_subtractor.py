@@ -40,7 +40,7 @@ capture.set(cv.CAP_PROP_FRAME_HEIGHT, height)
 time.sleep(2)
 kernel = np.ones((2, 2), np.uint8)
 
-#backSub.setShadowThreshold(0.05)
+# backSub.setShadowThreshold(0.05)
 print(backSub.getShadowThreshold())
 
 # load the trained convolutional neural network
@@ -106,7 +106,11 @@ while True:
         while (datetime.datetime.now() - last_movement).microseconds < 500000:
             ret, frame = capture.read()
             fgMask = backSub.apply(frame)
-            fgMask = get_white_mask(fgMask)
+            # fgMask = get_white_mask(fgMask)
+            try:
+                fgMask = get_blobl_with_closing(fgMask)
+            except ValueError:
+                continue
             conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
             if conts:
                 biggest_contour = max(conts, key=cv.contourArea)
@@ -119,7 +123,7 @@ while True:
         # morphological open frames in list with opencv
         # for i in range(len(fr2)):
         #    fr2[i] = morphological_top_hat(fr2[i])
-        fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
+        # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
         stop = datetime.datetime.now()
         delta = (stop - start).seconds
         try:
@@ -135,9 +139,9 @@ while True:
         # y = np.array(area_y.tolist())
         # model.fit(y)
         # breaks = model.predict(n_bkps=2)
-        #try:
+        # try:
         #    fp = find_peaks(area_y)[0][-1] - 10
-        #except IndexError:
+        # except IndexError:
         #    print("No peaks found")
         #    fp = len(area_y) // 2
         # minimas = find_local_minimas(area_y)
@@ -153,31 +157,29 @@ while True:
         # x, y, w, h = rect
         # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
 
-
-
-        #snap_cropped = get_sub_image(fr1[fp], *rect)
-        #cv.imshow('ERERER', errrr)
+        # snap_cropped = get_sub_image(fr1[fp], *rect)
+        # cv.imshow('ERERER', errrr)
         # cv.imshow('ERERER2', errrr)
-        #cv.imshow('Snapshot', snap_cropped)
-        #cv.imshow('Frame2', fr2[min_index])
-        #cv.waitKey(1) & 0xff
-        #fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
-        #save_images(fr1[1:5], fr2[1:5], str(uuid4()))
+        # cv.imshow('Snapshot', snap_cropped)
+        # cv.imshow('Frame2', fr2[min_index])
+        # cv.waitKey(1) & 0xff
+        # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
+        # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
 
         # eroded = erode(fr2[min_index])
 
         # new_frames, points = optical_flow.follow(fr1[min_index + 1:], fr1[min_index], max(cv.findContours(eroded,
         # cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea))
         # cv.imshow("Bounded points", points)
-        #cv.imshow("Eroded", eroded)ì
+        # cv.imshow("Eroded", eroded)ì
         cv.imshow('Frame', frame)
         cv.imshow('FG Mask', fgMask)
         asd = fr2[min_index]
         cv.imshow("snapframe", asd)
         cv.waitKey(1) & 0xff
 
-        #save_gif(new_frames)
-        #print("Gif printed")
+        # save_gif(new_frames)
+        # print("Gif printed")
         save_images(fr1, fr2, str(uuid4()))
 
         # i += 1

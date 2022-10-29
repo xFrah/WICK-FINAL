@@ -96,6 +96,16 @@ def push_vertex_buffer(vertex, v_b):
     v_b.append(vertex)
 
 
+def get_blobl_with_closing(frame):
+    inter = cv.morphologyEx(frame, cv.MORPH_CLOSE, cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5)))
+    cnts, _ = cv.findContours(inter, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    cnt = max(cnts, key=cv.contourArea)
+    out = np.zeros(frame.shape, np.uint8)
+    cv.drawContours(out, [cnt], -1, 255, cv.FILLED)
+    out = cv.bitwise_and(frame, out)
+    return out
+
+
 def get_white_mask(frame):
     mask = np.zeros(frame.shape[:2], np.uint8)
     mask[frame != 0] = 255
