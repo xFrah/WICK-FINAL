@@ -92,7 +92,7 @@ if __name__ == '__main__':
     pixels.fill((255, 255, 255))
     pixels.show()
 
-    #threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
+    threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
     while True:
         ret, frame = capture.read()
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         # cv.imshow('Frame', frame)
         # cv.imshow('FG Mask', fgMask)
         # cv.waitKey(1) & 0xff
-        #streamer.change_frame(frame)
+        streamer.change_frame(frame)
 
         conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
