@@ -41,12 +41,17 @@ if __name__ == '__main__':
     moving = False
     rectangles = []
     # print(distribute(900, 500, 1000))
-    subprocess.call(['v4l2-ctl -d /dev/video1 -c exposure_auto=1'], shell=True)
-    time.sleep(5)
-    cam_props = {'gain': 0, 'exposure_absolute': 25}
+
+    subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
+    time.sleep(1)
+    print("Set video format successfully?")
+
+    cam_props = {'gain': 0, 'exposure_auto': 1, 'exposure_absolute': 25}
     for key in cam_props:
         subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format(key, str(cam_props[key]))],
                         shell=True)
+        time.sleep(1)
+        print(f"Set {key} to {cam_props[key]}")
     if 1:
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
