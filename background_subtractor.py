@@ -80,6 +80,14 @@ if __name__ == '__main__':
     pixels.show()
 
     streamer.start_thread('0.0.0.0', "5000")
+    # loop to count framerate
+    a = datetime.datetime.now()
+    fps_c = 0
+    while True:
+        # Capture frame-by-frame
+        ret, frame = capture.read()
+        print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
+
 
     while True:
         ret, frame = capture.read()
