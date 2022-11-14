@@ -28,6 +28,7 @@ for key in cam_props:
     time.sleep(1)
     print(f"Set {key} to {cam_props[key]}")
 cap = cv.VideoCapture(1)
+print(cap.get(cv.CAP_PROP_FPS))
 print(cap.set(cv.CAP_PROP_FRAME_WIDTH, 640))
 print(cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
 print(cap.get(cv.CAP_PROP_FPS))
@@ -44,6 +45,7 @@ capture = WebcamVideoStream(src=cap).start()
 # print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
 # print(capture.set(cv.CAP_PROP_GAIN, 100))
 time.sleep(2)
+print(cap.get(cv.CAP_PROP_FPS))
 
 
 # function that checks if two frames are pixel per pixel identical
