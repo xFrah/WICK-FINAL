@@ -63,11 +63,6 @@ def video_feed():
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
-def setup(ip, port):
+def start_thread(ip, port):
     app.run(host=ip, port=port, debug=True,
             threaded=True, use_reloader=False)
-
-
-def start_thread(ip, port):
-    # start a thread that will perform motion detection
-    threading.Thread(target=setup, args=(ip, port)).start()

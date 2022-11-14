@@ -5,6 +5,7 @@ from helpers import *
 
 from lib import neopixel_spidev as neo
 from lib.pixelbuf import wheel
+import psutil
 # from tracking import track
 from uuid import uuid4
 
@@ -37,20 +38,19 @@ if __name__ == '__main__':
     still_frame = None
     moving = False
     rectangles = []
-
     # print(distribute(900, 500, 1000))
 
     if 1:
-        backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
+        backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
-        backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
+        backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
     capture = cv.VideoCapture("/dev/video1")
     # width, height = rescale_frame(640, 480, 50)
     print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
     print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
     print(capture.set(cv.CAP_PROP_FPS, 120))
-    # print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
-    print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
+    print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
+    print(capture.set(cv.CAP_PROP_EXPOSURE, 25))
     print(capture.set(cv.CAP_PROP_GAIN, 100))
     time.sleep(2)
     kernel = np.ones((2, 2), np.uint8)
@@ -88,6 +88,7 @@ if __name__ == '__main__':
 
         fgMask = backSub.apply(frame)
         fgMask = get_white_mask(fgMask)
+        print('RAM memory % used:', psutil.virtual_memory()[2])
 
         # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
         #     continue
