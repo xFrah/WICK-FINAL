@@ -29,6 +29,7 @@ print(capture.get(cv.CAP_PROP_FPS))
 # print(capture.set(cv.CAP_PROP_GAIN, 100))
 time.sleep(2)
 
+fps_c = 0
 while True:
     # Capture frame-by-frame
     ret, frame = capture.read()
