@@ -53,7 +53,7 @@ if __name__ == '__main__':
     print("Setting HEIGHT " + str(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480)))
     print("Setting FPS " + str(capture.set(cv.CAP_PROP_FPS, 120)))
     print("Setting AUTO_EXPOSURE " + str(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)))
-    print("Setting EXPOSURE " + str(capture.set(cv.CAP_PROP_EXPOSURE, -9)))
+    print("Setting EXPOSURE " + str(capture.set(cv.CAP_PROP_EXPOSURE, 25)))
     time.sleep(2)
     print("Setting PIXEL FORMAT " + str(capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))))
 
