@@ -18,14 +18,16 @@ import cv2 as cv
 ##    print(f"Set {key} to {cam_props[key]}")
 threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
-capture = WebcamVideoStream(src=1).start()
+cap = cv.VideoCapture(1)
+print(cap.set(cv.CAP_PROP_FRAME_WIDTH, 640))
+print(cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
+print(cap.set(cv.CAP_PROP_FPS, 120))
+# print(capture.set(cv.CAP_PROP_BUFFERSIZE, 1))
+print(cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
+capture = WebcamVideoStream(src=cap).start()
 
 # width, height = rescale_frame(640, 480, 50)
-print(capture.stream.set(cv.CAP_PROP_FRAME_WIDTH, 640))
-print(capture.stream.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
-print(capture.stream.set(cv.CAP_PROP_FPS, 120))
-# print(capture.set(cv.CAP_PROP_BUFFERSIZE, 1))
-print(capture.stream.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
+
 ##print(capture.stream.get(cv.CAP_PROP_FPS))
 # #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
 # print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
