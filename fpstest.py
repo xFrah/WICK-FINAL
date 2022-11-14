@@ -1,7 +1,7 @@
 import time
 import subprocess
 import datetime
-from imutils.video import WebcamVideoStream
+from wecam import WebcamVideoStream
 import streamer
 import threading
 import cv2 as cv
