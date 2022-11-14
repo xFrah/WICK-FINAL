@@ -74,6 +74,7 @@ while True:
         img.putpalette(pal)
         img = img.convert("RGB")
         img = img.resize((240, 240), resample=Image.NEAREST)
+        img = numpy.array(img)
 
         streamer.change_frame(img)
 
