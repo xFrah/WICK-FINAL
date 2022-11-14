@@ -3,7 +3,7 @@ from __future__ import print_function
 import datetime
 from helpers import *
 import optical_flow
-from tracking import track
+# from tracking import track
 from uuid import uuid4
 import ruptures as rpt
 from sklearn.cluster import DBSCAN
@@ -11,241 +11,272 @@ from scipy.signal import savgol_filter
 from kalman import kalman_tracking
 
 # import serial
-# from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model
 # import tflite_runtime.interpreter as tflite
-# import tensorflow as tf
+import tensorflow as tf
 
 import numpy as np
 import time
 
 import cv2 as cv
 
-buffer_v1 = [(0, 999), (999, 999), (0, 999), (999, 999), (0, 999), (999, 999)]
-buffer_v2 = [(999, 999), (0, 999), (999, 999), (0, 999), (999, 999), (0, 999)]
 
-still_frame = None
-moving = False
-rectangles = []
+# function to save multiple images with given names
+def save_images_with_names(frames, names, path):
+    for i in range(len(frames)):
+        filename = fr"{path}\{path}-{names[i]}.png"
+        print(f"Saved {filename}")
+        imageio.imwrite(filename, frames[i])
 
-# print(distribute(900, 500, 1000))
 
-if 1:
-    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
-else:
-    backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
-capture = cv.VideoCapture(0)
-width, height = rescale_frame(640, 480, 50)
-capture.set(cv.CAP_PROP_FRAME_WIDTH, width)
-capture.set(cv.CAP_PROP_FRAME_HEIGHT, height)
-time.sleep(2)
-kernel = np.ones((2, 2), np.uint8)
+if __name__ == '__main__':
 
-# backSub.setShadowThreshold(0.05)
-print(backSub.getShadowThreshold())
+    buffer_v1 = [(0, 999), (999, 999), (0, 999), (999, 999), (0, 999), (999, 999)]
+    buffer_v2 = [(999, 999), (0, 999), (999, 999), (0, 999), (999, 999), (0, 999)]
 
-# load the trained convolutional neural network
-print("[INFO] loading network...")
-# Load the TFLite model and allocate tensors.
-# interpreter = tflite.Interpreter(model_path="model.tflite")
-# interpreter.allocate_tensors()
+    label_dict = {0: "plastic", 1: "paper"}
 
-# Get input and output tensors.
-# input_details = interpreter.get_input_details()
-# output_details = interpreter.get_output_details()
-# model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
-last_red = None
-last_thing = None
-# os.system("sudo chmod 666 /dev/ttymxc2")
-# arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-# change_color("white", arduino)
-# arduino.close()
+    still_frame = None
+    moving = False
+    rectangles = []
 
-# model = rpt.Dynp(model="l1")
-asd = None
-while True:
+    # print(distribute(900, 500, 1000))
 
-    ret, frame = capture.read()
-    if frame is None:
-        break
+    if 1:
+        backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
+    else:
+        backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
+    capture = cv.VideoCapture(0)
+    # width, height = rescale_frame(640, 480, 50)
+    print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
+    print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
+    print(capture.set(cv.CAP_PROP_FPS, 120))
+    # print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
+    print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
+    print(capture.set(cv.CAP_PROP_GAIN, 100))
+    time.sleep(2)
+    kernel = np.ones((2, 2), np.uint8)
 
-    cv.waitKey(1) & 0xff
+    # backSub.setShadowThreshold(0.05)
+    print(backSub.getShadowThreshold())
 
-    fgMask = backSub.apply(frame)
-    fgMask = get_white_mask(fgMask)
+    # load the trained convolutional neural network
+    print("[INFO] loading network...")
+    # Load the TFLite model and allocate tensors.
+    interpreter = tf.lite.Interpreter(model_path="model.tflite")
+    interpreter.allocate_tensors()
 
-    # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
-    #     continue
-    # elif last_thing:
-    #     last_thing = None
-    #     print("Ready again")
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    # model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
+    last_red = None
+    last_thing = None
+    # os.system("sudo chmod 666 /dev/ttymxc2")
+    # arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
+    # change_color("white", arduino)
+    # arduino.close()
 
-    cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
-    if asd is not None:
-        cv.imshow("snapframe", asd)
-    cv.imshow('Frame', frame)
-    cv.imshow('FG Mask', fgMask)
+    # model = rpt.Dynp(model="l1")
+    while True:
 
-    conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        ret, frame = capture.read()
+        if frame is None:
+            break
 
-    # for cnt in conts:
-    if not conts:
-        continue
-    cnt = max(conts, key=cv.contourArea)
-    area = cv.contourArea(cnt)
-    if area > 200:
-        print("Motion session started")
-        area_buffer = []
-        fr1 = []
-        fr2 = []
-        # area_buffer, fr1, fr2 = optical_flow.follow(frame, capture, cnt, fgMask, backSub, datetime.datetime.now())
-        start = datetime.datetime.now()
-        last_movement = start
-        first_frame = frame
-        first_contour = cnt
-        first_fgMask = fgMask
-        while (datetime.datetime.now() - last_movement).microseconds < 500000:
-            ret, frame = capture.read()
-            fgMask = backSub.apply(frame)
-            # fgMask = get_white_mask(fgMask)
-            try:
-                fgMask = get_blobl_with_closing(fgMask)
-            except ValueError:
-                continue
-            conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-            if conts:
-                biggest_contour = max(conts, key=cv.contourArea)
-                if not is_on_edge(biggest_contour, frame):
-                    area_buffer.append(count_white_pixels(fgMask))
-                    fr1.append(frame)
-                    fr2.append(fgMask)
-                if cv.contourArea(biggest_contour) > 100:
-                    last_movement = datetime.datetime.now()
-        # morphological open frames in list with opencv
-        # for i in range(len(fr2)):
-        #    fr2[i] = morphological_top_hat(fr2[i])
-        # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
-        stop = datetime.datetime.now()
-        delta = (stop - start).seconds
-        try:
-            print(f"FPS: {int(len(fr1) / delta)}")
-        except ZeroDivisionError:
-            print("Session too short")
-            continue
-
-        # area_y = savgol_filter(area_buffer, len(area_buffer) - (0 if len(area_buffer) % 2 else 1), 3)
-        # area_y = join_arrays(np.array(
-        #    area_y[0:2][::-1] if area_y[0] > area_y[2] else [p - (area_y[2] - area_y[0]) for p in area_y[0:2]]),
-        #    area_y)
-        # y = np.array(area_y.tolist())
-        # model.fit(y)
-        # breaks = model.predict(n_bkps=2)
-        # try:
-        #    fp = find_peaks(area_y)[0][-1] - 10
-        # except IndexError:
-        #    print("No peaks found")
-        #    fp = len(area_y) // 2
-        # minimas = find_local_minimas(area_y)
-        # plot_y(area_y, fp)
-        min_index = np.argmax(area_buffer[1:5])
-
-        snap = max(cv.findContours(fr2[min_index], cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea)
-        # take bounding rectangle of snap
-        # cv.imshow("snap", snap)
-
-        rect = cv.boundingRect(snap)
-        track(fr1[min_index:], rect)
-        # x, y, w, h = rect
-        # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
-
-        # snap_cropped = get_sub_image(fr1[fp], *rect)
-        # cv.imshow('ERERER', errrr)
-        # cv.imshow('ERERER2', errrr)
-        # cv.imshow('Snapshot', snap_cropped)
-        # cv.imshow('Frame2', fr2[min_index])
-        # cv.waitKey(1) & 0xff
-        # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
-        # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
-
-        # eroded = erode(fr2[min_index])
-
-        # new_frames, points = optical_flow.follow(fr1[min_index + 1:], fr1[min_index], max(cv.findContours(eroded,
-        # cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)[0], key=cv.contourArea))
-        # cv.imshow("Bounded points", points)
-        # cv.imshow("Eroded", eroded)ì
-        cv.imshow('Frame', frame)
-        cv.imshow('FG Mask', fgMask)
-        asd = fr2[min_index]
-        cv.imshow("snapframe", asd)
         cv.waitKey(1) & 0xff
 
-        # save_gif(new_frames)
-        # print("Gif printed")
-        save_images(fr1, fr2, str(uuid4()))
+        fgMask = backSub.apply(frame)
+        fgMask = get_white_mask(fgMask)
 
-        # i += 1
-        # im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"
-        # imageio.imsave(im, letter)
-        # image = cv2.imread(im)
-        # orig = image.copy()
-        #
-        # # pre-process the image for classification
-        # image = cv2.resize(image, (28, 28))
-        # image = image.astype("float32") / 255.0
-        # image = np.array(image)
-        # image = np.expand_dims(image, axis=0)
-        #
-        # # classify the input image
-        # # (notSanta, santa) = model.predict(image)[0]
-        #
-        # # Test the model on random input data.
-        # input_shape = input_details[0]['shape']
-        #
-        # interpreter.set_tensor(input_details[0]['index'], image)
-        #
-        # # class_names = ["Not Santa", "Santa"]
-        # interpreter.invoke()
-        #
-        # # The function `get_tensor()` returns a copy of the tensor data.
-        # # Use `tensor()` in order to get a pointer to the tensor.
-        # output_data = interpreter.get_tensor(output_details[0]['index'])
-        # output_data = output_data[0]
-        # print(output_data)
-        # # print(class_names[np.argmax(output_data[0])])
-        #
-        # # build the label
-        # notSanta, santa = output_data
-        # label = "Santa" if santa > notSanta else "Not Santa"
-        # if label == "Santa":
-        #     c += 1
+        # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
+        #     continue
+        # elif last_thing:
+        #     last_thing = None
+        #     print("Ready again")
+
+        # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
+        cv.imshow('Frame', frame)
+        cv.imshow('FG Mask', fgMask)
+
+        conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+        # for cnt in conts:
+        if not conts:
+            continue
+        cnt = max(conts, key=cv.contourArea)
+        area = cv.contourArea(cnt)
+        if area > 200:
+            print("[STATUS] Motion session started")
+            flash = None
+            flash2 = None
+            flash3 = None
+            flash4 = None
+            # ret, frame = capture.read()
+            area_buffer = []
+
+            # area_buffer, fr1, fr2 = optical_flow.follow(frame, capture, cnt, fgMask, backSub, datetime.datetime.now())
+            start = datetime.datetime.now()
+            last_movement = start
+            first_frame = frame
+            first_contour = cnt
+            first_fgMask = fgMask
+            fr1 = [first_frame]
+            fr2 = [first_fgMask]
+            while (datetime.datetime.now() - last_movement).microseconds < 500000:
+                ret, frame = capture.read()
+                fgMask = backSub.apply(frame)
+                cv.imshow("Frame", frame)
+                cv.imshow("FG Mask", fgMask)
+                cv.waitKey(1) & 0xff
+                if flash is None and (datetime.datetime.now() - start).microseconds > 85000:
+                    flash2 = fgMask
+                    flash3 = erode(flash2)
+                    conts, hierarchy = cv.findContours(flash3, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                    try:
+                        x, y, w, h = cv.boundingRect(
+                            np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+                    except ValueError:
+                        pass
+                    flash = frame
+                    flash4 = flash
+                    # cv.rectangle(flash4, (x, y), (x + w - 1, y + h - 1), 255, 2)
+                    # apply morphological closing to fill in holes on flash2
+                    # flash2 = cv.morphologyEx(flash2, cv.MORPH_CLOSE, kernel)
+                # fgMask = get_white_mask(fgMask)
+                # try:
+                #     fgMask = get_blobl_with_closing(fgMask)
+                # except ValueError:
+                #
+                #     continue
+                conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                # if not is_on_edge(biggest_contour, frame):
+                # area_buffer.append(count_white_pixels(fgMask))
+                fr1.append(frame)
+                fr2.append(fgMask)
+                if conts and cv.contourArea(max(conts, key=cv.contourArea)) > 100:
+                    last_movement = datetime.datetime.now()
+            # morphological open frames in list with opencv
+            # for i in range(len(fr2)):
+            #    fr2[i] = morphological_top_hat(fr2[i])
+            # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
+            stop = datetime.datetime.now()
+            delta = (stop - start).total_seconds()
+            print(f"[INFO] Session duration: {delta} seconds")
+            if delta < 0.1:
+                print("[INFO] Session too short, aborting...")
+                continue
+            print(f"[INFO] FPS: {int(len(fr1) / delta)}")
+
+            # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
+            temp = datetime.datetime.now()
+            fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
+            print("[INFO] Images converted to RGB in {:.3f} seconds".format(
+                (datetime.datetime.now() - temp).total_seconds()))
+
+            cv.imshow('Frame', frame)
+            cv.imshow('FG Mask', fgMask)
+            cv.imshow('Flash', flash)
+            cv.imshow('Flash2', flash2)
+            # cv.imshow('Flash3', flash3)
+            # cv.imshow('Flash4', flash4)
+            try:
+                image = flash[y:y + h, x:x + w]
+                cv.imshow('Cropped', image)
+            except NameError:
+                pass
+            cv.waitKey(1) & 0xff
+            # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
+            #
+            # temp = datetime.datetime.now()
+            # while datetime.datetime.now() - temp < datetime.timedelta(seconds=2):
+            #     # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
+            #     ret, frame = capture.read()
+            #     fgMask = backSub.apply(frame)
+            #     cv.waitKey(1) & 0xff
+
+            # save_gif(new_frames)
+            # print("Gif printed")
+            # save_images(fr1, fr2, str(uuid4()))
+
+            # i += 1
+            # imageio.imsave(im, flash)
+            # image = cv2.imread(im)
+            # orig = image.copy()
+            # get image in rectangle
+
+            #
+            # # pre-process the image for classification
+            #######image = cv.resize(image, (128, 128))
+            #######image = image.astype("float32") / 255.0
+            #######image = np.array(image)
+            #######image = np.expand_dims(image, axis=0)
+            ########
+            ######## # classify the input image
+            ######## (uno, due, tre, quattro) = model.predict(image)[0]
+            ########
+            ######## # Test the model on random input data.
+            #######input_shape = input_details[0]['shape']
+            ########
+            #######interpreter.set_tensor(input_details[0]['index'], image)
+            ########
+            ######## class_names = ["1", "2", "3", "4"]
+            #######interpreter.invoke()
+            ########
+            ######## # The function `get_tensor()` returns a copy of the tensor data.
+            ######## # Use `tensor()` in order to get a pointer to the tensor.
+            #######output_data = interpreter.get_tensor(output_details[0]['index'])
+            #######output_data = output_data[0]
+            #######print(output_data)
+            #######for i in range(len(output_data)):
+            #######    print(f"{label_dict[i]}: {output_data[i]}")
+            #######argmax = np.argmax(output_data)
+            #######print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
+
+            im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+            temp = datetime.datetime.now()
+            im_save_thread_pool(fr1[:30], im)
+            print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
+            while datetime.datetime.now() - temp < datetime.timedelta(seconds=6):
+                # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
+                ret, frame = capture.read()
+                fgMask = backSub.apply(frame)
+                cv.waitKey(1) & 0xff
+            print("[STATUS] Session finished, Ready again...")
+            #
+            # # build the label
+            # uno, due, tre, quattro = output_data
+            # if label == "Santa":
+            #     c += 1
+            # else:
+            #     d += 1
+            # proba = santa if santa > notSanta else notSanta
+            # label = "{}: {:.2f}%".format(label, proba * 100)
+            #
+            # print(label)
+
+            # # draw the label on the image
+            # output = imutils.resize(orig, width=400)
+            # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.7, (0, 255, 0), 2)
+            #
+            # # show the output image
+            # cv2.imshow("Output", output)
+            # cv.waitKey(1) & 0xff
+
+            # print(what[0])
+            # rectangles = []
+            # what = []
+            # if d != 0:
+            #     change_color("red", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
+            # elif c != 0:
+            #     change_color("green", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
+            # arduino.close()
         # else:
-        #     d += 1
-        # proba = santa if santa > notSanta else notSanta
-        # label = "{}: {:.2f}%".format(label, proba * 100)
-        #
-        # print(label)
-
-        # # draw the label on the image
-        # output = imutils.resize(orig, width=400)
-        # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
-        #             0.7, (0, 255, 0), 2)
-        #
-        # # show the output image
-        # cv2.imshow("Output", output)
-        # cv.waitKey(1) & 0xff
-
-        # print(what[0])
-        # rectangles = []
-        # what = []
-        # if d != 0:
-        #     change_color("red", arduino)
-        #     time.sleep(2)
-        #     change_color("white", arduino)
-        #     last_thing = datetime.datetime.now()
-        # elif c != 0:
-        #     change_color("green", arduino)
-        #     time.sleep(2)
-        #     change_color("white", arduino)
-        #     last_thing = datetime.datetime.now()
-        # arduino.close()
-    # else:
-    #     still_frame = frame
+        #     still_frame = frame
