@@ -2,6 +2,7 @@ import time
 import subprocess
 import datetime
 from imutils.video import WebcamVideoStream
+import streamer
 import cv2 as cv
 
 ##subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
@@ -34,6 +35,7 @@ fps_c = 0
 while True:
     # Capture frame-by-frame
     frame = capture.read()
+    streamer.change_frame(frame)
     fps_c += 1
     if fps_c == 100:
         print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
