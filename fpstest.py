@@ -3,6 +3,7 @@ import subprocess
 import datetime
 from imutils.video import WebcamVideoStream
 import streamer
+import threading
 import cv2 as cv
 
 ##subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
@@ -15,6 +16,7 @@ import cv2 as cv
 ##                    shell=True)
 ##    time.sleep(1)
 ##    print(f"Set {key} to {cam_props[key]}")
+threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
 capture = WebcamVideoStream(src=1).start()
 
