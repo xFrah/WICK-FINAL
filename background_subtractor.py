@@ -92,7 +92,7 @@ if __name__ == '__main__':
     pixels.fill((255, 255, 255))
     pixels.show()
 
-    threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
+    #threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
     # loop to count framerate
     a = datetime.datetime.now()
