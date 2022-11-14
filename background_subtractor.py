@@ -51,7 +51,7 @@ if __name__ == '__main__':
     print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
     print(capture.set(cv.CAP_PROP_FPS, 120))
     #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
-    print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
+    print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
     print(capture.set(cv.CAP_PROP_GAIN, 100))
     time.sleep(2)
     kernel = np.ones((2, 2), np.uint8)
