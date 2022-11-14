@@ -1,251 +1,282 @@
 from __future__ import print_function
 
 import datetime
-import math
+from helpers import *
+import optical_flow
+# from tracking import track
 from uuid import uuid4
+import ruptures as rpt
+from sklearn.cluster import DBSCAN
+from scipy.signal import savgol_filter
+from kalman import kalman_tracking
 
-import cv2
-import imageio
-import serial
-import os
-# from tensorflow.keras.models import load_model
-import tflite_runtime.interpreter as tflite
-#import tensorflow as tf
+# import serial
+from tensorflow.keras.models import load_model
+# import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 
 import numpy as np
 import time
 
 import cv2 as cv
 
-buffer_v1 = [(0, 999), (999, 999), (0, 999), (999, 999), (0, 999), (999, 999)]
-buffer_v2 = [(999, 999), (0, 999), (999, 999), (0, 999), (999, 999), (0, 999)]
 
-still_frame = None
-moving = False
-rectangles = []
+# function to save multiple images with given names
+def save_images_with_names(frames, names, path):
+    for i in range(len(frames)):
+        filename = fr"{path}\{path}-{names[i]}.png"
+        print(f"Saved {filename}")
+        imageio.imwrite(filename, frames[i])
 
 
-def distribute(center, length, limit):
-    result = [0, 0]
-    length /= 2
-    if center > length:
-        result[0] = center - length
-        if limit - center > length:
-            result[1] = center + length
-        else:
-            result[1] = limit
-            result[0] -= length - (limit - center)
+if __name__ == '__main__':
+
+    buffer_v1 = [(0, 999), (999, 999), (0, 999), (999, 999), (0, 999), (999, 999)]
+    buffer_v2 = [(999, 999), (0, 999), (999, 999), (0, 999), (999, 999), (0, 999)]
+
+    label_dict = {0: "plastic", 1: "paper"}
+
+    still_frame = None
+    moving = False
+    rectangles = []
+
+    # print(distribute(900, 500, 1000))
+
+    if 1:
+        backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
     else:
-        result[0] = 0
-        result[1] = length * 2
-    return result
+        backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
+    capture = cv.VideoCapture(0)
+    # width, height = rescale_frame(640, 480, 50)
+    print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
+    print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
+    print(capture.set(cv.CAP_PROP_FPS, 120))
+    # print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
+    print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
+    print(capture.set(cv.CAP_PROP_GAIN, 100))
+    time.sleep(2)
+    kernel = np.ones((2, 2), np.uint8)
 
+    # backSub.setShadowThreshold(0.05)
+    print(backSub.getShadowThreshold())
 
-def get_average_vertex(v_buffer):
-    temp_x, temp_y = zip(*v_buffer)
-    avg_v = int(sum(temp_x) / len(v_buffer)), int(sum(temp_y) / len(v_buffer))
-    return avg_v, max([math.dist(avg_v, v) for v in v_buffer])
+    # load the trained convolutional neural network
+    print("[INFO] loading network...")
+    # Load the TFLite model and allocate tensors.
+    interpreter = tf.lite.Interpreter(model_path="model.tflite")
+    interpreter.allocate_tensors()
 
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    # model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
+    last_red = None
+    last_thing = None
+    # os.system("sudo chmod 666 /dev/ttymxc2")
+    # arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
+    # change_color("white", arduino)
+    # arduino.close()
 
-def change_color(color, arduino):
-    asd = {"white": b"34",
-           "red": b"23",
-           "green": b"12",
-           }
+    # model = rpt.Dynp(model="l1")
     while True:
-        bi = asd[color]
-        arduino.write(bi)
-        line = arduino.readline()
-        if bi in line:
-            print(f"Color changed to {color}")
+
+        ret, frame = capture.read()
+        if frame is None:
             break
 
+        cv.waitKey(1) & 0xff
 
-def push_vertex_buffer(vertex, v_b):
-    del v_b[0]
-    v_b.append(vertex)
+        fgMask = backSub.apply(frame)
+        fgMask = get_white_mask(fgMask)
 
+        # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
+        #     continue
+        # elif last_thing:
+        #     last_thing = None
+        #     print("Ready again")
 
-# print(distribute(900, 500, 1000))
+        # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
+        cv.imshow('Frame', frame)
+        cv.imshow('FG Mask', fgMask)
 
-if 0:
-    backSub = cv.createBackgroundSubtractorMOG2(history=150, varThreshold=0)
-else:
-    backSub = cv.createBackgroundSubtractorKNN(dist2Threshold=1200)
-capture = cv.VideoCapture(0)
-time.sleep(2)
-kernel = np.ones((2, 2), np.uint8)
+        conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
-# backSub.setShadowThreshold(0.75)
-# print(backSub.getShadowThreshold())
-
-# load the trained convolutional neural network
-print("[INFO] loading network...")
-# Load the TFLite model and allocate tensors.
-interpreter = tflite.Interpreter(model_path="model.tflite")
-interpreter.allocate_tensors()
-
-# Get input and output tensors.
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-# model = load_model(r"C:\Users\fdimo\Desktop\image-classification-keras\santa_not_santa.model")
-last_red = None
-last_thing = None
-os.system("sudo chmod 666 /dev/ttymxc2")
-arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-change_color("white", arduino)
-arduino.close()
-
-while True:
-    ret, frame = capture.read()
-    # cv2.imwrite(datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png", frame)
-    if frame is None:
-        break
-
-    cv.waitKey(1) & 0xff
-
-    fgMask = backSub.apply(frame)
-
-    if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
-        continue
-    elif last_thing:
-        last_thing = None
-        print("Ready again")
-
-    cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
-    cv.putText(frame, str(capture.get(cv.CAP_PROP_POS_FRAMES)), (15, 15),
-               cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-
-    # cv.imshow('Frame', frame)
-    # cv.imshow('FG Mask', fgMask)
-    # _, white_only = cv.threshold(fgMask, 250, 255, cv.THRESH_BINARY)
-    # fgMask_new = cv.erode(fgMask, kernel, iterations=2)
-    # cv.imshow('FG Mask New', fgMask_new)
-    # Finding contours of white square:
-    conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-
-    # for cnt in conts:
-    if not conts:
-        continue
-    for cnt in conts:
+        # for cnt in conts:
+        if not conts:
+            continue
+        cnt = max(conts, key=cv.contourArea)
         area = cv.contourArea(cnt)
-        if area > 400:
-            x1, y1, w, h = cv.boundingRect(cnt)
-            x2 = x1 + w  # (x1, y1) = top-left vertex
-            y2 = y1 + h  # (x2, y2) = bottom-right vertex
-            # rect = cv.rectangle(fgMask_new, (x1, y1), (x2, y2), (255, 0, 0), 2)
-            side_length = w if w > h else h
-            xC, yC = x1 + (w / 2), y1 + (h / 2)
-
-            x1, x2 = distribute(xC, side_length, len(frame[0]))
-            y1, y2 = distribute(yC, side_length, len(frame))
-
-            rectangles.append((int(x1), int(y1), int(x2), int(y2)))
-
-            # push_vertex_buffer((x1, y1), buffer_v1)
-            # push_vertex_buffer((x2, y2), buffer_v2)
-            #
-            # (avg_v1_x, avg_v1_y), dev1 = get_average_vertex(buffer_v1)
-            # (avg_v2_x, avg_v2_y), dev2 = get_average_vertex(buffer_v2)
-            #
-            # if dev1 < 20 and dev2 < 20:
-            #     letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
-            #     rectangles.append((avg_v1_x, avg_v1_y, avg_v2_x, avg_v2_y))
-            #     cv.imshow("asd", letter)
         if area > 200:
-            last_movement = datetime.datetime.now()
-            if not moving:
-                moving = True
-                print("Motion session started")
-                arduino.open()
-    dist = (datetime.datetime.now() - last_movement).microseconds
-    if dist > 500000:
-        if moving:
-            moving = False
-            print("Detection finished")
-            rectangles = rectangles[int(len(rectangles)*0.7):]
-            if rectangles:
-                what = cv.groupRectangles(rectangles + rectangles, groupThreshold=50, eps=0.2)
-                i = 0
-                c = 0
-                d = 0
-                for r in what[0]:
-                    avg_v1_x, avg_v1_y, avg_v2_x, avg_v2_y = r
-                    if avg_v2_x - avg_v1_x > 200:
-                        print(f"Discarded with side_length = {avg_v2_x - avg_v1_x}")
-                        continue
-                    letter = frame[avg_v1_y:avg_v2_y, avg_v1_x:avg_v2_x]
-                    # try:
-                    #     # cv.imshow("asd" + str(i), letter)
-                    #     pass
-                    # except:
-                    #     print("Failed to show image")
-                    #     continue
-                    i += 1
-                    im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4()) + ".png"
-                    imageio.imsave(im, letter)
-                    image = cv2.imread(im)
-                    orig = image.copy()
+            print("[STATUS] Motion session started")
+            flash = None
+            flash2 = None
+            flash3 = None
+            flash4 = None
+            # ret, frame = capture.read()
+            area_buffer = []
 
-                    # pre-process the image for classification
-                    image = cv2.resize(image, (28, 28))
-                    image = image.astype("float32") / 255.0
-                    image = np.array(image)
-                    image = np.expand_dims(image, axis=0)
+            # area_buffer, fr1, fr2 = optical_flow.follow(frame, capture, cnt, fgMask, backSub, datetime.datetime.now())
+            start = datetime.datetime.now()
+            last_movement = start
+            first_frame = frame
+            first_contour = cnt
+            first_fgMask = fgMask
+            fr1 = [first_frame]
+            fr2 = [first_fgMask]
+            while (datetime.datetime.now() - last_movement).microseconds < 500000:
+                ret, frame = capture.read()
+                fgMask = backSub.apply(frame)
+                cv.imshow("Frame", frame)
+                cv.imshow("FG Mask", fgMask)
+                cv.waitKey(1) & 0xff
+                if flash is None and (datetime.datetime.now() - start).microseconds > 85000:
+                    flash2 = fgMask
+                    flash3 = erode(flash2)
+                    conts, hierarchy = cv.findContours(flash3, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                    try:
+                        x, y, w, h = cv.boundingRect(
+                            np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+                    except ValueError:
+                        pass
+                    flash = frame
+                    flash4 = flash
+                    # cv.rectangle(flash4, (x, y), (x + w - 1, y + h - 1), 255, 2)
+                    # apply morphological closing to fill in holes on flash2
+                    # flash2 = cv.morphologyEx(flash2, cv.MORPH_CLOSE, kernel)
+                # fgMask = get_white_mask(fgMask)
+                # try:
+                #     fgMask = get_blobl_with_closing(fgMask)
+                # except ValueError:
+                #
+                #     continue
+                conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                # if not is_on_edge(biggest_contour, frame):
+                # area_buffer.append(count_white_pixels(fgMask))
+                fr1.append(frame)
+                fr2.append(fgMask)
+                if conts and cv.contourArea(max(conts, key=cv.contourArea)) > 100:
+                    last_movement = datetime.datetime.now()
+            # morphological open frames in list with opencv
+            # for i in range(len(fr2)):
+            #    fr2[i] = morphological_top_hat(fr2[i])
+            # fr1 = [apply_mask(f, f2) for f, f2 in zip(fr1, fr2)]
+            stop = datetime.datetime.now()
+            delta = (stop - start).total_seconds()
+            print(f"[INFO] Session duration: {delta} seconds")
+            if delta < 0.1:
+                print("[INFO] Session too short, aborting...")
+                continue
+            print(f"[INFO] FPS: {int(len(fr1) / delta)}")
 
-                    # classify the input image
-                    # (notSanta, santa) = model.predict(image)[0]
+            # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
+            temp = datetime.datetime.now()
+            fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
+            print("[INFO] Images converted to RGB in {:.3f} seconds".format(
+                (datetime.datetime.now() - temp).total_seconds()))
 
-                    # Test the model on random input data.
-                    input_shape = input_details[0]['shape']
+            cv.imshow('Frame', frame)
+            cv.imshow('FG Mask', fgMask)
+            cv.imshow('Flash', flash)
+            cv.imshow('Flash2', flash2)
+            # cv.imshow('Flash3', flash3)
+            # cv.imshow('Flash4', flash4)
+            try:
+                image = flash[y:y + h, x:x + w]
+                cv.imshow('Cropped', image)
+            except NameError:
+                pass
+            cv.waitKey(1) & 0xff
+            # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
+            #
+            # temp = datetime.datetime.now()
+            # while datetime.datetime.now() - temp < datetime.timedelta(seconds=2):
+            #     # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
+            #     ret, frame = capture.read()
+            #     fgMask = backSub.apply(frame)
+            #     cv.waitKey(1) & 0xff
 
-                    interpreter.set_tensor(input_details[0]['index'], image)
+            # save_gif(new_frames)
+            # print("Gif printed")
+            # save_images(fr1, fr2, str(uuid4()))
 
-                    # class_names = ["Not Santa", "Santa"]
-                    interpreter.invoke()
+            # i += 1
+            # imageio.imsave(im, flash)
+            # image = cv2.imread(im)
+            # orig = image.copy()
+            # get image in rectangle
 
-                    # The function `get_tensor()` returns a copy of the tensor data.
-                    # Use `tensor()` in order to get a pointer to the tensor.
-                    output_data = interpreter.get_tensor(output_details[0]['index'])
-                    output_data = output_data[0]
-                    print(output_data)
-                    # print(class_names[np.argmax(output_data[0])])
+            #
+            # # pre-process the image for classification
+            #######image = cv.resize(image, (128, 128))
+            #######image = image.astype("float32") / 255.0
+            #######image = np.array(image)
+            #######image = np.expand_dims(image, axis=0)
+            ########
+            ######## # classify the input image
+            ######## (uno, due, tre, quattro) = model.predict(image)[0]
+            ########
+            ######## # Test the model on random input data.
+            #######input_shape = input_details[0]['shape']
+            ########
+            #######interpreter.set_tensor(input_details[0]['index'], image)
+            ########
+            ######## class_names = ["1", "2", "3", "4"]
+            #######interpreter.invoke()
+            ########
+            ######## # The function `get_tensor()` returns a copy of the tensor data.
+            ######## # Use `tensor()` in order to get a pointer to the tensor.
+            #######output_data = interpreter.get_tensor(output_details[0]['index'])
+            #######output_data = output_data[0]
+            #######print(output_data)
+            #######for i in range(len(output_data)):
+            #######    print(f"{label_dict[i]}: {output_data[i]}")
+            #######argmax = np.argmax(output_data)
+            #######print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
-                    # build the label
-                    notSanta, santa = output_data
-                    label = "Santa" if santa > notSanta else "Not Santa"
-                    if label == "Santa":
-                        c += 1
-                    else:
-                        d += 1
-                    proba = santa if santa > notSanta else notSanta
-                    label = "{}: {:.2f}%".format(label, proba * 100)
+            im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+            temp = datetime.datetime.now()
+            im_save_thread_pool(fr1[:30], im)
+            print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
+            while datetime.datetime.now() - temp < datetime.timedelta(seconds=6):
+                # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
+                ret, frame = capture.read()
+                fgMask = backSub.apply(frame)
+                cv.waitKey(1) & 0xff
+            print("[STATUS] Session finished, Ready again...")
+            #
+            # # build the label
+            # uno, due, tre, quattro = output_data
+            # if label == "Santa":
+            #     c += 1
+            # else:
+            #     d += 1
+            # proba = santa if santa > notSanta else notSanta
+            # label = "{}: {:.2f}%".format(label, proba * 100)
+            #
+            # print(label)
 
-                    print(label)
+            # # draw the label on the image
+            # output = imutils.resize(orig, width=400)
+            # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
+            #             0.7, (0, 255, 0), 2)
+            #
+            # # show the output image
+            # cv2.imshow("Output", output)
+            # cv.waitKey(1) & 0xff
 
-                    # # draw the label on the image
-                    # output = imutils.resize(orig, width=400)
-                    # cv2.putText(output, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX,
-                    #             0.7, (0, 255, 0), 2)
-                    #
-                    # # show the output image
-                    # cv2.imshow("Output", output)
-                    # cv.waitKey(1) & 0xff
-
-                print(what[0])
-                rectangles = []
-                what = []
-                if d != 0:
-                    change_color("red", arduino)
-                    time.sleep(2)
-                    change_color("white", arduino)
-                    last_thing = datetime.datetime.now()
-                elif c != 0:
-                    change_color("green", arduino)
-                    time.sleep(2)
-                    change_color("white", arduino)
-                    last_thing = datetime.datetime.now()
-            arduino.close()
-        else:
-            still_frame = frame
+            # print(what[0])
+            # rectangles = []
+            # what = []
+            # if d != 0:
+            #     change_color("red", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
+            # elif c != 0:
+            #     change_color("green", arduino)
+            #     time.sleep(2)
+            #     change_color("white", arduino)
+            #     last_thing = datetime.datetime.now()
+            # arduino.close()
+        # else:
+        #     still_frame = frame

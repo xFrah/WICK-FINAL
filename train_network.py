@@ -32,7 +32,7 @@ args = vars(ap.parse_args())
 
 # initialize the number of epochs to train for, initia learning rate,
 # and batch size
-EPOCHS = 50
+EPOCHS = 500
 INIT_LR = 1e-3
 BS = 32
 
@@ -46,18 +46,20 @@ imagePaths = sorted(list(paths.list_images(args["dataset"])))
 random.seed(42)
 random.shuffle(imagePaths)
 
+label_dict = {"plastic": 0, "paper": 1}
+
 # loop over the input images
 for imagePath in imagePaths:
 	# load the image, pre-process it, and store it in the data list
 	image = cv2.imread(imagePath)
-	image = cv2.resize(image, (28, 28))
+	image = cv2.resize(image, (128, 128))
 	image = img_to_array(image)
 	data.append(image)
 
 	# extract the class label from the image path and update the
 	# labels list
 	label = imagePath.split(os.path.sep)[-2]
-	label = 1 if label == "santa" else 0
+	label = label_dict[label]
 	labels.append(label)
 
 # scale the raw pixel intensities to the range [0, 1]
@@ -74,13 +76,13 @@ trainY = to_categorical(trainY, num_classes=2)
 testY = to_categorical(testY, num_classes=2)
 
 # construct the image generator for data augmentation
-aug = ImageDataGenerator(rotation_range=30, width_shift_range=0.1,
-	height_shift_range=0.1, shear_range=0.2, zoom_range=0.2,
+aug = ImageDataGenerator(channel_shift_range=0.3,rotation_range=180, width_shift_range=0.1,
+	height_shift_range=0.1, shear_range=0.2,
 	horizontal_flip=True, fill_mode="nearest")
 
 # initialize the model
 print("[INFO] compiling model...")
-model = LeNet.build(width=28, height=28, depth=3, classes=2)
+model = LeNet.build(width=128, height=128, depth=3, classes=2)
 opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
