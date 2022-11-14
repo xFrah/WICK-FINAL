@@ -3,8 +3,8 @@ from __future__ import print_function
 import datetime
 from helpers import *
 
-from lib import neopixel_spidev as np
-from lib.pixelbuf import wheel
+#from lib import neopixel_spidev as np
+#from lib.pixelbuf import wheel
 # from tracking import track
 from uuid import uuid4
 
@@ -15,7 +15,7 @@ import tflite_runtime.interpreter as tflite
 
 import numpy as np
 import time
-
+import streamer
 import cv2 as cv
 
 
@@ -44,11 +44,11 @@ if __name__ == '__main__':
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
     else:
         backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
-    capture = cv.VideoCapture("/dev/video1")
+    capture = cv.VideoCapture(0)
     # width, height = rescale_frame(640, 480, 50)
     print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
-    print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 360))
-    print(capture.set(cv.CAP_PROP_FPS, 240))
+    print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
+    print(capture.set(cv.CAP_PROP_FPS, 120))
     # print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
     print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
     print(capture.set(cv.CAP_PROP_GAIN, 100))
@@ -72,21 +72,19 @@ if __name__ == '__main__':
     last_thing = None
     # os.system("sudo chmod 666 /dev/ttymxc2")
     # arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
-    # change_color("white", arduino)
     # arduino.close()
 
-    #pixels = np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
-    #print("[INFO] LEDs configured: {}".format(pixels))
-    #pixels.fill((0, 0, 0))
-    #pixels.show()
+    pixels = np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
+    print("[INFO] LEDs configured: {}".format(pixels))
+    pixels.fill((0, 0, 0))
+    pixels.show()
+
+    streamer.start_thread("127.0.0.1", "8080")
 
     while True:
-
         ret, frame = capture.read()
         if frame is None:
             break
-
-        cv.waitKey(1) & 0xff
 
         fgMask = backSub.apply(frame)
         fgMask = get_white_mask(fgMask)
@@ -100,6 +98,9 @@ if __name__ == '__main__':
         # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
         cv.imshow('Frame', frame)
         cv.imshow('FG Mask', fgMask)
+        cv.waitKey(1) & 0xff
+        streamer.change_frame(frame)
+
 
         conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
@@ -108,7 +109,7 @@ if __name__ == '__main__':
             continue
         cnt = max(conts, key=cv.contourArea)
         area = cv.contourArea(cnt)
-        if area > 200000000000:
+        if area > 200:
             print("[STATUS] Motion session started")
             flash = None
             flash2 = None
@@ -128,9 +129,9 @@ if __name__ == '__main__':
             while (datetime.datetime.now() - last_movement).microseconds < 500000:
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
-                cv.imshow("Frame", frame)
-                cv.imshow("FG Mask", fgMask)
-                cv.waitKey(1) & 0xff
+                #cv.imshow("Frame", frame)
+                #cv.imshow("FG Mask", fgMask)
+                #cv.waitKey(1) & 0xff
                 if flash is None and (datetime.datetime.now() - start).microseconds > 85000:
                     flash2 = fgMask
                     flash3 = erode(flash2)
@@ -190,13 +191,8 @@ if __name__ == '__main__':
             cv.waitKey(1) & 0xff
             # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
             #
-            # temp = datetime.datetime.now()
-            # while datetime.datetime.now() - temp < datetime.timedelta(seconds=2):
-            #     # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
-            #     ret, frame = capture.read()
-            #     fgMask = backSub.apply(frame)
-            #     cv.waitKey(1) & 0xff
-
+            temp = datetime.datetime.now()
+            streamer.change_frame(image)
             # save_gif(new_frames)
             # print("Gif printed")
             # save_images(fr1, fr2, str(uuid4()))
@@ -239,7 +235,7 @@ if __name__ == '__main__':
             #temp = datetime.datetime.now()
             #im_save_thread_pool(fr1[:30], im)
             #print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
-            while datetime.datetime.now() - temp < datetime.timedelta(seconds=6):
+            while datetime.datetime.now() - temp < datetime.timedelta(seconds=4):
                 # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
