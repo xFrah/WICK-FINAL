@@ -45,7 +45,7 @@ if __name__ == '__main__':
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
         backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
-    capture = cv.VideoCapture("/dev/video1")
+    capture = cv.VideoCapture("/dev/video1", cv.CAP_V4L2)
     # width, height = rescale_frame(640, 480, 50)
     print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
     print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
