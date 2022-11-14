@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     print("[INFO] LEDs configured: {}".format(pixels))
-    pixels.fill((0, 0, 0))
+    pixels.fill((255, 255, 255))
     pixels.show()
 
     streamer.start_thread("127.0.0.1", "8080")
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
         #cv.imshow('Frame', frame)
         #cv.imshow('FG Mask', fgMask)
-        cv.waitKey(1) & 0xff
+        #cv.waitKey(1) & 0xff
         streamer.change_frame(frame)
 
 
@@ -185,14 +185,13 @@ if __name__ == '__main__':
             # cv.imshow('Flash4', flash4)
             try:
                 image = flash[y:y + h, x:x + w]
+                streamer.change_frame(image)
                 #cv.imshow('Cropped', image)
             except NameError:
                 pass
-            cv.waitKey(1) & 0xff
-            # save_images(fr1[1:5], fr2[1:5], str(uuid4()))
-            #
+            #cv.waitKey(1) & 0xff
+
             temp = datetime.datetime.now()
-            streamer.change_frame(image)
             # save_gif(new_frames)
             # print("Gif printed")
             # save_images(fr1, fr2, str(uuid4()))
@@ -239,7 +238,7 @@ if __name__ == '__main__':
                 # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
-                cv.waitKey(1) & 0xff
+                #cv.waitKey(1) & 0xff
             print("[STATUS] Session finished, Ready again...")
             #
             # # build the label
