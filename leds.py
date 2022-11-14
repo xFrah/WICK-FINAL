@@ -14,9 +14,7 @@ from lib.pixelbuf import wheel
 with np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB) as pixels:
     try:
         while True:
-            for i in range(255):
-                # Use wheel function from pixelbuf module to calculate RGB color
-                pixels.fill((255, 255, 255))
-                time.sleep(0.03)
+            pixels.fill((255, 255, 255))
+            time.sleep(2)
     except KeyboardInterrupt:
         pass
