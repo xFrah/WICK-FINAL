@@ -6,6 +6,7 @@ from helpers import *
 from lib import neopixel_spidev as neo
 from lib.pixelbuf import wheel
 import threading
+import subprocess
 import psutil
 # from tracking import track
 from uuid import uuid4
@@ -41,6 +42,10 @@ if __name__ == '__main__':
     rectangles = []
     # print(distribute(900, 500, 1000))
 
+    cam_props = {'gain': 0, 'exposure_auto': 1, 'exposure_absolute': 25}
+    for key in cam_props:
+        subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format(key, str(cam_props[key]))],
+                        shell=True)
     if 1:
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
