@@ -5,6 +5,7 @@ from helpers import *
 
 from lib import neopixel_spidev as neo
 from lib.pixelbuf import wheel
+import threading
 import psutil
 # from tracking import track
 from uuid import uuid4
@@ -79,7 +80,8 @@ if __name__ == '__main__':
     pixels.fill((255, 255, 255))
     pixels.show()
 
-    streamer.start_thread('0.0.0.0', "5000")
+    threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
+
     # # loop to count framerate
     # a = datetime.datetime.now()
     # fps_c = 0
