@@ -96,8 +96,8 @@ if __name__ == '__main__':
         #     print("Ready again")
 
         # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
-        cv.imshow('Frame', frame)
-        cv.imshow('FG Mask', fgMask)
+        #cv.imshow('Frame', frame)
+        #cv.imshow('FG Mask', fgMask)
         cv.waitKey(1) & 0xff
         streamer.change_frame(frame)
 
@@ -177,15 +177,15 @@ if __name__ == '__main__':
             print("[INFO] Images converted to RGB in {:.3f} seconds".format(
                 (datetime.datetime.now() - temp).total_seconds()))
 
-            cv.imshow('Frame', frame)
-            cv.imshow('FG Mask', fgMask)
-            cv.imshow('Flash', flash)
-            cv.imshow('Flash2', flash2)
+            # cv.imshow('Frame', frame)
+            # cv.imshow('FG Mask', fgMask)
+            # cv.imshow('Flash', flash)
+            # cv.imshow('Flash2', flash2)
             # cv.imshow('Flash3', flash3)
             # cv.imshow('Flash4', flash4)
             try:
                 image = flash[y:y + h, x:x + w]
-                cv.imshow('Cropped', image)
+                #cv.imshow('Cropped', image)
             except NameError:
                 pass
             cv.waitKey(1) & 0xff
