@@ -1,69 +1,80 @@
+#!/usr/bin/env python3
+
 import time
+import vl53l5cx_ctypes as vl53l5cx
+import numpy
+from PIL import Image
+from matplotlib import cm
+import threading
 
-from vl53l5cx.vl53l5cx import VL53L5CX
+import streamer
 
-driver = VL53L5CX()
+COLOR_MAP = "plasma"
+INVERSE = False
 
-alive = driver.is_alive()
-if not alive:
-    raise IOError("VL53L5CX Device is not alive")
-
-print("Initialising...")
-t = time.time()
-driver.init()
-print(f"Initialised ({time.time() - t:.1f}s)")
-
-
-# function to reshape list in 4x4 matrix
-def reshape_list(data):
-    return [data[i:i + 4] for i in range(0, len(data), 4)]
+threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
 
-# function to plot 3d data from sensor VL53L5CX
-def plot_3d_data(data):
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
+def get_palette(name):
+    cmap = cm.get_cmap(name, 256)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=data[:, 2], marker='o')
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    # get plt as matrix
-    fig.canvas.draw()
-    plt.show()
+    try:
+        colors = cmap.colors
+    except AttributeError:
+        colors = numpy.array([cmap(i) for i in range(256)], dtype=float)
+
+    arr = numpy.array(colors * 255).astype('uint8')
+    arr = arr.reshape((16, 16, 4))
+    arr = arr[:, :, 0:3]
+    return arr.tobytes()
 
 
-# Ranging:
-driver.start_ranging()
+pal = get_palette(COLOR_MAP)
 
-previous_time = 0
-loop = 0
-while loop < 10:
-    if driver.check_data_ready():
-        ranging_data = driver.get_ranging_data()
+print("Uploading firmware, please wait...")
+vl53 = vl53l5cx.VL53L5CX()
+print("Done!")
+vl53.set_resolution(8 * 8)
 
-        # As the sensor is set in 4x4 mode by default, we have a total
-        # of 16 zones to print. For this example, only the data of first zone are
-        # print
-        now = time.time()
-        if previous_time != 0:
-            time_to_get_new_data = now - previous_time
-            print(f"Print data no : {driver.streamcount: >3d} ({time_to_get_new_data * 1000:.1f}ms)")
-        else:
-            print(f"Print data no : {driver.streamcount: >3d}")
+# Enable motion indication at 8x8 resolution
+vl53.enable_motion_indicator(8 * 8)
 
-        for i in range(16):
-            if i % 4 == 0:
-                print("Zone", i // 4)
-            print(#f"Zone : {i: >3d}, "
-                  #f"Status : {ranging_data.target_status[driver.nb_target_per_zone * i]: >3d}, "
-                  f"{ranging_data.distance_mm[driver.nb_target_per_zone * i]: >4.0f}", end=" ")
+# Default motion distance is quite far, set a sensible range
+# eg: 40cm to 1.4m
+vl53.set_motion_distance(100, 400)
 
-        print("")
+# This is a visual demo, so prefer speed over accuracy
+vl53.set_ranging_frequency_hz(15)
+vl53.set_integration_time_ms(5)
+vl53.start_ranging()
 
-        previous_time = now
-        loop += 1
+while True:
+    if vl53.data_ready():
+        data = vl53.get_data()
+        # Grab the first 16 motion entries and reshape into a 4 * 4 field
+        arr = numpy.flipud(numpy.array(list(data.motion_indicator.motion)[0:16]).reshape((4, 4))).astype('float64')
 
-    time.sleep(0.005)
+        # Scale view to a fixed motion intensity
+        intensity = 1024
+
+        # Scale and clip the result to 0-255
+        arr *= (255.0 / intensity)
+        arr = numpy.clip(arr, 0, 255)
+
+        # Invert the array : 0 - 255 becomes 255 - 0
+        if INVERSE:
+            arr *= -1
+            arr += 255.0
+
+        # Force to int
+        arr = arr.astype('uint8')
+
+        # Convert to a palette type image
+        img = Image.frombytes("P", (4, 4), arr)
+        img.putpalette(pal)
+        img = img.convert("RGB")
+        img = img.resize((240, 240), resample=Image.NEAREST)
+
+        streamer.change_frame(img)
+
+    time.sleep(0.01)  # Avoid polling *too* fast
