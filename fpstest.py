@@ -18,12 +18,13 @@ if 1:
 else:
     backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
 capture = cv.VideoCapture(1)
-capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+
 # width, height = rescale_frame(640, 480, 50)
 # print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
 # print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
 print(capture.set(cv.CAP_PROP_FPS, 120))
-print(capture.set(cv.CAP_PROP_BUFFERSIZE, 1))
+# print(capture.set(cv.CAP_PROP_BUFFERSIZE, 1))
+print(capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
 print(capture.get(cv.CAP_PROP_FPS))
 # #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
 # print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
