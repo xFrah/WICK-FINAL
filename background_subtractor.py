@@ -55,7 +55,7 @@ if __name__ == '__main__':
     print("Setting AUTO_EXPOSURE " + str(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)))
     print("Setting EXPOSURE " + str(capture.set(cv.CAP_PROP_EXPOSURE, -9)))
     time.sleep(2)
-    capture.set("Setting PIXEL FORMAT " + str(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
+    print("Setting PIXEL FORMAT " + str(capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))))
 
     ## print(capture.set(cv.CAP_PROP_GAIN, 100))
     print("FOURCC " + str(capture.get(cv.CAP_PROP_FOURCC)))
