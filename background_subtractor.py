@@ -79,7 +79,7 @@ if __name__ == '__main__':
     pixels.fill((255, 255, 255))
     pixels.show()
 
-    streamer.start_thread("localhost", "8080")
+    streamer.start_thread('0.0.0.0', "5000")
 
     while True:
         ret, frame = capture.read()
