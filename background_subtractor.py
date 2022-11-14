@@ -86,6 +86,7 @@ if __name__ == '__main__':
     while True:
         # Capture frame-by-frame
         ret, frame = capture.read()
+        fps_c += 1
         print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
 
 
