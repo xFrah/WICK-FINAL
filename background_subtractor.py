@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
     # arduino.close()
 
-    pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
+    pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     print("[INFO] LEDs configured: {}".format(pixels))
     pixels.fill((0, 0, 0))
     pixels.show()
