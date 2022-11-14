@@ -99,11 +99,15 @@ if __name__ == '__main__':
     # loop to count framerate
     a = datetime.datetime.now()
     fps_c = 0
+
     while True:
         # Capture frame-by-frame
         ret, frame = capture.read()
         fps_c += 1
-        print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
+        if fps_c == 100:
+            print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
+            a = datetime.datetime.now()
+            fps_c = 0
 
 
     while True:
