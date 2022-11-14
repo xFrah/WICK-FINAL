@@ -9,7 +9,7 @@ from lib.pixelbuf import wheel
 from uuid import uuid4
 
 # import serial
-from tensorflow.keras.models import load_model
+#from tensorflow.keras.models import load_model
 import tflite_runtime.interpreter as tflite
 #import tensorflow as tf
 
