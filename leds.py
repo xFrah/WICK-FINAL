@@ -11,12 +11,12 @@ from lib import neopixel_spidev as np
 from lib.pixelbuf import wheel
 
 # Init 56 LEDs on SPI bus 2, cs 0 with colors ordered green, red, blue
-with np.NeoPixelSpiDev(0, 0, n=26, pixel_order=np.GRB) as pixels:
+with np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB) as pixels:
     try:
         while True:
             for i in range(255):
                 # Use wheel function from pixelbuf module to calculate RGB color
-                pixels.fill(wheel(i))
+                pixels.fill((255, 255, 255))
                 time.sleep(0.03)
     except KeyboardInterrupt:
         pass
