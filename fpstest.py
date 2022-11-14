@@ -32,12 +32,32 @@ capture = WebcamVideoStream(src=1).start()
 # print(capture.set(cv.CAP_PROP_GAIN, 100))
 time.sleep(2)
 
+
+# function that checks if two frames are pixel per pixel identical
+def check_identical(frame1, frame2):
+    if frame1.shape == frame2.shape:
+        difference = cv.subtract(frame1, frame2)
+        b, g, r = cv.split(difference)
+        if cv.countNonZero(b) == 0 and cv.countNonZero(g) == 0 and cv.countNonZero(r) == 0:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 a = datetime.datetime.now()
 fps_c = 0
+prev = capture.read()
+prev[0][0] = [4, 34, 68]
 while True:
     # Capture frame-by-frame
     frame = capture.read()
     streamer.change_frame(frame)
+    if check_identical(frame, prev):
+        prev = frame
+        continue
+    prev = frame
     fps_c += 1
     if fps_c == 100:
         print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
