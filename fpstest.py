@@ -14,19 +14,16 @@ for key in cam_props:
                     shell=True)
     time.sleep(1)
     print(f"Set {key} to {cam_props[key]}")
-if 1:
-    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
-else:
-    backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
+
 capture = WebcamVideoStream(src=1).start()
 
 # width, height = rescale_frame(640, 480, 50)
 # print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
 # print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
-print(capture.set(cv.CAP_PROP_FPS, 120))
+print(capture.stream.set(cv.CAP_PROP_FPS, 120))
 # print(capture.set(cv.CAP_PROP_BUFFERSIZE, 1))
-print(capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
-print(capture.get(cv.CAP_PROP_FPS))
+print(capture.stream.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G')))
+print(capture.stream.get(cv.CAP_PROP_FPS))
 # #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
 # print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
 # print(capture.set(cv.CAP_PROP_GAIN, 100))
