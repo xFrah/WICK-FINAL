@@ -95,21 +95,7 @@ if __name__ == '__main__':
     pixels.fill((255, 255, 255))
     pixels.show()
 
-    #threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
-
-    # loop to count framerate
-    a = datetime.datetime.now()
-    fps_c = 0
-
-    while True:
-        # Capture frame-by-frame
-        ret, frame = capture.read()
-        fps_c += 1
-        if fps_c == 100:
-            print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
-            a = datetime.datetime.now()
-            fps_c = 0
-
+    threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
     while True:
         ret, frame = capture.read()
