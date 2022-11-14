@@ -53,7 +53,7 @@ if __name__ == '__main__':
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
         backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
-    capture = cv.VideoCapture(1)
+    capture = cv.VideoCapture(1, cv.CAP_V4L2)
     subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
     time.sleep(1)
     # width, height = rescale_frame(640, 480, 50)
