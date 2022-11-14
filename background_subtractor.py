@@ -94,14 +94,14 @@ if __name__ == '__main__':
 
     threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
-    # # loop to count framerate
-    # a = datetime.datetime.now()
-    # fps_c = 0
-    # while True:
-    #     # Capture frame-by-frame
-    #     ret, frame = capture.read()
-    #     fps_c += 1
-    #     print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
+    # loop to count framerate
+    a = datetime.datetime.now()
+    fps_c = 0
+    while True:
+        # Capture frame-by-frame
+        ret, frame = capture.read()
+        fps_c += 1
+        print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
 
 
     while True:
