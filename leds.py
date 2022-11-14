@@ -22,7 +22,7 @@ with np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB) as pixels:
             elif color == "b":
                 pixels.fill((0, 0, 255))
             elif color == "w":
-                pixels.fill((255, 255, 255, 255))
+                pixels.fill((0, 0, 0, 255))
             #pixels.show()
     except KeyboardInterrupt:
         pass
