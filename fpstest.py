@@ -1,6 +1,7 @@
 import time
 import subprocess
 import datetime
+from imutils.video import WebcamVideoStream
 import cv2 as cv
 
 subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
@@ -17,7 +18,7 @@ if 1:
     backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
 else:
     backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
-capture = cv.VideoCapture(1)
+capture = WebcamVideoStream(src=1).start()
 
 # width, height = rescale_frame(640, 480, 50)
 # print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
@@ -35,7 +36,7 @@ a = datetime.datetime.now()
 fps_c = 0
 while True:
     # Capture frame-by-frame
-    ret, frame = capture.read()
+    frame = capture.read()
     fps_c += 1
     if fps_c == 100:
         print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
