@@ -1,5 +1,6 @@
 import time
 import subprocess
+import datetime
 import cv2 as cv
 
 subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
