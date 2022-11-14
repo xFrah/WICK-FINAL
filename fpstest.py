@@ -17,7 +17,16 @@ import cv2 as cv
 ##    time.sleep(1)
 ##    print(f"Set {key} to {cam_props[key]}")
 threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
+subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
+time.sleep(1)
+print("Set video format successfully?")
 
+cam_props = {'gain': 0, 'exposure_auto': 1, 'exposure_absolute': 25}
+for key in cam_props:
+    subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format(key, str(cam_props[key]))],
+                    shell=True)
+    time.sleep(1)
+    print(f"Set {key} to {cam_props[key]}")
 cap = cv.VideoCapture(1)
 print(cap.set(cv.CAP_PROP_FRAME_WIDTH, 640))
 print(cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
