@@ -12,9 +12,9 @@ import psutil
 from uuid import uuid4
 
 # import serial
-#from tensorflow.keras.models import load_model
+# from tensorflow.keras.models import load_model
 import tflite_runtime.interpreter as tflite
-#import tensorflow as tf
+# import tensorflow as tf
 
 import numpy as np
 import time
@@ -42,16 +42,15 @@ if __name__ == '__main__':
     rectangles = []
     # print(distribute(900, 500, 1000))
 
-    subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
-    time.sleep(1)
     print("Set video format successfully?")
-
     cam_props = {'gain': 0, 'exposure_auto': 1, 'exposure_absolute': 25}
     for key in cam_props:
         subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format(key, str(cam_props[key]))],
                         shell=True)
         time.sleep(1)
         print(f"Set {key} to {cam_props[key]}")
+    subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
+    time.sleep(1)
     if 1:
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
@@ -60,7 +59,7 @@ if __name__ == '__main__':
     # width, height = rescale_frame(640, 480, 50)
     # print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
     # print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
-    # print(capture.set(cv.CAP_PROP_FPS, 120))
+    #print(capture.set(cv.CAP_PROP_FPS, 120))
     # #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
     # print(capture.set(cv.CAP_PROP_EXPOSURE, -11))
     # print(capture.set(cv.CAP_PROP_GAIN, 100))
@@ -102,7 +101,6 @@ if __name__ == '__main__':
     #     fps_c += 1
     #     print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
 
-
     while True:
         ret, frame = capture.read()
         if frame is None:
@@ -110,7 +108,7 @@ if __name__ == '__main__':
 
         fgMask = backSub.apply(frame)
         fgMask = get_white_mask(fgMask)
-        #print('RAM memory % used:', psutil.virtual_memory()[2])
+        # print('RAM memory % used:', psutil.virtual_memory()[2])
 
         # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
         #     continue
@@ -119,11 +117,10 @@ if __name__ == '__main__':
         #     print("Ready again")
 
         # cv.rectangle(frame, (10, 2), (100, 20), (255, 255, 255), -1)
-        #cv.imshow('Frame', frame)
-        #cv.imshow('FG Mask', fgMask)
-        #cv.waitKey(1) & 0xff
+        # cv.imshow('Frame', frame)
+        # cv.imshow('FG Mask', fgMask)
+        # cv.waitKey(1) & 0xff
         streamer.change_frame(frame)
-
 
         conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
@@ -148,14 +145,14 @@ if __name__ == '__main__':
             first_contour = cnt
             first_fgMask = fgMask
             fps_counter = 1
-            #fr1 = [first_frame]
-            #fr2 = [first_fgMask]
+            # fr1 = [first_frame]
+            # fr2 = [first_fgMask]
             while (datetime.datetime.now() - last_movement).microseconds < 500000:
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
-                #cv.imshow("Frame", frame)
-                #cv.imshow("FG Mask", fgMask)
-                #cv.waitKey(1) & 0xff
+                # cv.imshow("Frame", frame)
+                # cv.imshow("FG Mask", fgMask)
+                # cv.waitKey(1) & 0xff
                 if flash is None and (datetime.datetime.now() - start).microseconds > 85000:
                     flash2 = fgMask
                     flash3 = erode(flash2)
@@ -179,8 +176,8 @@ if __name__ == '__main__':
                 conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
                 # if not is_on_edge(biggest_contour, frame):
                 # area_buffer.append(count_white_pixels(fgMask))
-                #fr1.append(frame)
-                #fr2.append(fgMask)
+                # fr1.append(frame)
+                # fr2.append(fgMask)
                 fps_counter += 1
                 if conts and cv.contourArea(max(conts, key=cv.contourArea)) > 100:
                     last_movement = datetime.datetime.now()
@@ -198,8 +195,8 @@ if __name__ == '__main__':
 
             # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
             temp = datetime.datetime.now()
-            #fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
-            #print("[INFO] Images converted to RGB in {:.3f} seconds".format(
+            # fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
+            # print("[INFO] Images converted to RGB in {:.3f} seconds".format(
             #    (datetime.datetime.now() - temp).total_seconds()))
 
             # cv.imshow('Frame', frame)
@@ -211,10 +208,10 @@ if __name__ == '__main__':
             try:
                 image = flash[y:y + h, x:x + w]
                 streamer.change_frame(image)
-                #cv.imshow('Cropped', image)
+                # cv.imshow('Cropped', image)
             except NameError:
                 pass
-            #cv.waitKey(1) & 0xff
+            # cv.waitKey(1) & 0xff
 
             temp = datetime.datetime.now()
             # save_gif(new_frames)
@@ -255,15 +252,15 @@ if __name__ == '__main__':
             #######argmax = np.argmax(output_data)
             #######print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
-            #im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
-            #temp = datetime.datetime.now()
-            #im_save_thread_pool(fr1[:30], im)
-            #print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
+            # im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+            # temp = datetime.datetime.now()
+            # im_save_thread_pool(fr1[:30], im)
+            # print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
             while datetime.datetime.now() - temp < datetime.timedelta(seconds=4):
                 # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
-                #cv.waitKey(1) & 0xff
+                # cv.waitKey(1) & 0xff
             print("[STATUS] Session finished, Ready again...")
             #
             # # build the label
