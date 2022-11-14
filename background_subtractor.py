@@ -3,8 +3,8 @@ from __future__ import print_function
 import datetime
 from helpers import *
 
-#from lib import neopixel_spidev as np
-#from lib.pixelbuf import wheel
+from lib import neopixel_spidev as neo
+from lib.pixelbuf import wheel
 # from tracking import track
 from uuid import uuid4
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=200, varThreshold=200)
     else:
         backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=200, varThreshold=200)
-    capture = cv.VideoCapture(0)
+    capture = cv.VideoCapture("/dev/video1")
     # width, height = rescale_frame(640, 480, 50)
     print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
     print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     # arduino = serial.Serial(port="/dev/ttymxc2", baudrate=9600, timeout=1)
     # arduino.close()
 
-    pixels = np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
+    pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
     print("[INFO] LEDs configured: {}".format(pixels))
     pixels.fill((0, 0, 0))
     pixels.show()
