@@ -14,7 +14,14 @@ from lib.pixelbuf import wheel
 with np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB) as pixels:
     try:
         while True:
-            pixels.fill((255, 255, 255))
-            time.sleep(2)
+            color = input("Insert color: ")
+            if color == "r":
+                pixels.fill((255, 0, 0))
+            elif color == "g":
+                pixels.fill((0, 255, 0))
+            elif color == "b":
+                pixels.fill((0, 0, 255))
+            elif color == "w":
+                pixels.fill((255, 255, 255))
     except KeyboardInterrupt:
         pass
