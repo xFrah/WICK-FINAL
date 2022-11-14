@@ -55,10 +55,11 @@ while loop < 10:
             print(f"Print data no : {driver.streamcount: >3d}")
 
         for i in range(16):
-            print(f"Zone {i: >2d} : {ranging_data[i]: >5d} mm")
-            print(f"Zone : {i: >3d}, "
-                  f"Status : {ranging_data.target_status[driver.nb_target_per_zone * i]: >3d}, "
-                  f"Distance : {ranging_data.distance_mm[driver.nb_target_per_zone * i]: >4.0f} mm")
+            if i % 4 == 0:
+                print("Zone", i // 4)
+            print(#f"Zone : {i: >3d}, "
+                  #f"Status : {ranging_data.target_status[driver.nb_target_per_zone * i]: >3d}, "
+                  f"{ranging_data.distance_mm[driver.nb_target_per_zone * i]: >4.0f}", end=" ")
 
         print("")
 
