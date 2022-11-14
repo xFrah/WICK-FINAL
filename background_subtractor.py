@@ -3,17 +3,20 @@ from __future__ import print_function
 import datetime
 from helpers import *
 import optical_flow
+from lib import neopixel_spidev as np
+from lib.pixelbuf import wheel
 # from tracking import track
 from uuid import uuid4
 import ruptures as rpt
 from sklearn.cluster import DBSCAN
 from scipy.signal import savgol_filter
 from kalman import kalman_tracking
+import leds
 
 # import serial
 from tensorflow.keras.models import load_model
-# import tflite_runtime.interpreter as tflite
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
+#import tensorflow as tf
 
 import numpy as np
 import time
@@ -63,7 +66,7 @@ if __name__ == '__main__':
     # load the trained convolutional neural network
     print("[INFO] loading network...")
     # Load the TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path="model.tflite")
+    interpreter = tflite.Interpreter(model_path="model.tflite")
     interpreter.allocate_tensors()
 
     # Get input and output tensors.
@@ -77,7 +80,11 @@ if __name__ == '__main__':
     # change_color("white", arduino)
     # arduino.close()
 
-    # model = rpt.Dynp(model="l1")
+    #pixels = np.NeoPixelSpiDev(0, 0, n=24, pixel_order=np.GRB)
+    #print("[INFO] LEDs configured: {}".format(pixels))
+    #pixels.fill((0, 0, 0))
+    #pixels.show()
+
     while True:
 
         ret, frame = capture.read()
@@ -106,7 +113,7 @@ if __name__ == '__main__':
             continue
         cnt = max(conts, key=cv.contourArea)
         area = cv.contourArea(cnt)
-        if area > 200:
+        if area > 200000000000:
             print("[STATUS] Motion session started")
             flash = None
             flash2 = None
@@ -233,10 +240,10 @@ if __name__ == '__main__':
             #######argmax = np.argmax(output_data)
             #######print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
-            im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
-            temp = datetime.datetime.now()
-            im_save_thread_pool(fr1[:30], im)
-            print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
+            #im = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+            #temp = datetime.datetime.now()
+            #im_save_thread_pool(fr1[:30], im)
+            #print("[INFO] Images saved in {:.3f} seconds".format((datetime.datetime.now() - temp).total_seconds()))
             while datetime.datetime.now() - temp < datetime.timedelta(seconds=6):
                 # print(f"[INFO] Elapsed from stop: {(datetime.datetime.now() - temp).total_seconds()} seconds")
                 ret, frame = capture.read()
