@@ -41,7 +41,7 @@ vl53.enable_motion_indicator(8 * 8)
 
 # Default motion distance is quite far, set a sensible range
 # eg: 40cm to 1.4m
-vl53.set_motion_distance(100, 400)
+vl53.set_motion_distance(400, 600)
 
 # This is a visual demo, so prefer speed over accuracy
 vl53.set_ranging_frequency_hz(15)
