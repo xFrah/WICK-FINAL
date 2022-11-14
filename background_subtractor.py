@@ -49,13 +49,13 @@ if __name__ == '__main__':
                         shell=True)
         time.sleep(1)
         print(f"Set {key} to {cam_props[key]}")
-    subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
-    time.sleep(1)
     if 1:
         backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     else:
         backSub = cv.createBackgroundSubtractorKNN(detectShadows=True, history=150, varThreshold=200)
     capture = cv.VideoCapture(1)
+    subprocess.call(['v4l2-ctl -d /dev/video1 --set-fmt-video=width=640,height=480,pixelformat=MJPG'], shell=True)
+    time.sleep(1)
     # width, height = rescale_frame(640, 480, 50)
     # print(capture.set(cv.CAP_PROP_FRAME_WIDTH, 640))
     # print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
