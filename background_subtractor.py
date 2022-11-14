@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print(capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480))
     print(capture.set(cv.CAP_PROP_FPS, 120))
     #print(capture.set(cv.CAP_PROP_AUTO_EXPOSURE, 0.25))
-    print(capture.set(cv.CAP_PROP_EXPOSURE, 25))
+    print(capture.set(cv.CAP_PROP_EXPOSURE, -9))
     print(capture.set(cv.CAP_PROP_GAIN, 100))
     time.sleep(2)
     kernel = np.ones((2, 2), np.uint8)
@@ -80,14 +80,14 @@ if __name__ == '__main__':
     pixels.show()
 
     streamer.start_thread('0.0.0.0', "5000")
-    # loop to count framerate
-    a = datetime.datetime.now()
-    fps_c = 0
-    while True:
-        # Capture frame-by-frame
-        ret, frame = capture.read()
-        fps_c += 1
-        print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
+    # # loop to count framerate
+    # a = datetime.datetime.now()
+    # fps_c = 0
+    # while True:
+    #     # Capture frame-by-frame
+    #     ret, frame = capture.read()
+    #     fps_c += 1
+    #     print(f"[INFO] FPS: {int(fps_c / (datetime.datetime.now() - a).total_seconds())}")
 
 
     while True:
@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
         fgMask = backSub.apply(frame)
         fgMask = get_white_mask(fgMask)
-        print('RAM memory % used:', psutil.virtual_memory()[2])
+        #print('RAM memory % used:', psutil.virtual_memory()[2])
 
         # if last_thing and (datetime.datetime.now() - last_thing).seconds < 3:
         #     continue
