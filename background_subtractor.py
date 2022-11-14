@@ -41,7 +41,8 @@ if __name__ == '__main__':
     moving = False
     rectangles = []
     # print(distribute(900, 500, 1000))
-    subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format('exposure_auto', 1)], shell=True)
+    subprocess.call(['v4l2-ctl -d /dev/video1 -c exposure_auto=1'], shell=True)
+    time.sleep(5)
     cam_props = {'gain': 0, 'exposure_absolute': 25}
     for key in cam_props:
         subprocess.call(['v4l2-ctl -d /dev/video1 -c {}={}'.format(key, str(cam_props[key]))],
