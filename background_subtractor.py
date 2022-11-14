@@ -125,8 +125,9 @@ if __name__ == '__main__':
             first_frame = frame
             first_contour = cnt
             first_fgMask = fgMask
-            fr1 = [first_frame]
-            fr2 = [first_fgMask]
+            fps_counter = 1
+            #fr1 = [first_frame]
+            #fr2 = [first_fgMask]
             while (datetime.datetime.now() - last_movement).microseconds < 500000:
                 ret, frame = capture.read()
                 fgMask = backSub.apply(frame)
@@ -156,8 +157,9 @@ if __name__ == '__main__':
                 conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
                 # if not is_on_edge(biggest_contour, frame):
                 # area_buffer.append(count_white_pixels(fgMask))
-                fr1.append(frame)
-                fr2.append(fgMask)
+                #fr1.append(frame)
+                #fr2.append(fgMask)
+                fps_counter += 1
                 if conts and cv.contourArea(max(conts, key=cv.contourArea)) > 100:
                     last_movement = datetime.datetime.now()
             # morphological open frames in list with opencv
@@ -170,13 +172,13 @@ if __name__ == '__main__':
             if delta < 0.1:
                 print("[INFO] Session too short, aborting...")
                 continue
-            print(f"[INFO] FPS: {int(len(fr1) / delta)}")
+            print(f"[INFO] FPS: {int(fps_counter / delta)}")
 
             # kalman_tracking(fr1[min_index:], x, x + w, y, y + h)
             temp = datetime.datetime.now()
-            fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
-            print("[INFO] Images converted to RGB in {:.3f} seconds".format(
-                (datetime.datetime.now() - temp).total_seconds()))
+            #fr1 = [cv.cvtColor(f, cv.COLOR_BGR2RGB) for f in fr1]
+            #print("[INFO] Images converted to RGB in {:.3f} seconds".format(
+            #    (datetime.datetime.now() - temp).total_seconds()))
 
             # cv.imshow('Frame', frame)
             # cv.imshow('FG Mask', fgMask)
