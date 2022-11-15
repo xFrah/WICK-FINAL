@@ -64,8 +64,9 @@ def plot_heatmap(data, title):
     fig = plt.figure(figsize=(14, 9))
     ax = plt.axes(projection='3d')
     x, y, z = get_xyz(data)
+    ax.plot_surface(x, y, z, rstride=1, cstride=1)
     # Creating plot
-    ax.plot_surface(x, y, z)
+    #ax.plot_surface(x, y, z)
     # get plt as image and turn it to a numpy array
     fig.canvas.draw()
     img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
