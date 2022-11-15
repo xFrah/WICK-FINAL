@@ -82,12 +82,11 @@ while True:
     if vl53.data_ready():
         data = vl53.get_data()
         if mode == "4x4":
-            temp = numpy.array([data.distance_mm[0][:16]])
-            print(temp)
+            cock = data.distance_mm[0][:16]
+            temp = numpy.array([cock])
             temp = temp.reshape((4, 4))
         else:
             temp = numpy.array(data.distance_mm).reshape((8, 8))
-        print(temp)
         arr = numpy.flipud(temp).astype('float64')
 
         # Scale view relative to the furthest distance
@@ -118,7 +117,7 @@ while True:
         streamer.change_frame(img)
 
         # check if at least 3 items in the temp matrix are less than 200
-        asd = sorted(data.distance_mm[0][:16])[:3]
+        asd = sorted(cock)[:3]
         while asd[2] <= 200:
             print(f"Object at {sum(asd) / 3} mm")
             time.sleep(0.003)
