@@ -43,6 +43,7 @@ vl53.start_ranging()
 while True:
     if vl53.data_ready():
         data = vl53.get_data()
+        print(data.distance_mm)
         arr = numpy.flipud(numpy.array(data.distance_mm).reshape((4, 4))).astype('float64')
 
         # Scale view relative to the furthest distance
