@@ -3,7 +3,7 @@ import time
 
 from vl53l5cx.vl53l5cx import VL53L5CX
 
-driver = VL53L5CX()
+driver = VL53L5CX(bus_id=2)
 
 alive = driver.is_alive()
 if not alive:
@@ -13,6 +13,7 @@ print("Initialising...")
 t = time.time()
 driver.init()
 print(f"Initialised ({time.time() - t:.1f}s)")
+#driver.set_i2c_address(0x29)
 
 
 print(f"Ranging frequency: {driver.get_ranging_frequency_hz()} Hz")
