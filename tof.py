@@ -119,6 +119,12 @@ while True:
 
         # check if at least 3 items in the temp matrix are less than 200
         while (temp < 200).sum() >= 3:
+            if mode == "4x4":
+                temp = numpy.array([data.distance_mm[0][:16]])
+                print(temp)
+                temp = temp.reshape((4, 4))
+            else:
+                temp = numpy.array(data.distance_mm).reshape((8, 8))
             time.sleep(0.003)
             data = vl53.get_data()
             # get values of pixels that are less than 200 with np.where
