@@ -66,8 +66,7 @@ def plot_heatmap(data, title):
     # get plt as image and turn it to a numpy array
     fig.canvas.draw()
     img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
-    img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    img = numpy.flip(img, 0)
+    img = img.reshape(fig.canvas.get_width_height()[::-1] + (4,))
     plt.close(fig)
     return img
     # plt.show()
