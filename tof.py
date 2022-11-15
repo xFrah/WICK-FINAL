@@ -42,7 +42,7 @@ vl53.set_resolution(8 * 8)
 
 # This is a visual demo, so prefer speed over accuracy
 vl53.set_ranging_frequency_hz(15)
-vl53.set_integration_time_ms(10)
+vl53.set_integration_time_ms(5)
 vl53.start_ranging()
 
 #mode = "4x4"
