@@ -25,20 +25,6 @@ def get_palette(name):
     arr = arr[:, :, 0:3]
     return arr.tobytes()
 
-
-display = ST7789.ST7789(
-    width=240,
-    height=240,
-    rotation=90,
-    port=0,
-    cs=ST7789.BG_SPI_CS_BACK,  # Otherwise it will block the sensor!
-    dc=9,
-    backlight=18,
-    spi_speed_hz=80 * 1000 * 1000,
-    offset_left=0,
-    offset_top=0
-)
-
 pal = get_palette(COLOR_MAP)
 
 print("Uploading firmware, please wait...")
@@ -92,7 +78,5 @@ while True:
         img = img.convert("RGB")
         img = img.resize((240, 240), resample=Image.NEAREST)
 
-        # Display the result
-        display.display(img)
 
     time.sleep(0.01)  # Avoid polling *too* fast
