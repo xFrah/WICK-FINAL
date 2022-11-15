@@ -53,11 +53,11 @@ elif mode == "8x8":
 def plot_heatmap(data, title):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    x = numpy.arange(0, data.shape[0], 1)
-    y = numpy.arange(0, data.shape[1], 1)
+    x = numpy.arange(0, 3, 1)
+    y = numpy.arange(0, 3, 1)
     x, y = numpy.meshgrid(x, y)
     surf = ax.plot_surface(x, y, data, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(0, 1000)
+    ax.set_zlim(0, 600)
     # invert z axis
     ax.invert_zaxis()
     ax.zaxis.set_major_locator(LinearLocator(10))
