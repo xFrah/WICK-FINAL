@@ -78,7 +78,7 @@ while True:
         arr = arr.astype('uint8')
 
         # Convert to a palette type image
-        img = Image.frombytes("P", (8, 8), arr)
+        img = Image.frombytes("P", (8, 8) if mode != "4x4" else (4, 4), arr)
         img.putpalette(pal)
         img = img.convert("RGB")
         img = img.resize((240, 240), resample=Image.NEAREST)
