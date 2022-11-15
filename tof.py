@@ -118,14 +118,10 @@ while True:
         streamer.change_frame(img)
 
         # check if at least 3 items in the temp matrix are less than 200
-        while (temp < 200).sum() >= 3:
+        asd = sorted(data.distance_mm[0][:16])[:3]
+        while asd[2] <= 200:
+            print(f"Object at {sum(asd) / 3} mm")
             time.sleep(0.003)
-            data = vl53.get_data()
-            data = data.distance_mm[0][:16]
-            # get 3 lowest values from the list
-            lowest_values = sorted(data)[:3]
-            # get average of lowest values
-            average = sum(lowest_values) / len(lowest_values)
-            print(f"Object at {average} mm")
+            data = sorted(vl53.get_data().distance_mm[0][:16])[:3]
 
     time.sleep(0.01)  # Avoid polling *too* fast
