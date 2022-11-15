@@ -2,7 +2,6 @@
 import datetime
 import time
 import vl53l5cx_ctypes as vl53l5cx
-import ST7789
 import numpy
 from PIL import Image
 from matplotlib import cm
