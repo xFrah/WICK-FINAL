@@ -68,7 +68,7 @@ def plot_heatmap(data, title):
     x, y, z = get_xyz(data)
     ax.plot_surface(x, y, z, rstride=1, cstride=1)
     # Creating plot
-    #ax.plot_surface(x, y, z)
+    # ax.plot_surface(x, y, z)
     # get plt as image and turn it to a numpy array
     fig.canvas.draw()
     img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
@@ -133,6 +133,5 @@ while True:
             # compute average of the values
             average = sum(values) / len(values)
             print(f"Object at {average} mm")
-
 
     time.sleep(0.01)  # Avoid polling *too* fast
