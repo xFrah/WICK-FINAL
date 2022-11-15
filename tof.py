@@ -80,6 +80,7 @@ def plot_heatmap(data, title):
 
 count = 0
 movement = False
+start = datetime.datetime.now()
 while True:
     if vl53.data_ready():
         # data = vl53.get_data()
@@ -117,21 +118,26 @@ while True:
         # img = numpy.array(img)
         #
         # streamer.change_frame(img)
-
+        vl53.get_data()
+        count += 1
+        if count == 100:
+            print("FPS: ", 100 / (datetime.datetime.now() - start).total_seconds())
+            start = datetime.datetime.now()
+            count = 0
         # check if at least 3 items in the temp matrix are less than 200
-        asd = sorted(vl53.get_data().distance_mm[0])[:5]
-        if not movement:
-            if asd[2] < 200:
-                movement = True
-                print("Movement detected")
-                start = datetime.datetime.now()
-        else:
-            if asd[2] > 200:
-                movement = False
-                print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
-                count = 0
-            else:
-                #print(f"Object at {sum(asd) / 3} mm")
-                count += 1
+        # asd = sorted(vl53.get_data().distance_mm[0])[:5]
+        # if not movement:
+        #     if asd[2] < 200:
+        #         movement = True
+        #         print("Movement detected")
+        #         start = datetime.datetime.now()
+        # else:
+        #     if asd[2] > 200:
+        #         movement = False
+        #         print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
+        #         count = 0
+        #     else:
+        #         #print(f"Object at {sum(asd) / 3} mm")
+        #         count += 1
 
     time.sleep(0.01)  # Avoid polling *too* fast
