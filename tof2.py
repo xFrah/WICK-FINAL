@@ -48,4 +48,4 @@ while True:
         #           f"Status : {ranging_data.target_status[driver.nb_target_per_zone * i]: >3d}, "
         #           f"Distance : {ranging_data.distance_mm[driver.nb_target_per_zone * i]: >4.0f} mm")
 
-    time.sleep(0.005)
+    #time.sleep(0.005)
