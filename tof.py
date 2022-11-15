@@ -45,10 +45,11 @@ vl53.set_ranging_frequency_hz(60)
 vl53.set_integration_time_ms(5)
 vl53.start_ranging()
 
-#mode = "4x4"
-#if mode == "4x4":
+
+# mode = "4x4"
+# if mode == "4x4":
 #    vl53.set_resolution(4 * 4)
-#elif mode == "8x8":
+# elif mode == "8x8":
 #    vl53.set_resolution(8 * 8)
 
 
@@ -77,6 +78,8 @@ def plot_heatmap(data, title):
     return img
     # plt.show()
 
+
+print(vl53.get_ranging_frequency_hz())
 count = 0
 movement = False
 while True:
@@ -130,7 +133,7 @@ while True:
                 print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
                 count = 0
             else:
-                #print(f"Object at {sum(asd) / 3} mm")
+                # print(f"Object at {sum(asd) / 3} mm")
                 count += 1
 
     time.sleep(0.001)  # Avoid polling *too* fast
