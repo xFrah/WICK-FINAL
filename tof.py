@@ -80,47 +80,47 @@ def plot_heatmap(data, title):
 
 while True:
     if vl53.data_ready():
-        data = vl53.get_data()
-        if mode == "4x4":
-            cock = data.distance_mm[0][:16]
-            temp = numpy.array([cock])
-            temp = temp.reshape((4, 4))
-        else:
-            temp = numpy.array(data.distance_mm).reshape((8, 8))
-        arr = numpy.flipud(temp).astype('float64')
-
-        # Scale view relative to the furthest distance
-        # distance = arr.max()
-
-        # Scale view to a fixed distance
-        distance = 512
-
-        # Scale and clip the result to 0-255
-        arr *= (255.0 / distance)
-        arr = numpy.clip(arr, 0, 255)
-
-        # Invert the array : 0 - 255 becomes 255 - 0
-        if INVERSE:
-            arr *= -1
-            arr += 255.0
-
-        # Force to int
-        arr = arr.astype('uint8')
-
-        # Convert to a palette type image
-        img = Image.frombytes("P", (8, 8) if mode != "4x4" else (4, 4), arr)
-        img.putpalette(pal)
-        img = img.convert("RGB")
-        img = img.resize((240, 240), resample=Image.NEAREST)
-        img = numpy.array(img)
-
-        streamer.change_frame(img)
+        # data = vl53.get_data()
+        # if mode == "4x4":
+        #     cock = data.distance_mm[0][:16]
+        #     temp = numpy.array([cock])
+        #     temp = temp.reshape((4, 4))
+        # else:
+        #     temp = numpy.array(data.distance_mm).reshape((8, 8))
+        # arr = numpy.flipud(temp).astype('float64')
+        #
+        # # Scale view relative to the furthest distance
+        # # distance = arr.max()
+        #
+        # # Scale view to a fixed distance
+        # distance = 512
+        #
+        # # Scale and clip the result to 0-255
+        # arr *= (255.0 / distance)
+        # arr = numpy.clip(arr, 0, 255)
+        #
+        # # Invert the array : 0 - 255 becomes 255 - 0
+        # if INVERSE:
+        #     arr *= -1
+        #     arr += 255.0
+        #
+        # # Force to int
+        # arr = arr.astype('uint8')
+        #
+        # # Convert to a palette type image
+        # img = Image.frombytes("P", (8, 8) if mode != "4x4" else (4, 4), arr)
+        # img.putpalette(pal)
+        # img = img.convert("RGB")
+        # img = img.resize((240, 240), resample=Image.NEAREST)
+        # img = numpy.array(img)
+        #
+        # streamer.change_frame(img)
 
         # check if at least 3 items in the temp matrix are less than 200
-        asd = sorted(cock)[:3]
+        asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
         while asd[2] <= 200:
             print(f"Object at {sum(asd) / 3} mm")
-            time.sleep(0.003)
+            time.sleep(0.001)
             asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
 
-    time.sleep(0.01)  # Avoid polling *too* fast
+    time.sleep(0.001)  # Avoid polling *too* fast
