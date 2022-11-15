@@ -41,10 +41,19 @@ vl53.set_ranging_frequency_hz(60)
 vl53.set_integration_time_ms(5)
 vl53.start_ranging()
 
+mode = "4x4"
+if mode == "4x4":
+    vl53.set_resolution(4 * 4)
+elif mode == "8x8":
+    vl53.set_resolution(8 * 8)
+
 while True:
     if vl53.data_ready():
         data = vl53.get_data()
-        temp = numpy.array(data.distance_mm).reshape((8, 8))
+        if mode == "4x4":
+            temp = numpy.array(data.distance_mm)[:16].reshape((4, 4))
+        else:
+            temp = numpy.array(data.distance_mm).reshape((8, 8))
         print(temp)
         arr = numpy.flipud(temp).astype('float64')
 
