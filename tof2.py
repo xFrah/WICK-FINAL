@@ -2,7 +2,7 @@ import datetime
 import os
 import time
 
-import psutil
+#import psutil
 from vl53l5cx.vl53l5cx import VL53L5CX
 
 driver = VL53L5CX(bus_id=2)
@@ -37,8 +37,8 @@ start = datetime.datetime.now()
 
 while True:
     #print(f"Count: {count}")
-    load1, _, _ = psutil.getloadavg()
-    print("The CPU usage is : ", (load1 / os.cpu_count()) * 100)
+    #load1, _, _ = psutil.getloadavg()
+    #print("The CPU usage is : ", (load1 / os.cpu_count()) * 100)
     if driver.check_data_ready():
         ranging_data = driver.get_ranging_data()
 
