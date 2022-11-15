@@ -1,6 +1,8 @@
 import datetime
+import os
 import time
 
+import psutil
 from vl53l5cx.vl53l5cx import VL53L5CX
 
 driver = VL53L5CX(bus_id=2)
@@ -23,7 +25,7 @@ print(f"Power mode: {driver.get_power_mode()}")
 print(f"Alive: {driver.is_alive()}")
 # Ranging:
 driver.start_ranging()
-
+driver.set_resolution(4 * 4)
 driver.set_ranging_frequency_hz(60)
 driver.set_integration_time_ms(10)
 print(f"Ranging frequency: {driver.get_ranging_frequency_hz()} Hz")
@@ -32,8 +34,11 @@ print(f"Integration time: {driver.get_integration_time_ms()} ms")
 
 count = 0
 start = datetime.datetime.now()
+
 while True:
     #print(f"Count: {count}")
+    load1, _, _ = psutil.getloadavg()
+    print("The CPU usage is : ", (load1 / os.cpu_count()) * 100)
     if driver.check_data_ready():
         ranging_data = driver.get_ranging_data()
 
@@ -48,4 +53,4 @@ while True:
         #           f"Status : {ranging_data.target_status[driver.nb_target_per_zone * i]: >3d}, "
         #           f"Distance : {ranging_data.distance_mm[driver.nb_target_per_zone * i]: >4.0f} mm")
 
-    #time.sleep(0.005)
+    time.sleep(0.008)
