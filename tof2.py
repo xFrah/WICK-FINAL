@@ -14,12 +14,14 @@ t = time.time()
 driver.init()
 print(f"Initialised ({time.time() - t:.1f}s)")
 
-# Ranging:
-driver.start_ranging()
 driver.set_ranging_frequency_hz(60)
 driver.set_integration_time_ms(5)
 print(f"Ranging frequency: {driver.get_ranging_frequency_hz()} Hz")
 print(f"Integration time: {driver.get_integration_time_ms()} ms")
+
+# Ranging:
+driver.start_ranging()
+
 
 count = 0
 start = datetime.datetime.now()
