@@ -57,7 +57,9 @@ def plot_heatmap(data, title):
     y = numpy.arange(0, data.shape[1], 0.25)
     x, y = numpy.meshgrid(x, y)
     surf = ax.plot_surface(x, y, data, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(1000, 0)
+    ax.set_zlim(0, 1000)
+    # reverse the z axis
+    ax.invert_zaxis()
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     fig.colorbar(surf, shrink=0.5, aspect=5)
