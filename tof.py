@@ -51,7 +51,9 @@ while True:
     if vl53.data_ready():
         data = vl53.get_data()
         if mode == "4x4":
-            temp = numpy.array(data.distance_mm[:16]).reshape((4, 4))
+            temp = numpy.array(data.distance_mm[:16])
+            print(temp)
+            temp = temp.reshape((4, 4))
         else:
             temp = numpy.array(data.distance_mm).reshape((8, 8))
         print(temp)
