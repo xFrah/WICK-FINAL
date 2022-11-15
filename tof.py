@@ -11,12 +11,12 @@ import threading
 
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
-import streamer
+#import streamer
 
 COLOR_MAP = "plasma"
 INVERSE = False
 
-threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
+#threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
 
 def get_palette(name):
