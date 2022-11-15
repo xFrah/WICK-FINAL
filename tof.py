@@ -28,6 +28,7 @@ def get_palette(name):
     arr = arr[:, :, 0:3]
     return arr.tobytes()
 
+
 pal = get_palette(COLOR_MAP)
 
 print("Uploading firmware, please wait...")
@@ -43,8 +44,9 @@ vl53.start_ranging()
 while True:
     if vl53.data_ready():
         data = vl53.get_data()
-        print(data.distance_mm)
-        arr = numpy.flipud(numpy.array(data.distance_mm).reshape((4, 4))).astype('float64')
+        temp = numpy.array(data.distance_mm).reshape((8, 8))
+        print(temp)
+        arr = numpy.flipud(temp).astype('float64')
 
         # Scale view relative to the furthest distance
         # distance = arr.max()
@@ -65,7 +67,7 @@ while True:
         arr = arr.astype('uint8')
 
         # Convert to a palette type image
-        img = Image.frombytes("P", (4, 4), arr)
+        img = Image.frombytes("P", (8, 8), arr)
         img.putpalette(pal)
         img = img.convert("RGB")
         img = img.resize((240, 240), resample=Image.NEAREST)
