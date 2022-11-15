@@ -45,11 +45,11 @@ vl53.set_ranging_frequency_hz(60)
 vl53.set_integration_time_ms(5)
 vl53.start_ranging()
 
-mode = "4x4"
-if mode == "4x4":
-    vl53.set_resolution(4 * 4)
-elif mode == "8x8":
-    vl53.set_resolution(8 * 8)
+#mode = "4x4"
+#if mode == "4x4":
+#    vl53.set_resolution(4 * 4)
+#elif mode == "8x8":
+#    vl53.set_resolution(8 * 8)
 
 
 # function to turn numpy image to x, y, z pixels
