@@ -4,8 +4,10 @@ import time
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
-from matplotlib import cm
+from matplotlib import cm, pyplot as plt
 import threading
+
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 import streamer
 
@@ -47,6 +49,27 @@ if mode == "4x4":
 elif mode == "8x8":
     vl53.set_resolution(8 * 8)
 
+
+# function to plot heatmap as 3d surface
+def plot_heatmap(data, title):
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    x = numpy.arange(0, data.shape[0], 1)
+    y = numpy.arange(0, data.shape[1], 1)
+    x, y = numpy.meshgrid(x, y)
+    surf = ax.plot_surface(x, y, data, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    ax.set_zlim(0, 1000)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    plt.title(title)
+    # get plt as numpy array
+    image = fig.canvas.draw()
+    plt.close()
+    return image
+    # plt.show()
+
+
 while True:
     if vl53.data_ready():
         data = vl53.get_data()
@@ -84,6 +107,6 @@ while True:
         img = img.resize((240, 240), resample=Image.NEAREST)
         img = numpy.array(img)
 
-        streamer.change_frame(img)
+        streamer.change_frame(plot_heatmap(temp, "3D Heatmap"))
 
     time.sleep(0.01)  # Avoid polling *too* fast
