@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import datetime
 import time
 
 import numpy as np
@@ -77,7 +77,8 @@ def plot_heatmap(data, title):
     return img
     # plt.show()
 
-
+count = 0
+movement = False
 while True:
     if vl53.data_ready():
         # data = vl53.get_data()
@@ -118,9 +119,23 @@ while True:
 
         # check if at least 3 items in the temp matrix are less than 200
         asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
+        if not movement:
+            if asd[2] < 200:
+                movement = True
+                print("Movement detected")
+                start = datetime.datetime.now()
+        else:
+            if asd[2] > 200:
+                movement = False
+                print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
+                count = 0
+            else:
+                print(f"Object at {sum(asd) / 3} mm")
+                count += 1
+
         while asd[2] <= 200:
-            print(f"Object at {sum(asd) / 3} mm")
-            time.sleep(0.001)
+
             asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
+        print(f"FPS: {(datetime.datetime.now() - start).total_seconds() / }")
 
     time.sleep(0.001)  # Avoid polling *too* fast
