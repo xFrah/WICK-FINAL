@@ -134,4 +134,4 @@ while True:
                 #print(f"Object at {sum(asd) / 3} mm")
                 count += 1
 
-    time.sleep(0.001)  # Avoid polling *too* fast
+    time.sleep(0.01)  # Avoid polling *too* fast
