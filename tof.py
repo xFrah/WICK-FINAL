@@ -63,12 +63,13 @@ def plot_heatmap(data, title):
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
     fig.colorbar(surf, shrink=0.5, aspect=5)
     plt.title(title)
-    # get plt as numpy array
-    image = fig.canvas.draw()
-    image = numpy.frombuffer(image.tostring_rgb(), dtype='uint8')
-    image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    plt.close()
-    return image
+    # get plt as image and turn it to a numpy array
+    fig.canvas.draw()
+    img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
+    img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    img = numpy.flip(img, 0)
+    plt.close(fig)
+    return img
     # plt.show()
 
 
