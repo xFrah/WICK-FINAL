@@ -18,7 +18,6 @@ driver.set_ranging_frequency_hz(60)
 driver.set_integration_time_ms(5)
 print(f"Ranging frequency: {driver.get_ranging_frequency_hz()} Hz")
 print(f"Integration time: {driver.get_integration_time_ms()} ms")
-
 # Ranging:
 driver.start_ranging()
 
@@ -26,6 +25,7 @@ driver.start_ranging()
 count = 0
 start = datetime.datetime.now()
 while True:
+    print(f"Count: {count}")
     if driver.check_data_ready():
         ranging_data = driver.get_ranging_data()
 
