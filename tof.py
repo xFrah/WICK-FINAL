@@ -38,18 +38,17 @@ pal = get_palette(COLOR_MAP)
 print("Uploading firmware, please wait...")
 vl53 = vl53l5cx.VL53L5CX()
 print("Done!")
-vl53.set_resolution(4 * 4)
+vl53.set_resolution(8 * 8)
 
 # This is a visual demo, so prefer speed over accuracy
-vl53.set_ranging_frequency_hz(60)
-vl53.set_integration_time_ms(5)
+vl53.set_ranging_frequency_hz(15)
+vl53.set_integration_time_ms(10)
 vl53.start_ranging()
 
-
-# mode = "4x4"
-# if mode == "4x4":
+#mode = "4x4"
+#if mode == "4x4":
 #    vl53.set_resolution(4 * 4)
-# elif mode == "8x8":
+#elif mode == "8x8":
 #    vl53.set_resolution(8 * 8)
 
 
@@ -79,7 +78,6 @@ def plot_heatmap(data, title):
     # plt.show()
 
 
-print(vl53.get_ranging_frequency_hz())
 count = 0
 movement = False
 while True:
@@ -121,7 +119,7 @@ while True:
         # streamer.change_frame(img)
 
         # check if at least 3 items in the temp matrix are less than 200
-        asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
+        asd = sorted(vl53.get_data().distance_mm[0])[:5]
         if not movement:
             if asd[2] < 200:
                 movement = True
@@ -133,7 +131,7 @@ while True:
                 print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
                 count = 0
             else:
-                # print(f"Object at {sum(asd) / 3} mm")
+                #print(f"Object at {sum(asd) / 3} mm")
                 count += 1
 
     time.sleep(0.001)  # Avoid polling *too* fast
