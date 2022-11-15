@@ -121,6 +121,6 @@ while True:
         while asd[2] <= 200:
             print(f"Object at {sum(asd) / 3} mm")
             time.sleep(0.003)
-            data = sorted(vl53.get_data().distance_mm[0][:16])[:3]
+            asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
 
     time.sleep(0.01)  # Avoid polling *too* fast
