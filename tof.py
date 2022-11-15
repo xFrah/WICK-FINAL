@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import time
+
+import numpy as np
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
@@ -113,6 +115,24 @@ while True:
         img = img.resize((240, 240), resample=Image.NEAREST)
         img = numpy.array(img)
 
-        streamer.change_frame(plot_heatmap(temp, "3D Heatmap"))
+        streamer.change_frame(img)
+
+        # check if at least 3 items in the temp matrix are less than 200
+        while (temp < 200).sum() >= 3:
+            time.sleep(0.003)
+            data = vl53.get_data()
+            # get values of pixels that are less than 200 with np.where
+            indices = np.where((img <= 200).all(axis=2))
+            # get the x and y coordinates of the pixels that are less than 200
+            values = []
+            for i in range(len(indices[0])):
+                x = indices[0][i]
+                y = indices[1][i]
+                # get the value of the pixel at the x and y coordinates
+                values.append(img[x, y])
+            # compute average of the values
+            average = sum(values) / len(values)
+            print(f"Object at {average} mm")
+
 
     time.sleep(0.01)  # Avoid polling *too* fast
