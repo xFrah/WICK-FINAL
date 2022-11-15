@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 import datetime
 import time
-
-import numpy as np
 import vl53l5cx_ctypes as vl53l5cx
+import ST7789
 import numpy
 from PIL import Image
-from matplotlib import cm, pyplot as plt
-import threading
+from matplotlib import cm
 
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-
-#import streamer
 
 COLOR_MAP = "plasma"
 INVERSE = False
-
-#threading.Thread(target=streamer.start_thread, args=('0.0.0.0', "5000")).start()
 
 
 def get_palette(name):
@@ -33,6 +26,19 @@ def get_palette(name):
     return arr.tobytes()
 
 
+display = ST7789.ST7789(
+    width=240,
+    height=240,
+    rotation=90,
+    port=0,
+    cs=ST7789.BG_SPI_CS_BACK,  # Otherwise it will block the sensor!
+    dc=9,
+    backlight=18,
+    spi_speed_hz=80 * 1000 * 1000,
+    offset_left=0,
+    offset_top=0
+)
+
 pal = get_palette(COLOR_MAP)
 
 print("Uploading firmware, please wait...")
@@ -40,104 +46,53 @@ vl53 = vl53l5cx.VL53L5CX()
 print("Done!")
 vl53.set_resolution(8 * 8)
 
+# Enable motion indication at 8x8 resolution
+vl53.enable_motion_indicator(8 * 8)
+
+# Default motion distance is quite far, set a sensible range
+# eg: 40cm to 1.4m
+vl53.set_motion_distance(400, 1400)
+
 # This is a visual demo, so prefer speed over accuracy
 vl53.set_ranging_frequency_hz(15)
 vl53.set_integration_time_ms(5)
 vl53.start_ranging()
 
-#mode = "4x4"
-#if mode == "4x4":
-#    vl53.set_resolution(4 * 4)
-#elif mode == "8x8":
-#    vl53.set_resolution(8 * 8)
-
-
-# function to turn numpy image to x, y, z pixels
-def get_xyz(data):
-    x = numpy.arange(0, data.shape[0])
-    y = numpy.arange(0, data.shape[1])
-    x, y = numpy.meshgrid(x, y)
-    z = data
-    return x, y, z
-
-
-def plot_heatmap(data, title):
-    # Creating figure
-    fig = plt.figure(figsize=(14, 9))
-    ax = plt.axes(projection='3d')
-    x, y, z = get_xyz(data)
-    ax.plot_surface(x, y, z, rstride=1, cstride=1)
-    # Creating plot
-    # ax.plot_surface(x, y, z)
-    # get plt as image and turn it to a numpy array
-    fig.canvas.draw()
-    img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
-    img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    plt.close(fig)
-    return img
-    # plt.show()
-
-
 count = 0
-movement = False
 start = datetime.datetime.now()
 while True:
     if vl53.data_ready():
-        # data = vl53.get_data()
-        # if mode == "4x4":
-        #     cock = data.distance_mm[0][:16]
-        #     temp = numpy.array([cock])
-        #     temp = temp.reshape((4, 4))
-        # else:
-        #     temp = numpy.array(data.distance_mm).reshape((8, 8))
-        # arr = numpy.flipud(temp).astype('float64')
-        #
-        # # Scale view relative to the furthest distance
-        # # distance = arr.max()
-        #
-        # # Scale view to a fixed distance
-        # distance = 512
-        #
-        # # Scale and clip the result to 0-255
-        # arr *= (255.0 / distance)
-        # arr = numpy.clip(arr, 0, 255)
-        #
-        # # Invert the array : 0 - 255 becomes 255 - 0
-        # if INVERSE:
-        #     arr *= -1
-        #     arr += 255.0
-        #
-        # # Force to int
-        # arr = arr.astype('uint8')
-        #
-        # # Convert to a palette type image
-        # img = Image.frombytes("P", (8, 8) if mode != "4x4" else (4, 4), arr)
-        # img.putpalette(pal)
-        # img = img.convert("RGB")
-        # img = img.resize((240, 240), resample=Image.NEAREST)
-        # img = numpy.array(img)
-        #
-        # streamer.change_frame(img)
-        vl53.get_data()
         count += 1
-        if count == 100:
-            print("FPS: ", 100 / (datetime.datetime.now() - start).total_seconds())
+        if count == 30:
+            print("FPS: {}".format(30 / (datetime.datetime.now() - start).total_seconds()))
             start = datetime.datetime.now()
             count = 0
-        # check if at least 3 items in the temp matrix are less than 200
-        # asd = sorted(vl53.get_data().distance_mm[0])[:5]
-        # if not movement:
-        #     if asd[2] < 200:
-        #         movement = True
-        #         print("Movement detected")
-        #         start = datetime.datetime.now()
-        # else:
-        #     if asd[2] > 200:
-        #         movement = False
-        #         print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
-        #         count = 0
-        #     else:
-        #         #print(f"Object at {sum(asd) / 3} mm")
-        #         count += 1
+        data = vl53.get_data()
+        # Grab the first 16 motion entries and reshape into a 4 * 4 field
+        arr = numpy.flipud(numpy.array(list(data.motion_indicator.motion)[0:16]).reshape((4, 4))).astype('float64')
+
+        # Scale view to a fixed motion intensity
+        intensity = 1024
+
+        # Scale and clip the result to 0-255
+        arr *= (255.0 / intensity)
+        arr = numpy.clip(arr, 0, 255)
+
+        # Invert the array : 0 - 255 becomes 255 - 0
+        if INVERSE:
+            arr *= -1
+            arr += 255.0
+
+        # Force to int
+        arr = arr.astype('uint8')
+
+        # Convert to a palette type image
+        img = Image.frombytes("P", (4, 4), arr)
+        img.putpalette(pal)
+        img = img.convert("RGB")
+        img = img.resize((240, 240), resample=Image.NEAREST)
+
+        # Display the result
+        display.display(img)
 
     time.sleep(0.01)  # Avoid polling *too* fast
