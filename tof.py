@@ -133,9 +133,4 @@ while True:
                 print(f"Object at {sum(asd) / 3} mm")
                 count += 1
 
-        while asd[2] <= 200:
-
-            asd = sorted(vl53.get_data().distance_mm[0][:16])[:3]
-        print(f"FPS: {(datetime.datetime.now() - start).total_seconds() / }")
-
     time.sleep(0.001)  # Avoid polling *too* fast
