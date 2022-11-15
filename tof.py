@@ -50,20 +50,22 @@ elif mode == "8x8":
     vl53.set_resolution(8 * 8)
 
 
-def plot_heatmap(data, title):
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    x = numpy.arange(0, 3, 1)
-    y = numpy.arange(0, 3, 1)
+# function to turn numpy image to x, y, z pixels
+def get_xyz(data):
+    x = numpy.arange(0, data.shape[0])
+    y = numpy.arange(0, data.shape[1])
     x, y = numpy.meshgrid(x, y)
-    surf = ax.plot_surface(x, y, data, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlim(0, 600)
-    # invert z axis
-    ax.invert_zaxis()
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-    fig.colorbar(surf, shrink=0.5, aspect=5)
-    plt.title(title)
+    z = data
+    return x, y, z
+
+
+def plot_heatmap(data, title):
+    # Creating figure
+    fig = plt.figure(figsize=(14, 9))
+    ax = plt.axes(projection='3d')
+    x, y, z = get_xyz(data)
+    # Creating plot
+    ax.plot_surface(x, y, z)
     # get plt as image and turn it to a numpy array
     fig.canvas.draw()
     img = numpy.fromstring(fig.canvas.tostring_rgb(), dtype=numpy.uint8, sep='')
