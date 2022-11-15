@@ -130,7 +130,7 @@ while True:
                 print(F"Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
                 count = 0
             else:
-                print(f"Object at {sum(asd) / 3} mm")
+                #print(f"Object at {sum(asd) / 3} mm")
                 count += 1
 
     time.sleep(0.001)  # Avoid polling *too* fast
