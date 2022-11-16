@@ -133,6 +133,7 @@ def main():
                         time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
                         closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
+                        print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                         cv.imshow("frame", closest_frame_item[1][0])
                         cv.waitKey(1) & 0xFF
                     count = 0
