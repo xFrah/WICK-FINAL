@@ -73,9 +73,11 @@ def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
     backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
+    last_applied = datetime.datetime.now()
     while True:
         _, frame = cap.read()
-        #fgMask = backSub.apply(frame)
+        if (datetime.datetime.now() - last_applied).total_seconds() < 5:
+            fgMask = backSub.apply(frame)
         if do_i_shoot:
             temp = {datetime.datetime.now(): (frame, 0, fgMask)}
             while do_i_shoot and ram_is_ok:
@@ -94,6 +96,7 @@ def camera_thread(cap):
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
             with lock:
                 camera_buffer = temp.copy()
+            last_applied = datetime.datetime.now()
 
 
 def tof_setup():
