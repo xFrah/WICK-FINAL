@@ -45,7 +45,7 @@ def setup_camera():
 
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-    pixels.fill((255, 255, 255))
+    pixels.fill((0, 0, 0))
     pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
