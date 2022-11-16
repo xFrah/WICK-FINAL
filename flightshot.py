@@ -105,7 +105,7 @@ def main():
     pixels = setup_led()
     cap = setup_camera()
     _, frame = cap.read()
-    threading.Thread(target=camera_thread, args=(cap,)).start()
+    #threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
     global camera_buffer
