@@ -33,6 +33,9 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_FOURCC] = cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
     time.sleep(2)
+    succ[cv.CAP_PROP_AUTO_EXPOSURE] = cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+    time.sleep(2)
+    succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 25)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
