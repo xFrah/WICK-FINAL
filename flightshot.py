@@ -54,7 +54,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
-    #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -83,7 +83,7 @@ def camera_thread(cap):
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 fgMask = backSub.apply(frame)
-                #fgMask = get_white_mask(fgMask)
+                # fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp, fgMask
                 ram_is_ok = psutil.virtual_memory()[2] < 70
@@ -108,6 +108,11 @@ def tof_setup():
     vl53.set_integration_time_ms(5)
     vl53.start_ranging()
     return vl53
+
+
+# function to flip matrix horizontally
+def flip_matrix(matrix):
+    return numpy.flip(matrix, 1)
 
 
 def main():
@@ -143,9 +148,10 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
-                        #pixels.fill((1, 1, 1))
+                        # pixels.fill((1, 1, 1))
                         pixels.show()
-                        print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        print(
+                            f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                         # for frame in camera_buffer:
                         #     cv.imshow("frame", frame)
                         #     cv.waitKey(1) & 0xFF
@@ -155,11 +161,14 @@ def main():
                         # camera_buffer is time: frame, frame_number
                         # tof_buffer is time: (full_matrix, distance)
                         time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                        closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                        closest_frame_item = min(camera_buffer.items(),
+                                                 key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
 
                         temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
+                        temp = [list(reversed(col)) for col in zip(*temp)]
+                        temp = flip_matrix(temp)
                         arr = numpy.flipud(temp).astype('float64')
 
                         # Scale view relative to the furthest distance
