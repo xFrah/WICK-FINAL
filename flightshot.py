@@ -39,9 +39,10 @@ def setup_camera():
 
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-    print("[INFO] LEDs configured: {}".format(pixels))
-    pixels.fill((255, 255, 255))
+
+    pixels.fill((0, 0, 0))
     pixels.show()
+    print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
 
 
@@ -108,6 +109,7 @@ def main():
                     pixels.fill((0, 0, 0))
                 else:
                     print(f"Object at {sum(asd) / 3} mm")
+                    print(asd)
                     count += 1
 
         time.sleep(0.003)  # Avoid polling *too* fast
