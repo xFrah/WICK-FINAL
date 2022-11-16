@@ -127,101 +127,77 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            _, frame = cap.read()
-            temp = numpy.array(data.distance_mm).reshape((8, 8))
-            temp = [list(reversed(col)) for col in zip(*temp)]
-            temp = flip_matrix_horizontal(temp)
-            arr = numpy.flipud(temp).astype('float64')
 
-            # Scale view relative to the furthest distance
-            # distance = arr.max()
+            asd = sorted(data.distance_mm[0])[:5]
+            if not movement:
+                if asd[2] < 200:
+                    # pixels.fill((255, 255, 255))
+                    camera_buffer = {}
+                    tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
+                    do_i_shoot = True
+                    movement = True
+                    print("[INFO] Movement detected")
+                    start = datetime.datetime.now()
+            else:
+                if asd[2] > 200:
+                    do_i_shoot = False
+                    movement = False
+                    while len(camera_buffer) == 0:
+                        pass
+                    with lock:
+                        # pixels.fill((1, 1, 1))
+                        pixels.show()
+                        print(
+                            f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        # for frame in camera_buffer:
+                        #     cv.imshow("frame", frame)
+                        #     cv.waitKey(1) & 0xFF
+                        #     time.sleep(0.2)
+                        # print("[INFO] Showed {} frames".format(len(camera_buffer)))
 
-            # Scale view to a fixed distance
-            distance = 512
+                        # camera_buffer is time: frame, frame_number
+                        # tof_buffer is time: (full_matrix, distance)
+                        time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
+                        closest_frame_item = min(camera_buffer.items(),
+                                                 key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                        print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
+                        print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
 
-            # Scale and clip the result to 0-255
-            arr *= (255.0 / distance)
-            arr = numpy.clip(arr, 0, 255)
+                        temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
+                        temp = [list(reversed(col)) for col in zip(*temp)]
+                        temp = flip_matrix_horizontal(temp)
+                        arr = numpy.flipud(temp).astype('float64')
 
-            # Force to int
-            arr = arr.astype('uint8')
+                        # Scale view relative to the furthest distance
+                        # distance = arr.max()
 
-            # Convert to a palette type image
-            img = Image.frombytes("P", (8, 8), arr)
-            img.putpalette(pal)
-            img = img.convert("RGB")
-            img = img.resize((240, 240), resample=Image.NEAREST)
-            img = numpy.array(img)
+                        # Scale view to a fixed distance
+                        distance = 512
 
-            cv.imshow("Tof", img)
-            cv.imshow("Camera", frame)
-            cv.waitKey(1) & 0xFF
+                        # Scale and clip the result to 0-255
+                        arr *= (255.0 / distance)
+                        arr = numpy.clip(arr, 0, 255)
 
-            # asd = sorted(data.distance_mm[0])[:5]
-            # if not movement:
-            #    if asd[2] < 200:
-            #        # pixels.fill((255, 255, 255))
-            #        camera_buffer = {}
-            #        tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
-            #        do_i_shoot = True
-            #        movement = True
-            #        print("[INFO] Movement detected")
-            #        start = datetime.datetime.now()
-            # else:
-            #    if asd[2] > 200:
-            #        do_i_shoot = False
-            #        movement = False
-            #        while len(camera_buffer) == 0:
-            #            pass
-            #        with lock:
-            #            #pixels.fill((1, 1, 1))
-            #            pixels.show()
-            #            print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
-            #            # for frame in camera_buffer:
-            #            #     cv.imshow("frame", frame)
-            #            #     cv.waitKey(1) & 0xFF
-            #            #     time.sleep(0.2)
-            #            # print("[INFO] Showed {} frames".format(len(camera_buffer)))
-            #
-            #            # camera_buffer is time: frame, frame_number
-            #            # tof_buffer is time: (full_matrix, distance)
-            #            time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-            #            closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
-            #            print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
-            #            print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
-            #
-            #            temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
-            #            arr = numpy.flipud(temp).astype('float64')
-            #
-            #            # Scale view relative to the furthest distance
-            #            # distance = arr.max()
-            #
-            #            # Scale view to a fixed distance
-            #            distance = 512
-            #
-            #            # Scale and clip the result to 0-255
-            #            arr *= (255.0 / distance)
-            #            arr = numpy.clip(arr, 0, 255)
-            #
-            #            # Force to int
-            #            arr = arr.astype('uint8')
-            #
-            #            # Convert to a palette type image
-            #            img = Image.frombytes("P", (8, 8), arr)
-            #            img.putpalette(pal)
-            #            img = img.convert("RGB")
-            #            img = img.resize((240, 240), resample=Image.NEAREST)
-            #            img = numpy.array(img)
-            #
-            #            cv.imshow("Tof", img)
-            #            cv.imshow("Camera", closest_frame_item[1][0])
-            #            cv.waitKey(1) & 0xFF
-            #        count = 0
-            #    else:
-            #        # print(f"Object at {sum(asd) / 3} mm")
-            #        # print(list(data.distance_mm[0]))
-            #        tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
-            #        count += 1
+                        # Force to int
+                        arr = arr.astype('uint8')
+
+                        # Convert to a palette type image
+                        img = Image.frombytes("P", (8, 8), arr)
+                        img.putpalette(pal)
+                        img = img.convert("RGB")
+                        img = img.resize((240, 240), resample=Image.NEAREST)
+                        img = numpy.array(img)
+
+                        cv.imshow("Tof", img)
+                        cv.imshow("Camera", frame)
+                        cv.waitKey(1) & 0xFF
+
+                    count = 0
+                else:
+                    # print(f"Object at {sum(asd) / 3} mm")
+                    # print(list(data.distance_mm[0]))
+                    tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
+                    count += 1
 
         time.sleep(0.002)  # Avoid polling *too* fast
 
