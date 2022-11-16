@@ -81,9 +81,9 @@ def tof_setup():
 
 
 def main():
-    vl53 = tof_setup()
     pixels = setup_led()
     threading.Thread(target=camera_thread).start()
+    vl53 = tof_setup()
     global do_i_shoot
     count = 0
     movement = False
