@@ -108,7 +108,7 @@ def tof_setup():
     print("[INFO] Done!")
     vl53.set_resolution(8 * 8)
     vl53.set_ranging_frequency_hz(15)
-    vl53.set_integration_time_ms(10)
+    vl53.set_integration_time_ms(1)
     vl53.start_ranging()
     return vl53
 
