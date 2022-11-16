@@ -121,7 +121,7 @@ def main():
                         for frame in camera_buffer:
                             cv.imshow("frame", frame)
                             cv.waitKey(1) & 0xFF
-                            time.sleep(1)
+                            time.sleep(0.2)
                         print("[INFO] Showed {} frames".format(len(camera_buffer)))
                     count = 0
                 else:
