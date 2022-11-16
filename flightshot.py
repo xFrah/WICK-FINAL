@@ -62,7 +62,7 @@ def camera_thread(cap):
             temp = {datetime.datetime.now(): frame}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
-                lentemp = [1][1]
+                lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
@@ -128,7 +128,7 @@ def main():
                         #     time.sleep(0.2)
                         # print("[INFO] Showed {} frames".format(len(camera_buffer)))
 
-                        # camera_buffer is time: frame
+                        # camera_buffer is time: frame, frame_number
                         # tof_buffer is time: (full_matrix, distance)
                         time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
                         closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
