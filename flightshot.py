@@ -112,12 +112,13 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
+                        print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
+
                         for frame in camera_buffer:
                             cv.imshow("frame", frame)
                             cv.waitKey(1) & 0xFF
                             time.sleep(0.35)
                         camera_buffer = []
-                    print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                     count = 0
                     pixels.fill((1, 1, 1))
                     pixels.show()
