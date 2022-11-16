@@ -37,6 +37,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 50)
+    succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -55,7 +56,7 @@ def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
     while True:
-        _, frame = cap.read()
+        #_, frame = cap.read()
         if do_i_shoot:
             temp = []
             while do_i_shoot and ram_is_ok:
