@@ -67,6 +67,7 @@ def camera_thread(cap):
             else:
                 print("[INFO] Session has finished, saving to buffer")
                 camera_buffer = temp
+                temp = []
 
 
 def tof_setup():
