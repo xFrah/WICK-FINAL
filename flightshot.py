@@ -53,7 +53,7 @@ def setup_camera():
     succ[cv.CAP_PROP_AUTO_EXPOSURE] = cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
-    succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 50)
+    succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
     #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
@@ -188,12 +188,12 @@ def main():
                         try:
                             x, y, w, h = cv.boundingRect(
                                 np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+                            cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
+                            cv.imshow("Camera", final_img)
                         except ValueError:
                             print("[WARN] No contours found")
-                        cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
 
                         cv.imshow("Tof", img)
-                        cv.imshow("Camera", final_img)
                         cv.imshow("Mask", fgMask)
                         cv.waitKey(1) & 0xFF
                     count = 0
