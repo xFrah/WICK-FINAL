@@ -1,11 +1,12 @@
 import datetime
 import os
 import time
+import smbus2
 
 #import psutil
 from vl53l5cx.vl53l5cx import VL53L5CX
 
-driver = VL53L5CX(bus_id=2)
+driver = VL53L5CX()
 
 alive = driver.is_alive()
 if not alive:
