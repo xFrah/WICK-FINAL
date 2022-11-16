@@ -129,7 +129,7 @@ def main():
                     # print(list(data.distance_mm[0]))
                     count += 1
 
-        time.sleep(0.003)  # Avoid polling *too* fast
+        time.sleep(0.002)  # Avoid polling *too* fast
 
 
 if __name__ == '__main__':
