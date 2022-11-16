@@ -77,18 +77,18 @@ def camera_thread(cap):
     while True:
         _, frame = cap.read()
         #if (datetime.datetime.now() - last_applied).total_seconds() < 5:
-        fgMask = backSub.apply(frame)
+        #fgMask = backSub.apply(frame)
         #cv.imshow('Frame', frame)
         #cv.imshow('FG Mask', fgMask)
         #cv.waitKey(1) & 0xFF
         if do_i_shoot:
-            temp = {datetime.datetime.now(): (frame, 0, fgMask)}
+            temp = {datetime.datetime.now(): (frame, 0)}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
-                fgMask = backSub.apply(frame)
+                #fgMask = backSub.apply(frame)
                 # fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
-                temp[datetime.datetime.now()] = frame, lentemp, fgMask
+                temp[datetime.datetime.now()] = frame, lentemp
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
@@ -195,18 +195,18 @@ def main():
                         img = numpy.array(img)
 
                         final_img = closest_frame_item[1][0]
-                        fgMask = closest_frame_item[1][2]
-                        conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-                        try:
-                            x, y, w, h = cv.boundingRect(
-                                np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
-                            cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
-
-                        except ValueError:
-                            print("[WARN] No contours found")
+                        #fgMask = closest_frame_item[1][2]
+                        #conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        #try:
+                        #    x, y, w, h = cv.boundingRect(
+                        #        np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+                        #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
+                        #
+                        #except ValueError:
+                        #    print("[WARN] No contours found")
 
                         cv.imshow("Tof", img)
-                        cv.imshow("Mask", fgMask)
+                        #cv.imshow("Mask", fgMask)
                         cv.imshow("Camera", final_img)
                         cv.waitKey(1) & 0xFF
                     count = 0
