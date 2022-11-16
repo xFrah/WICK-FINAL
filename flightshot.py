@@ -33,7 +33,7 @@ def setup_camera():
     succ[cv.CAP_PROP_FOURCC] = cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
     time.sleep(2)
 
-    print(tuple([item if value else "FAILED" for item, value in succ.items()]), ")")
+    print(str(tuple([item if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
 
 
@@ -110,7 +110,7 @@ def main():
                     pixels.fill((0, 0, 0))
                 else:
                     print(f"Object at {sum(asd) / 3} mm")
-                    print(data)
+                    print(data.distance_mm[0])
                     count += 1
 
         time.sleep(0.003)  # Avoid polling *too* fast
