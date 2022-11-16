@@ -83,7 +83,7 @@ def camera_thread(cap):
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 fgMask = backSub.apply(frame)
-                fgMask = get_white_mask(fgMask)
+                #fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp, fgMask
                 ram_is_ok = psutil.virtual_memory()[2] < 70
