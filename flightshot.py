@@ -20,6 +20,20 @@ lock = threading.Lock()
 target_distance = 150
 
 
+def get_palette(name):
+    cmap = cm.get_cmap(name, 256)
+
+    try:
+        colors = cmap.colors
+    except AttributeError:
+        colors = numpy.array([cmap(i) for i in range(256)], dtype=float)
+
+    arr = numpy.array(colors * 255).astype('uint8')
+    arr = arr.reshape((16, 16, 4))
+    arr = arr[:, :, 0:3]
+    return arr.tobytes()
+
+
 def setup_camera():
     cap = cv.VideoCapture(0)
     print("[INFO] Setting up camera")
@@ -99,13 +113,14 @@ def main():
     movement = False
     start = datetime.datetime.now()
     tof_buffer = {}
+    pal = get_palette("plasma")
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
             asd = sorted(data.distance_mm[0])[:5]
             if not movement:
                 if asd[2] < 200:
-                    #pixels.fill((255, 255, 255))
+                    # pixels.fill((255, 255, 255))
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
                     do_i_shoot = True
@@ -134,9 +149,32 @@ def main():
                         closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
-                        print(list(camera_buffer.items()))
-                        print(list(tof_buffer.items()))
-                        cv.imshow("frame", closest_frame_item[1][0])
+
+                        temp = numpy.array(data.distance_mm).reshape((8, 8))
+                        arr = numpy.flipud(temp).astype('float64')
+
+                        # Scale view relative to the furthest distance
+                        # distance = arr.max()
+
+                        # Scale view to a fixed distance
+                        distance = 512
+
+                        # Scale and clip the result to 0-255
+                        arr *= (255.0 / distance)
+                        arr = numpy.clip(arr, 0, 255)
+
+                        # Force to int
+                        arr = arr.astype('uint8')
+
+                        # Convert to a palette type image
+                        img = Image.frombytes("P", (8, 8), arr)
+                        img.putpalette(pal)
+                        img = img.convert("RGB")
+                        img = img.resize((240, 240), resample=Image.NEAREST)
+                        img = numpy.array(img)
+
+                        cv.imshow("Tof", img)
+                        cv.imshow("Camera", closest_frame_item[1][0])
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
