@@ -102,7 +102,7 @@ def main():
             asd = sorted(data.distance_mm[0])[:5]
             if not movement:
                 if asd[2] < 200:
-                    #pixels.fill((255, 255, 255))
+                    pixels.fill((255, 255, 255))
                     camera_buffer = []
                     do_i_shoot = True
                     movement = True
@@ -115,7 +115,7 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
-                        #pixels.fill((1, 1, 1))
+                        pixels.fill((1, 1, 1))
                         pixels.show()
                         print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                         for frame in camera_buffer:
