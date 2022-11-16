@@ -77,7 +77,7 @@ def camera_thread(cap):
         _, frame = cap.read()
         fgMask = backSub.apply(frame)
         if do_i_shoot:
-            temp = {datetime.datetime.now(): (frame, 0)}
+            temp = {datetime.datetime.now(): (frame, 0, fgMask)}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 fgMask = backSub.apply(frame)
