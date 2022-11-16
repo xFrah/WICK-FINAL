@@ -54,6 +54,7 @@ def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
     while True:
+        _, frame = cap.read()
         if do_i_shoot:
             temp = []
             while do_i_shoot and ram_is_ok:
