@@ -118,11 +118,13 @@ def main():
                         pixels.fill((1, 1, 1))
                         pixels.show()
                         print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
-                        for frame in camera_buffer:
-                            cv.imshow("frame", frame)
-                            cv.waitKey(1) & 0xFF
-                            time.sleep(0.2)
-                        print("[INFO] Showed {} frames".format(len(camera_buffer)))
+                        # for frame in camera_buffer:
+                        #     cv.imshow("frame", frame)
+                        #     cv.waitKey(1) & 0xFF
+                        #     time.sleep(0.2)
+                        # print("[INFO] Showed {} frames".format(len(camera_buffer)))
+                        cv.imshow("frame", camera_buffer[len(camera_buffer) // 2])
+                        cv.waitKey(1) & 0xFF
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
