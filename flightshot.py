@@ -115,7 +115,7 @@ def main():
                         for frame in camera_buffer:
                             cv.imshow("frame", frame)
                             cv.waitKey(1) & 0xFF
-                            count += 1
+                            time.sleep(1)
                         camera_buffer = []
                     print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                     count = 0
