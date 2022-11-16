@@ -16,6 +16,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 do_i_shoot = False
 camera_buffer = []
+lock = threading.Lock()
 
 
 def setup_camera():
@@ -39,7 +40,6 @@ def setup_camera():
 
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-
     pixels.fill((0, 0, 0))
     pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
@@ -60,13 +60,15 @@ def camera_thread(cap):
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
                 temp[len(temp) // 2:] = []
-                camera_buffer = temp
+                with lock:
+                    camera_buffer[:] = temp
                 while do_i_shoot:
                     pass
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-                camera_buffer = temp
+                with lock:
+                    camera_buffer[:] = temp
                 temp = []
 
 
@@ -88,6 +90,7 @@ def main():
     threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
+    global camera_buffer
     count = 0
     movement = False
     start = datetime.datetime.now()
@@ -106,6 +109,14 @@ def main():
                 if asd[2] > 200:
                     do_i_shoot = False
                     movement = False
+                    while len(camera_buffer) == 0:
+                        pass
+                    with lock:
+                        for frame in camera_buffer:
+                            cv.imshow("frame", frame)
+                            cv.waitKey(1) & 0xFF
+                            count += 1
+                        camera_buffer = []
                     print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                     count = 0
                     pixels.fill((1, 1, 1))
