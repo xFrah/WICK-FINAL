@@ -59,7 +59,7 @@ def camera_thread(cap):
     while True:
         _, frame = cap.read()
         if do_i_shoot:
-            temp = {datetime.datetime.now(): frame}
+            temp = {datetime.datetime.now(): (frame, 0)}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 lentemp = len(temp)
