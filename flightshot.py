@@ -104,8 +104,8 @@ def main():
             asd = sorted(data.distance_mm[0][:16])[:3]
             if not movement:
                 if asd[2] < 200:
-                    do_i_shoot = True
                     pixels.fill((255, 255, 255))
+                    do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
                     start = datetime.datetime.now()
