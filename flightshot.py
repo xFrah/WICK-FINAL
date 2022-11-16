@@ -180,7 +180,8 @@ def main():
                         img = numpy.array(img)
 
                         final_img = closest_frame_item[1][0]
-                        conts, hierarchy = cv.findContours(erode(closest_frame_item[1][2]), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        fgMask = closest_frame_item[1][2]
+                        conts, hierarchy = cv.findContours(erode(fgMask), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
                         try:
                             x, y, w, h = cv.boundingRect(
                                 np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
@@ -190,6 +191,7 @@ def main():
 
                         cv.imshow("Tof", img)
                         cv.imshow("Camera", final_img)
+                        cv.imshow("Mask", fgMask)
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
