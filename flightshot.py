@@ -150,7 +150,7 @@ def main():
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
 
-                        temp = numpy.array(data.distance_mm).reshape((8, 8))
+                        temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
                         arr = numpy.flipud(temp).astype('float64')
 
                         # Scale view relative to the furthest distance
