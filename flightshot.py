@@ -52,7 +52,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 50)
-    # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -90,6 +90,16 @@ def camera_thread(cap):
                 camera_buffer = temp.copy()
 
 
+# function to flip matrix 90 degrees to the right
+def flip_matrix(matrix):
+    return numpy.rot90(numpy.rot90(numpy.rot90(matrix)))
+
+
+# function to flip a matrix horizontally
+def flip_matrix_horizontal(matrix):
+    return numpy.flip(matrix, 1)
+
+
 def tof_setup():
     print("[INFO] Uploading firmware, please wait...")
     vl53 = vl53l5cx.VL53L5CX()
@@ -101,21 +111,11 @@ def tof_setup():
     return vl53
 
 
-# function to flip matrix 90 degrees to the right
-def flip_matrix(matrix):
-    return numpy.rot90(numpy.rot90(numpy.rot90(matrix)))
-
-
-# function to flip a matrix horizontally
-def flip_matrix_horizontal(matrix):
-    return numpy.flip(matrix, 1)
-
-
 def main():
     pixels = setup_led()
     cap = setup_camera()
     _, frame = cap.read()
-    # threading.Thread(target=camera_thread, args=(cap,)).start()
+    threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
     global camera_buffer
@@ -127,7 +127,6 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-
             asd = sorted(data.distance_mm[0])[:5]
             if not movement:
                 if asd[2] < 200:
@@ -145,10 +144,9 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
-                        # pixels.fill((1, 1, 1))
+                        #pixels.fill((1, 1, 1))
                         pixels.show()
-                        print(
-                            f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                         # for frame in camera_buffer:
                         #     cv.imshow("frame", frame)
                         #     cv.waitKey(1) & 0xFF
@@ -158,8 +156,7 @@ def main():
                         # camera_buffer is time: frame, frame_number
                         # tof_buffer is time: (full_matrix, distance)
                         time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                        closest_frame_item = min(camera_buffer.items(),
-                                                 key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                        closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
 
@@ -191,7 +188,6 @@ def main():
                         cv.imshow("Tof", img)
                         cv.imshow("Camera", frame)
                         cv.waitKey(1) & 0xFF
-
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
