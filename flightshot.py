@@ -45,7 +45,7 @@ def setup_camera():
 
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-    pixels.fill((0, 0, 0))
+    pixels.fill((255, 255, 255))
     pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
@@ -115,7 +115,7 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
-                        pixels.fill((1, 1, 1))
+                        #pixels.fill((1, 1, 1))
                         pixels.show()
                         print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                         for frame in camera_buffer:
