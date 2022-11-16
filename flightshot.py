@@ -125,7 +125,7 @@ def main():
             _, frame = cap.read()
             rotated = [list(reversed(col)) for col in zip(*data.distance_mm)]
             temp = numpy.array(rotated).reshape((8, 8))
-            temp = flip_matrix(temp)
+            #temp = flip_matrix(temp)
             arr = numpy.flipud(temp).astype('float64')
 
             # Scale view relative to the furthest distance
