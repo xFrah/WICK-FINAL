@@ -101,6 +101,7 @@ def main():
             if not movement:
                 if asd[2] < 200:
                     pixels.fill((255, 255, 255))
+                    camera_buffer = []
                     do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
@@ -120,7 +121,6 @@ def main():
                             cv.waitKey(1) & 0xFF
                             time.sleep(1)
                         print("[INFO] Showed {} frames".format(len(camera_buffer)))
-                        camera_buffer = []
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
