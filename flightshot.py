@@ -108,6 +108,7 @@ def main():
                     print(f"[INFO] Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
                     count = 0
                     pixels.fill((0, 0, 0))
+                    pixels.show()
                 else:
                     print(f"Object at {sum(asd) / 3} mm")
                     print(list(data.distance_mm[0]))
