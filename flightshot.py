@@ -98,7 +98,7 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = sorted(data.distance_mm[0][:16])[:3]
+            asd = sorted(data.distance_mm[0])[:5]
             if not movement:
                 if asd[2] < 200:
                     pixels.fill((255, 255, 255))
