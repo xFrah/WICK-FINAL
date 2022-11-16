@@ -72,7 +72,7 @@ def setup_led():
 def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
-    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
+    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=100, varThreshold=100)
     last_applied = datetime.datetime.now()
     while True:
         _, frame = cap.read()
