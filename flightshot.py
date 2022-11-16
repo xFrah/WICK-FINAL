@@ -14,6 +14,8 @@ import cv2 as cv
 
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
+from helpers import get_white_mask, erode
+
 do_i_shoot = False
 camera_buffer = []
 lock = threading.Lock()
@@ -70,14 +72,18 @@ def setup_led():
 def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
+    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     while True:
         _, frame = cap.read()
+        fgMask = backSub.apply(frame)
         if do_i_shoot:
             temp = {datetime.datetime.now(): (frame, 0)}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
+                fgMask = backSub.apply(frame)
+                fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
-                temp[datetime.datetime.now()] = frame, lentemp
+                temp[datetime.datetime.now()] = frame, lentemp, fgMask
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
@@ -173,8 +179,17 @@ def main():
                         img = img.resize((240, 240), resample=Image.NEAREST)
                         img = numpy.array(img)
 
+                        final_img = closest_frame_item[1][0]
+                        conts, hierarchy = cv.findContours(erode(closest_frame_item[1][2]), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        try:
+                            x, y, w, h = cv.boundingRect(
+                                np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+                        except ValueError:
+                            print("[WARN] No contours found")
+                        cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
+
                         cv.imshow("Tof", img)
-                        cv.imshow("Camera", closest_frame_item[1][0])
+                        cv.imshow("Camera", final_img)
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
