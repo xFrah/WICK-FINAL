@@ -52,7 +52,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 50)
-    #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -101,11 +101,16 @@ def tof_setup():
     return vl53
 
 
+# function to flip matrix 90 degrees to the right
+def flip_matrix(matrix):
+    return numpy.rot90(numpy.rot90(numpy.rot90(matrix)))
+
+
 def main():
     pixels = setup_led()
     cap = setup_camera()
     _, frame = cap.read()
-    #threading.Thread(target=camera_thread, args=(cap,)).start()
+    # threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
     global camera_buffer
@@ -119,34 +124,35 @@ def main():
             data = vl53.get_data()
             _, frame = cap.read()
             temp = numpy.array(data.distance_mm).reshape((8, 8))
+            temp = flip_matrix(temp)
             arr = numpy.flipud(temp).astype('float64')
-            
+
             # Scale view relative to the furthest distance
             # distance = arr.max()
-            
+
             # Scale view to a fixed distance
             distance = 512
-            
+
             # Scale and clip the result to 0-255
             arr *= (255.0 / distance)
             arr = numpy.clip(arr, 0, 255)
-            
+
             # Force to int
             arr = arr.astype('uint8')
-            
+
             # Convert to a palette type image
             img = Image.frombytes("P", (8, 8), arr)
             img.putpalette(pal)
             img = img.convert("RGB")
             img = img.resize((240, 240), resample=Image.NEAREST)
             img = numpy.array(img)
-            
+
             cv.imshow("Tof", img)
             cv.imshow("Camera", frame)
             cv.waitKey(1) & 0xFF
 
-            #asd = sorted(data.distance_mm[0])[:5]
-            #if not movement:
+            # asd = sorted(data.distance_mm[0])[:5]
+            # if not movement:
             #    if asd[2] < 200:
             #        # pixels.fill((255, 255, 255))
             #        camera_buffer = {}
@@ -155,7 +161,7 @@ def main():
             #        movement = True
             #        print("[INFO] Movement detected")
             #        start = datetime.datetime.now()
-            #else:
+            # else:
             #    if asd[2] > 200:
             #        do_i_shoot = False
             #        movement = False
