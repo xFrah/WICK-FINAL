@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import psutil
+from lib import neopixel_spidev as neo
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
@@ -17,7 +18,7 @@ do_i_shoot = False
 camera_buffer = []
 
 
-def camera_setup(cap):
+def setup_camera(cap):
     print("[INFO] Setting up camera")
     print(
         f"[INFO] Changed {(cap.get(cv.CAP_PROP_FRAME_WIDTH), cap.get(cv.CAP_PROP_FRAME_HEIGHT), cap.get(cv.CAP_PROP_FPS))} to (",
@@ -34,10 +35,18 @@ def camera_setup(cap):
     print(tuple([item if value else "FAILED" for item, value in succ.items()]), ")")
 
 
+def setup_led():
+    pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
+    print("[INFO] LEDs configured: {}".format(pixels))
+    pixels.fill((255, 255, 255))
+    pixels.show()
+    return pixels
+
+
 # function that begins to take pictures
 def camera_thread():
     cap = cv.VideoCapture(0)
-    camera_setup(cap)
+    setup_camera(cap)
     temp = []
     global camera_buffer
     ram_is_ok = True
@@ -59,18 +68,23 @@ def camera_thread():
                 camera_buffer = temp
 
 
-threading.Thread(target=camera_thread).start()
+def tof_setup():
+    print("[INFO] Uploading firmware, please wait...")
+    vl53 = vl53l5cx.VL53L5CX()
+    print("[INFO] Done!")
+    vl53.set_resolution(4 * 4)
 
-print("[INFO] Uploading firmware, please wait...")
-vl53 = vl53l5cx.VL53L5CX()
-print("[INFO] Done!")
-vl53.set_resolution(4 * 4)
+    vl53.set_ranging_frequency_hz(60)
+    vl53.set_integration_time_ms(10)
+    vl53.start_ranging()
+    return vl53
 
-vl53.set_ranging_frequency_hz(60)
-vl53.set_integration_time_ms(10)
-vl53.start_ranging()
 
 def main():
+    vl53 = tof_setup()
+    pixels = setup_led()
+    threading.Thread(target=camera_thread).start()
+    global do_i_shoot
     count = 0
     movement = False
     start = datetime.datetime.now()
@@ -79,14 +93,18 @@ def main():
             asd = sorted(vl53.get_data().distance_mm[0])[:5]
             if not movement:
                 if asd[2] < 200:
+                    do_i_shoot = True
+                    pixels.fill((255, 255, 255))
                     movement = True
                     print("[INFO] Movement detected")
                     start = datetime.datetime.now()
             else:
                 if asd[2] > 200:
+                    do_i_shoot = False
                     movement = False
                     print(f"[INFO] Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
                     count = 0
+                    pixels.fill((0, 0, 0))
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
                     count += 1
