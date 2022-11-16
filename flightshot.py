@@ -92,7 +92,8 @@ def main():
     start = datetime.datetime.now()
     while True:
         if vl53.data_ready():
-            asd = sorted(vl53.get_data().distance_mm[0])[:3]
+            data = vl53.get_data()
+            asd = sorted(data.distance_mm[0])[:3]
             if not movement:
                 if asd[2] < 200:
                     do_i_shoot = True
@@ -109,7 +110,7 @@ def main():
                     pixels.fill((0, 0, 0))
                 else:
                     print(f"Object at {sum(asd) / 3} mm")
-                    print(asd)
+                    print(data)
                     count += 1
 
         time.sleep(0.003)  # Avoid polling *too* fast
