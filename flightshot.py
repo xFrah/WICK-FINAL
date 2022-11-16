@@ -75,7 +75,7 @@ def camera_thread(cap):
     backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=150, varThreshold=200)
     while True:
         _, frame = cap.read()
-        fgMask = backSub.apply(frame)
+        #fgMask = backSub.apply(frame)
         if do_i_shoot:
             temp = {datetime.datetime.now(): (frame, 0, fgMask)}
             while do_i_shoot and ram_is_ok:
