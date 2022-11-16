@@ -36,6 +36,7 @@ def setup_camera():
     succ[cv.CAP_PROP_AUTO_EXPOSURE] = cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
+    succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 50)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
