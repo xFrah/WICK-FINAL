@@ -123,7 +123,8 @@ def main():
         if vl53.data_ready():
             data = vl53.get_data()
             _, frame = cap.read()
-            temp = numpy.array(data.distance_mm).reshape((8, 8))
+            rotated = [list(reversed(col)) for col in zip(*data.distance_mm)]
+            temp = numpy.array(rotated).reshape((8, 8))
             temp = flip_matrix(temp)
             arr = numpy.flipud(temp).astype('float64')
 
