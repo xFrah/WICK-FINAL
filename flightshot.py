@@ -65,7 +65,7 @@ def camera_thread(cap):
                     pass
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
-                print("[INFO] Session has finished, saving to buffer")
+                print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
                 camera_buffer = temp
                 temp = []
 
