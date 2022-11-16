@@ -18,7 +18,8 @@ do_i_shoot = False
 camera_buffer = []
 
 
-def setup_camera(cap):
+def setup_camera():
+    cap = cv.VideoCapture(0)
     print("[INFO] Setting up camera")
     print(
         f"[INFO] Changed {(cap.get(cv.CAP_PROP_FRAME_WIDTH), cap.get(cv.CAP_PROP_FRAME_HEIGHT), cap.get(cv.CAP_PROP_FPS))} to (",
@@ -33,6 +34,7 @@ def setup_camera(cap):
     time.sleep(2)
 
     print(tuple([item if value else "FAILED" for item, value in succ.items()]), ")")
+    return cap
 
 
 def setup_led():
@@ -44,9 +46,7 @@ def setup_led():
 
 
 # function that begins to take pictures
-def camera_thread():
-    cap = cv.VideoCapture(0)
-    setup_camera(cap)
+def camera_thread(cap):
     temp = []
     global camera_buffer
     ram_is_ok = True
@@ -82,7 +82,8 @@ def tof_setup():
 
 def main():
     pixels = setup_led()
-    threading.Thread(target=camera_thread).start()
+    cap = setup_camera()
+    threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
     count = 0
@@ -106,7 +107,7 @@ def main():
                     count = 0
                     pixels.fill((0, 0, 0))
                 else:
-                    # print(f"Object at {sum(asd) / 3} mm")
+                    print(f"Object at {sum(asd) / 3} mm")
                     count += 1
 
         time.sleep(0.003)  # Avoid polling *too* fast
