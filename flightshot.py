@@ -123,7 +123,7 @@ def main():
                         #     cv.waitKey(1) & 0xFF
                         #     time.sleep(0.2)
                         # print("[INFO] Showed {} frames".format(len(camera_buffer)))
-                        cv.imshow("frame", camera_buffer[len(camera_buffer) // 2])
+                        cv.imshow("frame", camera_buffer[len(camera_buffer) // 3])
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
