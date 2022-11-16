@@ -90,16 +90,6 @@ def camera_thread(cap):
                 camera_buffer = temp.copy()
 
 
-# function to flip matrix 90 degrees to the right
-def flip_matrix(matrix):
-    return numpy.rot90(numpy.rot90(numpy.rot90(matrix)))
-
-
-# function to flip a matrix horizontally
-def flip_matrix_horizontal(matrix):
-    return numpy.flip(matrix, 1)
-
-
 def tof_setup():
     print("[INFO] Uploading firmware, please wait...")
     vl53 = vl53l5cx.VL53L5CX()
@@ -161,8 +151,6 @@ def main():
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
 
                         temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
-                        temp = [list(reversed(col)) for col in zip(*temp)]
-                        temp = flip_matrix_horizontal(temp)
                         arr = numpy.flipud(temp).astype('float64')
 
                         # Scale view relative to the furthest distance
@@ -186,7 +174,7 @@ def main():
                         img = numpy.array(img)
 
                         cv.imshow("Tof", img)
-                        cv.imshow("Camera", frame)
+                        cv.imshow("Camera", closest_frame_item[1][0])
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
