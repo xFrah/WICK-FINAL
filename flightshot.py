@@ -99,7 +99,7 @@ def camera_thread(cap):
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
             with lock:
                 camera_buffer = temp.copy()
-            last_applied = datetime.datetime.now()
+            #last_applied = datetime.datetime.now()
 
 
 def tof_setup():
@@ -168,6 +168,7 @@ def main():
                                                  key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
+                        print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
                         temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
                         temp = [list(reversed(col)) for col in zip(*temp)]
