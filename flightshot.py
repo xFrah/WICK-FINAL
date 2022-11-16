@@ -76,8 +76,11 @@ def camera_thread(cap):
     last_applied = datetime.datetime.now()
     while True:
         _, frame = cap.read()
-        if (datetime.datetime.now() - last_applied).total_seconds() < 5:
-            fgMask = backSub.apply(frame)
+        #if (datetime.datetime.now() - last_applied).total_seconds() < 5:
+        fgMask = backSub.apply(frame)
+        cv.imshow('Frame', frame)
+        cv.imshow('FG Mask', fgMask)
+        cv.waitKey(1) & 0xFF
         if do_i_shoot:
             temp = {datetime.datetime.now(): (frame, 0, fgMask)}
             while do_i_shoot and ram_is_ok:
