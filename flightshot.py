@@ -51,28 +51,24 @@ def setup_led():
 
 # function that begins to take pictures
 def camera_thread(cap):
-    temp = []
     global camera_buffer
     ram_is_ok = True
     while True:
         if do_i_shoot:
+            temp = []
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 temp.append(frame)
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
-                temp[len(temp) // 2:] = []
-                with lock:
-                    camera_buffer[:] = temp
                 while do_i_shoot:
                     pass
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-                with lock:
-                    camera_buffer[:] = temp
-                temp = []
+            with lock:
+                camera_buffer = temp.copy()
 
 
 def tof_setup():
