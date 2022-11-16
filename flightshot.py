@@ -105,13 +105,13 @@ def main():
                 if asd[2] > 200:
                     do_i_shoot = False
                     movement = False
-                    print(f"[INFO] Movement stopped, FPS: {count / (datetime.datetime.now() - start).total_seconds()}")
+                    print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
                     count = 0
-                    pixels.fill((0, 0, 0))
+                    pixels.fill((1, 1, 1))
                     pixels.show()
                 else:
-                    print(f"Object at {sum(asd) / 3} mm")
-                    print(list(data.distance_mm[0]))
+                    # print(f"Object at {sum(asd) / 3} mm")
+                    # print(list(data.distance_mm[0]))
                     count += 1
 
         time.sleep(0.003)  # Avoid polling *too* fast
