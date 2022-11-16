@@ -17,6 +17,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 do_i_shoot = False
 camera_buffer = []
 lock = threading.Lock()
+target_distance = 150
 
 
 def setup_camera():
@@ -58,10 +59,11 @@ def camera_thread(cap):
     while True:
         _, frame = cap.read()
         if do_i_shoot:
-            temp = [frame]
+            temp = {datetime.datetime.now(): frame}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
-                temp.append(frame)
+                lentemp = [1][1]
+                temp[datetime.datetime.now()] = frame, lentemp
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
@@ -96,6 +98,7 @@ def main():
     count = 0
     movement = False
     start = datetime.datetime.now()
+    tof_buffer = {}
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
@@ -103,7 +106,8 @@ def main():
             if not movement:
                 if asd[2] < 200:
                     pixels.fill((255, 255, 255))
-                    camera_buffer = []
+                    camera_buffer = {}
+                    tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
@@ -123,12 +127,19 @@ def main():
                         #     cv.waitKey(1) & 0xFF
                         #     time.sleep(0.2)
                         # print("[INFO] Showed {} frames".format(len(camera_buffer)))
-                        cv.imshow("frame", camera_buffer[len(camera_buffer) // 3])
+
+                        # camera_buffer is time: frame
+                        # tof_buffer is time: (full_matrix, distance)
+                        time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
+                        closest_frame_item = min(camera_buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                        print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
+                        cv.imshow("frame", closest_frame_item[1][0])
                         cv.waitKey(1) & 0xFF
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
                     # print(list(data.distance_mm[0]))
+                    tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
                     count += 1
 
         time.sleep(0.002)  # Avoid polling *too* fast
