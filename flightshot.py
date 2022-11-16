@@ -106,6 +106,11 @@ def flip_matrix(matrix):
     return numpy.rot90(numpy.rot90(numpy.rot90(matrix)))
 
 
+# function to flip a matrix horizontally
+def flip_matrix_horizontal(matrix):
+    return numpy.flip(matrix, 1)
+
+
 def main():
     pixels = setup_led()
     cap = setup_camera()
@@ -125,8 +130,8 @@ def main():
             _, frame = cap.read()
             temp = numpy.array(data.distance_mm).reshape((8, 8))
             temp = [list(reversed(col)) for col in zip(*temp)]
+            temp = flip_matrix_horizontal(temp)
             arr = numpy.flipud(temp).astype('float64')
-
 
             # Scale view relative to the furthest distance
             # distance = arr.max()
