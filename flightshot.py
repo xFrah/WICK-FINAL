@@ -143,7 +143,7 @@ def setup_led():
 
 
 def setup_edgetpu():
-    interpreter = edgetpu.make_interpreter("model_quant_edgetpu.tflite")
+    interpreter = edgetpu.make_interpreter("/home/fra/Desktop/WICK-FINAL/model_quant_edgetpu.tflite")
     print("[INFO] EdgeTPU configured: {}".format(interpreter))
     interpreter.allocate_tensors()
     print("[INFO] Tensors allocated")
