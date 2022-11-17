@@ -115,6 +115,7 @@ def setup_camera():
     start = datetime.datetime.now()
     while c < 100:
         _, frame = cap.read()
+        c += 1
     print("[INFO] Camera setup complete, FPS: {}".format(100 / (datetime.datetime.now() - start).total_seconds()))
     return cap
 
