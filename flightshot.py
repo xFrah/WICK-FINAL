@@ -172,7 +172,7 @@ def main():
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                         print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                        temp = numpy.array(time_target_item[1][0]).reshape((8, 8))
+                        temp = numpy.array(time_target_item[1][0]).reshape((4, 4))
                         temp = [list(reversed(col)) for col in zip(*temp)]
                         temp = flip_matrix(temp)
                         arr = numpy.flipud(temp).astype('float64')
@@ -191,7 +191,7 @@ def main():
                         arr = arr.astype('uint8')
 
                         # Convert to a palette type image
-                        img = Image.frombytes("P", (8, 8), arr)
+                        img = Image.frombytes("P", (4, 4), arr)
                         img.putpalette(pal)
                         img = img.convert("RGB")
                         img = img.resize((240, 240), resample=Image.NEAREST)
