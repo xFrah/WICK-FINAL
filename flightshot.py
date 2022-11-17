@@ -139,7 +139,7 @@ def main():
                 if len(asd) > 0:
                     # pixels.fill((255, 255, 255))
                     camera_buffer = {}
-                    tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
+                    tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
@@ -217,7 +217,7 @@ def main():
                     # print(f"Object at {sum(asd) / 3} mm")
                     # print(list(data.distance_mm[0]))
                     print(asd, sum(asd) / len(asd))
-                    tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
+                    tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
 
         time.sleep(0.002)  # Avoid polling *too* fast
