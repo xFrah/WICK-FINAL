@@ -106,9 +106,9 @@ def tof_setup():
     print("[INFO] Uploading firmware, please wait...")
     vl53 = vl53l5cx.VL53L5CX()
     print("[INFO] Done!")
-    vl53.set_resolution(8 * 8)
-    vl53.set_ranging_frequency_hz(15)
-    # vl53.set_integration_time_ms(1)
+    vl53.set_resolution(4 * 4)
+    vl53.set_ranging_frequency_hz(60)
+    vl53.set_integration_time_ms(5)
     vl53.start_ranging()
     return vl53
 
@@ -134,7 +134,7 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = sorted(data.distance_mm[0])[:5]
+            asd = sorted(data.distance_mm[0][:16])[:3]
             if not movement:
                 if asd[2] < 300:
                     print(asd)

@@ -85,8 +85,7 @@ while True:
     if vl53.data_ready():
         # data = vl53.get_data()
         # if mode == "4x4":
-        #     cock = data.distance_mm[0][:16]
-        #     temp = numpy.array([cock])
+        #     temp = numpy.array([data.distance_mm[0][:16]])
         #     temp = temp.reshape((4, 4))
         # else:
         #     temp = numpy.array(data.distance_mm).reshape((8, 8))
