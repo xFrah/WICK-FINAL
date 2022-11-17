@@ -148,7 +148,7 @@ def setup_led():
 
 
 def setup_edgetpu():
-    interpreter = edgetpu.make_interpreter("model_quant_edgetpu.tflite")
+    interpreter = edgetpu.make_interpreter("/model_quant_edgetpu.tflite")
     interpreter.allocate_tensors()
     return interpreter
 
@@ -164,8 +164,6 @@ def camera_thread(cap):
             temp = {}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
-                # fgMask = backSub.apply(frame)
-                # fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp
                 ram_is_ok = psutil.virtual_memory()[2] < 70
