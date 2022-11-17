@@ -236,7 +236,7 @@ def main():
                         cam_buf_len = len(camera_buffer)
                         if cam_buf_len > 0:
                             print(f"[INFO] Background frame count: {cam_buf_len}")
-                            cv.imshow("Target", max(camera_buffer.values(), key=lambda d: d[1])[0])
+                            cv.imshow("Background", max(camera_buffer.values(), key=lambda d: d[1])[0])
                         else:
                             print("[WARN] No background frames")
                         cv.waitKey(1) & 0xFF
