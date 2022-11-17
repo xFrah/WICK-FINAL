@@ -16,6 +16,8 @@ from pycoral.adapters import common
 from pycoral.adapters import classify
 import cv2 as cv
 
+import tflite_runtime.interpreter as tflite
+
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 from helpers import get_white_mask, erode
@@ -148,7 +150,8 @@ def setup_led():
 
 
 def setup_edgetpu():
-    interpreter = edgetpu.make_interpreter("model_quant_edgetpu.tflite")
+    #interpreter = edgetpu.make_interpreter("model_quant_edgetpu.tflite")
+    interpreter = tflite.Interpreter("model_quant_edgetpu.tflite", experimental_delegates=[tflite.load_delegate('libedgetpu.so.1')])
     interpreter.allocate_tensors()
     return interpreter
 
@@ -229,10 +232,10 @@ def inference(image, interpreter):
     image = np.array(image)
     image = np.expand_dims(image, axis=0)
 
-    common.set_input(interpreter, image)
-    interpreter.invoke()
-    classes = classify.get_classes(interpreter, top_k=1)
-    print(classes)
+    # common.set_input(interpreter, image)
+    # interpreter.invoke()
+    # classes = classify.get_classes(interpreter, top_k=1)
+    # print(classes)
     return "", ""
     # for i in range(len(output_data)):
     #     print(f"{label_dict[i]}: {output_data[i]}")
