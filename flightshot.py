@@ -22,7 +22,7 @@ lock = threading.Lock()
 target_distance = 150
 
 
-def show_results(tof_frame, camera_frame):
+def show_results(tof_frame, camera_frame, background):
     temp = numpy.array(tof_frame).reshape((4, 4))
     temp = [list(reversed(col)) for col in zip(*temp)]
     temp = flip_matrix(temp)
@@ -56,8 +56,17 @@ def show_results(tof_frame, camera_frame):
     #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
     #
     # except ValueError:
-    #    print("[WARN] No contours found")
+    #    print("[WARN] No contours found")à
 
+
+    gray = cv.cvtColor(camera_frame, cv.COLOR_BGR2GRAY)
+    gray = cv.GaussianBlur(gray, (21, 21), 0)
+    background = cv.cvtColor(background, cv.COLOR_BGR2GRAY)
+    background = cv.GaussianBlur(background, (21, 21), 0)
+    frameDelta = cv.absdiff(background, gray)
+    thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
+    thresh = cv.dilate(thresh, None, iterations=2)
+    cv.imshow("Diff", thresh)
     cv.imshow("Tof", img)
     cv.imshow("Camera", camera_frame)
     cv.waitKey(1) & 0xFF
@@ -101,6 +110,12 @@ def setup_camera():
     # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
+
+    c = 0
+    start = datetime.datetime.now()
+    while c < 100:
+        _, frame = cap.read()
+    print("[INFO] Camera setup complete, FPS: {}".format(100 / (datetime.datetime.now() - start).total_seconds()))
     return cap
 
 
@@ -116,8 +131,6 @@ def setup_led():
 def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
-    backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=100, varThreshold=100)
-    last_applied = datetime.datetime.now()
     while True:
         _, frame = cap.read()
         # if (datetime.datetime.now() - last_applied).total_seconds() < 5:
@@ -173,10 +186,28 @@ def grab_buffer():
     return copy
 
 
+def grab_background(pixels):
+    global do_i_shoot
+    pixels.fill((255, 255, 255))
+    pixels.show()
+    do_i_shoot = True
+    time.sleep(0.125)
+    do_i_shoot = False
+    pixels.fill((0, 0, 0))
+    pixels.show()
+    buffer = grab_buffer()
+    if len(buffer) > 0:
+        print(f"[INFO] Background frame count: {len(buffer)}")
+        cv.imshow("Background", max(buffer.values(), key=lambda d: d[1])[0])
+    else:
+        print("[WARN] No background frames")
+    cv.waitKey(1) & 0xFF
+    return buffer
+
+
 def main():
     pixels = setup_led()
     cap = setup_camera()
-    _, frame = cap.read()
     threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
@@ -184,6 +215,7 @@ def main():
     movement = False
     start = datetime.datetime.now()
     tof_buffer = {}
+    background = grab_background(pixels)
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
@@ -219,25 +251,11 @@ def main():
                     print(
                         f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                    show_results(time_target_item[1][0], closest_frame_item[1][0])
+                    show_results(time_target_item[1][0], closest_frame_item[1][0], background)
 
                     time.sleep(1.5)
 
-                    pixels.fill((255, 255, 255))
-                    pixels.show()
-                    do_i_shoot = True
-                    time.sleep(0.125)
-                    do_i_shoot = False
-                    pixels.fill((0, 0, 0))
-                    pixels.show()
-                    buffer = grab_buffer()
-                    if len(buffer) > 0:
-                        print(f"[INFO] Background frame count: {len(buffer)}")
-                        cv.imshow("Background", max(buffer.values(), key=lambda d: d[1])[0])
-                    else:
-                        print("[WARN] No background frames")
-                    cv.waitKey(1) & 0xFF
-
+                    background = grab_background(pixels)
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
