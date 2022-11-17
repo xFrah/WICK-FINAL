@@ -288,7 +288,7 @@ def main():
                     print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                     print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                    show_results(time_target_item[1][0], closest_frame_item[1][0], background)
+                    show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter)
 
                     time.sleep(1.5)
 
