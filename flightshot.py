@@ -10,6 +10,10 @@ import numpy
 from PIL import Image
 from matplotlib import cm, pyplot as plt
 import threading
+from pycoral.utils import edgetpu
+from pycoral.utils import dataset
+from pycoral.adapters import common
+from pycoral.adapters import classify
 import cv2 as cv
 
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
@@ -20,6 +24,7 @@ do_i_shoot = False
 camera_buffer = {}
 lock = threading.Lock()
 target_distance = 150
+label_dict = {0: "plastic", 1: "paper"}
 
 
 def get_diff(frame, background):
@@ -40,7 +45,7 @@ def get_diff(frame, background):
         print("[WARN] No contours found")
 
 
-def show_results(tof_frame, camera_frame, background):
+def show_results(tof_frame, camera_frame, background, interpreter):
     temp = numpy.array(tof_frame).reshape((4, 4))
     temp = [list(reversed(col)) for col in zip(*temp)]
     temp = flip_matrix(temp)
@@ -76,6 +81,8 @@ def show_results(tof_frame, camera_frame, background):
         if cropped.shape[0] > 0 and cropped.shape[1] > 0:
             # convert to rgb
             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
+            label, score = inference(cropped, interpreter)
+            print(f"[INFO] Class: {label}, score: {score}")
 
 
     # cv.imshow("Diff", thresh)
@@ -140,17 +147,18 @@ def setup_led():
     return pixels
 
 
+def setup_edgetpu():
+    interpreter = edgetpu.make_interpreter("model_quant_edgetpu.tflite")
+    interpreter.allocate_tensors()
+    return interpreter
+
+
 # function that begins to take pictures
 def camera_thread(cap):
     global camera_buffer
     ram_is_ok = True
     while True:
         _, frame = cap.read()
-        # if (datetime.datetime.now() - last_applied).total_seconds() < 5:
-        # fgMask = backSub.apply(frame)
-        # cv.imshow('Frame', frame)
-        # cv.imshow('FG Mask', fgMask)
-        # cv.waitKey(1) & 0xFF
         if do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
             temp = {}
@@ -216,7 +224,28 @@ def grab_background(pixels):
         print("[WARN] No background frames")
 
 
+def inference(image, interpreter):
+    image = cv.resize(image, (128, 128))
+    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+    image = image.astype("float32") / 255.0
+    image = np.array(image)
+    image = np.expand_dims(image, axis=0)
+
+    common.set_input(interpreter, image)
+    interpreter.invoke()
+    classes = classify.get_classes(interpreter, top_k=1)
+    print(classes)
+    return "", ""
+    # for i in range(len(output_data)):
+    #     print(f"{label_dict[i]}: {output_data[i]}")
+    # argmax = np.argmax(output_data)
+    # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
+
+
+
+
 def main():
+    interpreter = setup_edgetpu()
     pixels = setup_led()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
@@ -249,8 +278,7 @@ def main():
                     pixels.fill((1, 1, 1))
                     pixels.show()
                     movement = False
-                    print(
-                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                    print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
 
                     # camera_buffer is time: frame, frame_number
                     # tof_buffer is time: (full_matrix, distance)
@@ -258,8 +286,7 @@ def main():
                     closest_frame_item = min(buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                     print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                     print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
-                    print(
-                        f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
+                    print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
                     show_results(time_target_item[1][0], closest_frame_item[1][0], background)
 
@@ -268,9 +295,6 @@ def main():
                     background = grab_background(pixels)
                     count = 0
                 else:
-                    # print(f"Object at {sum(asd) / 3} mm")
-                    # print(list(data.distance_mm[0]))
-                    #  print(asd, sum(asd) / len(asd))
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
 
