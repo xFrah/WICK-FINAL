@@ -19,7 +19,7 @@ from helpers import get_white_mask, erode
 do_i_shoot = False
 camera_buffer = []
 lock = threading.Lock()
-target_distance = 170
+target_distance = 150
 
 
 def get_palette(name):
@@ -134,10 +134,9 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = sorted(data.distance_mm[0][:16])[:3]
+            asd = [e for e in data.distance_mm[0][:16] if e < 200]
             if not movement:
-                if asd[2] < 300:
-
+                if len(asd) > 0:
                     # pixels.fill((255, 255, 255))
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
@@ -148,7 +147,7 @@ def main():
                     start = datetime.datetime.now()
                     count = 1
             else:
-                if asd[2] > 300:
+                if len(asd) == 0:
                     do_i_shoot = False
                     movement = False
                     while len(camera_buffer) == 0:
