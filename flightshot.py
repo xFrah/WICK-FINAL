@@ -48,17 +48,6 @@ def show_results(tof_frame, camera_frame, background):
     img = img.resize((240, 240), resample=Image.NEAREST)
     img = numpy.array(img)
 
-    # fgMask = closest_frame_item[1][2]
-    # conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    # try:
-    #    x, y, w, h = cv.boundingRect(
-    #        np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
-    #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
-    #
-    # except ValueError:
-    #    print("[WARN] No contours found")à
-
-
     gray = cv.cvtColor(camera_frame, cv.COLOR_BGR2GRAY)
     gray = cv.GaussianBlur(gray, (21, 21), 0)
     background = cv.cvtColor(background, cv.COLOR_BGR2GRAY)
@@ -66,7 +55,16 @@ def show_results(tof_frame, camera_frame, background):
     frameDelta = cv.absdiff(background, gray)
     thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
     thresh = cv.dilate(thresh, None, iterations=2)
-    cv.imshow("Diff", thresh)
+
+    conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    try:
+       x, y, w, h = cv.boundingRect(
+           np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+       cv.rectangle(camera_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
+
+    except ValueError:
+       print("[WARN] No contours found")
+    #cv.imshow("Diff", thresh)
     cv.imshow("Tof", img)
     cv.imshow("Camera", camera_frame)
     cv.waitKey(1) & 0xFF
