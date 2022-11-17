@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 import psutil
-#from lib import neopixel_spidev as neo
+from lib import neopixel_spidev as neo
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
