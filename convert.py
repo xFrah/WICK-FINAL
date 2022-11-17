@@ -1,6 +1,7 @@
 import tensorflow as tf
 
-converter = tf.lite.TFLiteConverter.from_saved_model("model")  # path to the SavedModel directory
+converter = tf.lite.TFLiteConverter.from_saved_model("model2")  # path to the SavedModel directory
+converter.optimizations = [tf.lite.Optimize.DEFAULT]
 # # This enables quantization
 # converter.optimizations = [tf.lite.Optimize.DEFAULT]
 # # This sets the representative dataset for quantization
@@ -15,7 +16,7 @@ converter = tf.lite.TFLiteConverter.from_saved_model("model")  # path to the Sav
 tflite_model = converter.convert()
 
 # Save the model.
-with open('model.tflite', 'wb') as f:
+with open('model_quant.tflite', 'wb') as f:
     f.write(tflite_model)
 
 print("Model converted")

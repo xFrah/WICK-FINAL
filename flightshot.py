@@ -22,6 +22,24 @@ lock = threading.Lock()
 target_distance = 150
 
 
+def get_diff(frame, background):
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gray = cv.GaussianBlur(gray, (21, 21), 0)
+    background = cv.cvtColor(background, cv.COLOR_BGR2GRAY)
+    background = cv.GaussianBlur(background, (21, 21), 0)
+    frameDelta = cv.absdiff(background, gray)
+    thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
+    thresh = cv.dilate(thresh, None, iterations=2)
+
+    conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    try:
+        x, y, w, h = cv.boundingRect(
+            np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+        return x, y, w, h
+    except ValueError:
+        print("[WARN] No contours found")
+
+
 def show_results(tof_frame, camera_frame, background):
     temp = numpy.array(tof_frame).reshape((4, 4))
     temp = [list(reversed(col)) for col in zip(*temp)]
@@ -48,23 +66,19 @@ def show_results(tof_frame, camera_frame, background):
     img = img.resize((240, 240), resample=Image.NEAREST)
     img = numpy.array(img)
 
-    gray = cv.cvtColor(camera_frame, cv.COLOR_BGR2GRAY)
-    gray = cv.GaussianBlur(gray, (21, 21), 0)
-    background = cv.cvtColor(background, cv.COLOR_BGR2GRAY)
-    background = cv.GaussianBlur(background, (21, 21), 0)
-    frameDelta = cv.absdiff(background, gray)
-    thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
-    thresh = cv.dilate(thresh, None, iterations=2)
+    rect = get_diff(camera_frame, background)
+    if rect:
+        x, y, w, h = rect
+        img = cv.rectangle(camera_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
 
-    conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    try:
-       x, y, w, h = cv.boundingRect(
-           np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
-       cv.rectangle(camera_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
+        cropped = img[y:y + h, x:x + w]
 
-    except ValueError:
-       print("[WARN] No contours found")
-    #cv.imshow("Diff", thresh)
+        if cropped.shape[0] > 0 and cropped.shape[1] > 0:
+            # convert to rgb
+            cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
+
+
+    # cv.imshow("Diff", thresh)
     cv.imshow("Tof", img)
     cv.imshow("Camera", camera_frame)
     cv.waitKey(1) & 0xFF
@@ -236,13 +250,12 @@ def main():
                     pixels.show()
                     movement = False
                     print(
-                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
 
                     # camera_buffer is time: frame, frame_number
                     # tof_buffer is time: (full_matrix, distance)
                     time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                    closest_frame_item = min(buffer.items(),
-                                             key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                    closest_frame_item = min(buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                     print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                     print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                     print(
