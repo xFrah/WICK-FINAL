@@ -54,7 +54,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
-    succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -75,7 +75,7 @@ def camera_thread(cap):
     backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=100, varThreshold=100)
     last_applied = datetime.datetime.now()
     while True:
-        # _, frame = cap.read()
+        _, frame = cap.read()
         # if (datetime.datetime.now() - last_applied).total_seconds() < 5:
         # fgMask = backSub.apply(frame)
         # cv.imshow('Frame', frame)
