@@ -22,6 +22,47 @@ lock = threading.Lock()
 target_distance = 150
 
 
+def show_results(tof_frame, camera_frame):
+    temp = numpy.array(tof_frame).reshape((4, 4))
+    temp = [list(reversed(col)) for col in zip(*temp)]
+    temp = flip_matrix(temp)
+    arr = numpy.flipud(temp).astype('float64')
+
+    # Scale view relative to the furthest distance
+    # distance = arr.max()
+
+    # Scale view to a fixed distance
+    distance = 512
+
+    # Scale and clip the result to 0-255
+    arr *= (255.0 / distance)
+    arr = numpy.clip(arr, 0, 255)
+
+    # Force to int
+    arr = arr.astype('uint8')
+
+    # Convert to a palette type image
+    img = Image.frombytes("P", (4, 4), arr)
+    img.putpalette(pal)
+    img = img.convert("RGB")
+    img = img.resize((240, 240), resample=Image.NEAREST)
+    img = numpy.array(img)
+
+    # fgMask = closest_frame_item[1][2]
+    # conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    # try:
+    #    x, y, w, h = cv.boundingRect(
+    #        np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+    #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
+    #
+    # except ValueError:
+    #    print("[WARN] No contours found")
+
+    cv.imshow("Tof", img)
+    cv.imshow("Camera", camera_frame)
+    cv.waitKey(1) & 0xFF
+
+
 def get_palette(name):
     cmap = cm.get_cmap(name, 256)
 
@@ -34,6 +75,9 @@ def get_palette(name):
     arr = arr.reshape((16, 16, 4))
     arr = arr[:, :, 0:3]
     return arr.tobytes()
+
+
+pal = get_palette("plasma")
 
 
 def setup_camera():
@@ -54,7 +98,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
-    #succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -131,7 +175,6 @@ def main():
     movement = False
     start = datetime.datetime.now()
     tof_buffer = {}
-    pal = get_palette("plasma")
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
@@ -175,51 +218,15 @@ def main():
                         print(
                             f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                        temp = numpy.array(time_target_item[1][0]).reshape((4, 4))
-                        temp = [list(reversed(col)) for col in zip(*temp)]
-                        temp = flip_matrix(temp)
-                        arr = numpy.flipud(temp).astype('float64')
+                        show_results(time_target_item[1][0], closest_frame_item[1][0])
 
-                        # Scale view relative to the furthest distance
-                        # distance = arr.max()
+                        time.sleep(1.5)
 
-                        # Scale view to a fixed distance
-                        distance = 512
-
-                        # Scale and clip the result to 0-255
-                        arr *= (255.0 / distance)
-                        arr = numpy.clip(arr, 0, 255)
-
-                        # Force to int
-                        arr = arr.astype('uint8')
-
-                        # Convert to a palette type image
-                        img = Image.frombytes("P", (4, 4), arr)
-                        img.putpalette(pal)
-                        img = img.convert("RGB")
-                        img = img.resize((240, 240), resample=Image.NEAREST)
-                        img = numpy.array(img)
-
-                        final_img = closest_frame_item[1][0]
-                        # fgMask = closest_frame_item[1][2]
-                        # conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-                        # try:
-                        #    x, y, w, h = cv.boundingRect(
-                        #        np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
-                        #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
-                        #
-                        # except ValueError:
-                        #    print("[WARN] No contours found")
-
-                        cv.imshow("Tof", img)
-                        # cv.imshow("Mask", fgMask)
-                        cv.imshow("Camera", final_img)
-                        cv.waitKey(1) & 0xFF
                     count = 0
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
                     # print(list(data.distance_mm[0]))
-                    print(asd, sum(asd) / len(asd))
+                    #  print(asd, sum(asd) / len(asd))
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
 
