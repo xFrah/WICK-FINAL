@@ -213,21 +213,24 @@ def main():
                         time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
                         closest_frame_item = min(camera_buffer.items(),
                                                  key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
-                        print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
-                        print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
-                        print(
-                            f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
+                    print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
+                    print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
+                    print(
+                        f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                        show_results(time_target_item[1][0], closest_frame_item[1][0])
+                    show_results(time_target_item[1][0], closest_frame_item[1][0])
 
-                        time.sleep(1.5)
+                    time.sleep(1.5)
 
-                        pixels.fill((255, 255, 255))
-                        pixels.show()
-                        camera_buffer = {}
-                        do_i_shoot = True
-                        time.sleep(0.125)
-                        do_i_shoot = False
+                    pixels.fill((255, 255, 255))
+                    pixels.show()
+                    camera_buffer = {}
+                    do_i_shoot = True
+                    time.sleep(0.125)
+                    do_i_shoot = False
+                    while len(camera_buffer) == 0:
+                        pass
+                    with lock:
                         pixels.fill((0, 0, 0))
                         pixels.show()
                         cam_buf_len = len(camera_buffer)
