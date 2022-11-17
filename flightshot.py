@@ -220,7 +220,7 @@ def main():
 
                         show_results(time_target_item[1][0], closest_frame_item[1][0])
 
-                        time.sleep(1.5)
+                        #time.sleep(1.5)
 
                     count = 0
                 else:
