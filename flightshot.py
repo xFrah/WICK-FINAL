@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import math
 import time
 
 import numpy as np
@@ -79,11 +80,11 @@ def show_results(tof_frame, camera_frame, background, interpreter):
             label, score = inference(cropped, interpreter)
             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
-
     # cv.imshow("Diff", thresh)
     cv.imshow("Cropped", cropped)
     cv.imshow("Camera", camera_frame)
     cv.waitKey(1) & 0xFF
+    return label, score
 
 
 def get_palette(name):
@@ -140,6 +141,38 @@ def setup_led():
     pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
+
+
+# change leds gradually to green
+def change_to_green(pixels):
+    for i in range(0, 255, 5):
+        pixels.fill((0, i, 0))
+        pixels.show()
+        time.sleep(0.03)
+
+
+# change leds gradually to green
+def black_from_green(pixels):
+    for i in range(0, 255, 5)[::-1]:
+        pixels.fill((0, i, 0))
+        pixels.show()
+        time.sleep(0.03)
+
+
+# change leds gradually to green
+def change_to_red(pixels):
+    for i in range(0, 255, 5):
+        pixels.fill((i, 0, 0))
+        pixels.show()
+        time.sleep(0.03)
+
+
+# change leds gradually to green
+def black_from_red(pixels):
+    for i in range(0, 255, 5)[::-1]:
+        pixels.fill((0, i, 0))
+        pixels.show()
+        time.sleep(0.03)
 
 
 def setup_edgetpu():
@@ -237,8 +270,6 @@ def inference(image, interpreter):
     # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
-
-
 def main():
     interpreter = setup_edgetpu()
     pixels = setup_led()
@@ -273,21 +304,29 @@ def main():
                     pixels.fill((1, 1, 1))
                     pixels.show()
                     movement = False
-                    print(f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                    print(
+                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
 
                     # camera_buffer is time: frame, frame_number
                     # tof_buffer is time: (full_matrix, distance)
                     time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                    closest_frame_item = min(buffer.items(), key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                    closest_frame_item = min(buffer.items(),
+                                             key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                     print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                     print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                     print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
-                    show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter)
+                    label, score = show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter)
 
-                    time.sleep(1.5)
-
+                    if label == "paper":
+                        change_to_green(pixels)
+                    else:
+                        change_to_red(pixels)
                     background = grab_background(pixels)
+                    if label == "paper":
+                        black_from_green(pixels)
+                    else:
+                        black_from_red(pixels)
                     count = 0
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
