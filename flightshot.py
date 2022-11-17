@@ -81,7 +81,7 @@ def show_results(tof_frame, camera_frame, background, interpreter):
 
 
     # cv.imshow("Diff", thresh)
-    cv.imshow("Tof", img)
+    cv.imshow("Cropped", cropped)
     cv.imshow("Camera", camera_frame)
     cv.waitKey(1) & 0xFF
 
