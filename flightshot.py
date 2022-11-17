@@ -143,6 +143,7 @@ def setup_led():
 
 
 def setup_edgetpu():
+    print("[INFO] Setting up EdgeTPU")
     interpreter = edgetpu.make_interpreter("/home/fra/Desktop/WICK-FINAL/model_quant_edgetpu.tflite")
     print("[INFO] EdgeTPU configured: {}".format(interpreter))
     interpreter.allocate_tensors()
