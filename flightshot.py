@@ -17,7 +17,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from helpers import get_white_mask, erode
 
 do_i_shoot = False
-camera_buffer = []
+camera_buffer = {}
 lock = threading.Lock()
 target_distance = 150
 
@@ -163,6 +163,16 @@ def flip_matrix(matrix):
     return numpy.flip(matrix, 1)
 
 
+def grab_buffer():
+    global camera_buffer
+    while len(camera_buffer) == 0:
+        pass
+    with lock:
+        copy = camera_buffer.copy()
+        camera_buffer = {}
+    return copy
+
+
 def main():
     pixels = setup_led()
     cap = setup_camera()
@@ -170,7 +180,6 @@ def main():
     threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
-    global camera_buffer
     count = 0
     movement = False
     start = datetime.datetime.now()
@@ -178,12 +187,11 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = [e for e in data.distance_mm[0][:16] if e < 200]
+            asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
                     pixels.fill((255, 255, 255))
                     pixels.show()
-                    camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
@@ -194,25 +202,18 @@ def main():
             else:
                 if len(asd) == 0:
                     do_i_shoot = False
+                    buffer = grab_buffer()
+                    pixels.fill((1, 1, 1))
+                    pixels.show()
                     movement = False
-                    while len(camera_buffer) == 0:
-                        pass
-                    with lock:
-                        pixels.fill((1, 1, 1))
-                        pixels.show()
-                        print(
-                            f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
-                        # for frame in camera_buffer:
-                        #     cv.imshow("frame", frame)
-                        #     cv.waitKey(1) & 0xFF
-                        #     time.sleep(0.2)
-                        # print("[INFO] Showed {} frames".format(len(camera_buffer)))
+                    print(
+                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
 
-                        # camera_buffer is time: frame, frame_number
-                        # tof_buffer is time: (full_matrix, distance)
-                        time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                        closest_frame_item = min(camera_buffer.items(),
-                                                 key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+                    # camera_buffer is time: frame, frame_number
+                    # tof_buffer is time: (full_matrix, distance)
+                    time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
+                    closest_frame_item = min(buffer.items(),
+                                             key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                     print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                     print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
                     print(
@@ -224,22 +225,18 @@ def main():
 
                     pixels.fill((255, 255, 255))
                     pixels.show()
-                    camera_buffer = {}
                     do_i_shoot = True
                     time.sleep(0.125)
                     do_i_shoot = False
-                    while len(camera_buffer) == 0:
-                        pass
-                    with lock:
-                        pixels.fill((0, 0, 0))
-                        pixels.show()
-                        cam_buf_len = len(camera_buffer)
-                        if cam_buf_len > 0:
-                            print(f"[INFO] Background frame count: {cam_buf_len}")
-                            cv.imshow("Background", max(camera_buffer.values(), key=lambda d: d[1])[0])
-                        else:
-                            print("[WARN] No background frames")
-                        cv.waitKey(1) & 0xFF
+                    pixels.fill((0, 0, 0))
+                    pixels.show()
+                    buffer = grab_buffer()
+                    if len(buffer) > 0:
+                        print(f"[INFO] Background frame count: {len(buffer)}")
+                        cv.imshow("Background", max(buffer.values(), key=lambda d: d[1])[0])
+                    else:
+                        print("[WARN] No background frames")
+                    cv.waitKey(1) & 0xFF
 
                     count = 0
                 else:
