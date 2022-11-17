@@ -54,7 +54,7 @@ def setup_camera():
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
-    # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+    succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
     return cap
@@ -62,7 +62,7 @@ def setup_camera():
 
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-    pixels.fill((255, 255, 255))
+    pixels.fill((0, 0, 0))
     pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
@@ -75,17 +75,18 @@ def camera_thread(cap):
     backSub = cv.createBackgroundSubtractorMOG2(detectShadows=True, history=100, varThreshold=100)
     last_applied = datetime.datetime.now()
     while True:
-        _, frame = cap.read()
-        #if (datetime.datetime.now() - last_applied).total_seconds() < 5:
-        #fgMask = backSub.apply(frame)
-        #cv.imshow('Frame', frame)
-        #cv.imshow('FG Mask', fgMask)
-        #cv.waitKey(1) & 0xFF
+        # _, frame = cap.read()
+        # if (datetime.datetime.now() - last_applied).total_seconds() < 5:
+        # fgMask = backSub.apply(frame)
+        # cv.imshow('Frame', frame)
+        # cv.imshow('FG Mask', fgMask)
+        # cv.waitKey(1) & 0xFF
         if do_i_shoot:
-            temp = {datetime.datetime.now(): (frame, 0)}
+            # temp = {datetime.datetime.now(): (frame, 0)}
+            temp = {}
             while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
-                #fgMask = backSub.apply(frame)
+                # fgMask = backSub.apply(frame)
                 # fgMask = get_white_mask(fgMask)
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp
@@ -99,7 +100,7 @@ def camera_thread(cap):
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
             with lock:
                 camera_buffer = temp.copy()
-            #last_applied = datetime.datetime.now()
+            # last_applied = datetime.datetime.now()
 
 
 def tof_setup():
@@ -137,7 +138,8 @@ def main():
             asd = [e for e in data.distance_mm[0][:16] if e < 200]
             if not movement:
                 if len(asd) > 0:
-                    # pixels.fill((255, 255, 255))
+                    pixels.fill((255, 255, 255))
+                    pixels.show()
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
@@ -153,7 +155,7 @@ def main():
                     while len(camera_buffer) == 0:
                         pass
                     with lock:
-                        # pixels.fill((1, 1, 1))
+                        pixels.fill((1, 1, 1))
                         pixels.show()
                         print(
                             f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(camera_buffer) / (datetime.datetime.now() - start).total_seconds())}")
@@ -170,7 +172,8 @@ def main():
                                                  key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
                         print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                         print(f"[INFO] Distances: {[dist[1] for dist in tof_buffer.values()]}")
-                        print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
+                        print(
+                            f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
 
                         temp = numpy.array(time_target_item[1][0]).reshape((4, 4))
                         temp = [list(reversed(col)) for col in zip(*temp)]
@@ -198,18 +201,18 @@ def main():
                         img = numpy.array(img)
 
                         final_img = closest_frame_item[1][0]
-                        #fgMask = closest_frame_item[1][2]
-                        #conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-                        #try:
+                        # fgMask = closest_frame_item[1][2]
+                        # conts, hierarchy = cv.findContours(fgMask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+                        # try:
                         #    x, y, w, h = cv.boundingRect(
                         #        np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
                         #    cv.rectangle(final_img, (x, y), (x + w - 1, y + h - 1), 255, 2)
                         #
-                        #except ValueError:
+                        # except ValueError:
                         #    print("[WARN] No contours found")
 
                         cv.imshow("Tof", img)
-                        #cv.imshow("Mask", fgMask)
+                        # cv.imshow("Mask", fgMask)
                         cv.imshow("Camera", final_img)
                         cv.waitKey(1) & 0xFF
                     count = 0
