@@ -77,7 +77,7 @@ def show_results(tof_frame, camera_frame, background, interpreter):
             # convert to rgb
             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
             label, score = inference(cropped, interpreter)
-            print(f"[INFO] Class: {label}, score: {score}%")
+            print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
 
     # cv.imshow("Diff", thresh)
