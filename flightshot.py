@@ -8,17 +8,12 @@ from lib import neopixel_spidev as neo
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
-from matplotlib import cm, pyplot as plt
+from matplotlib import cm
 import threading
 from pycoral.utils import edgetpu
-from pycoral.utils import dataset
 from pycoral.adapters import common
 from pycoral.adapters import classify
 import cv2 as cv
-
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-
-from helpers import get_white_mask, erode
 
 do_i_shoot = False
 camera_buffer = {}
