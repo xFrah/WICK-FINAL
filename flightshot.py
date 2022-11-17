@@ -220,7 +220,18 @@ def main():
 
                         show_results(time_target_item[1][0], closest_frame_item[1][0])
 
-                        #time.sleep(1.5)
+                        time.sleep(1.5)
+
+                        pixels.fill((255, 255, 255))
+                        pixels.show()
+                        camera_buffer = {}
+                        do_i_shoot = True
+                        time.sleep(0.125)
+                        do_i_shoot = False
+                        pixels.fill((0, 0, 0))
+                        pixels.show()
+                        cv.imshow("Target", max(camera_buffer.values(), key=lambda d: d[1])[0])
+                        cv.waitKey(1) & 0xFF
 
                     count = 0
                 else:
