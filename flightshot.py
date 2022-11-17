@@ -170,7 +170,7 @@ def change_to_red(pixels):
 # change leds gradually to green
 def black_from_red(pixels):
     for i in range(0, 255, 5)[::-1]:
-        pixels.fill((0, i, 0))
+        pixels.fill((i, 0, 0))
         pixels.show()
         time.sleep(0.03)
 
