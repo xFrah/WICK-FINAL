@@ -199,11 +199,9 @@ def grab_background(pixels):
     buffer = grab_buffer()
     if len(buffer) > 0:
         print(f"[INFO] Background frame count: {len(buffer)}")
-        cv.imshow("Background", max(buffer.values(), key=lambda d: d[1])[0])
+        return max(buffer.values(), key=lambda d: d[1])[0]
     else:
         print("[WARN] No background frames")
-    cv.waitKey(1) & 0xFF
-    return buffer
 
 
 def main():
