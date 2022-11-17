@@ -230,8 +230,12 @@ def main():
                         do_i_shoot = False
                         pixels.fill((0, 0, 0))
                         pixels.show()
-                        print(f"[INFO] Background frame count: {len(camera_buffer)}")
-                        cv.imshow("Target", max(camera_buffer.values(), key=lambda d: d[1])[0])
+                        cam_buf_len = len(camera_buffer)
+                        if cam_buf_len > 0:
+                            print(f"[INFO] Background frame count: {cam_buf_len}")
+                            cv.imshow("Target", max(camera_buffer.values(), key=lambda d: d[1])[0])
+                        else:
+                            print("[WARN] No background frames")
                         cv.waitKey(1) & 0xFF
 
                     count = 0
