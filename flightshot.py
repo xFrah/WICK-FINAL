@@ -135,9 +135,9 @@ def main():
         if vl53.data_ready():
             data = vl53.get_data()
             asd = sorted(data.distance_mm[0])[:5]
-            print(asd)
             if not movement:
                 if asd[2] < 300:
+                    print(asd)
                     # pixels.fill((255, 255, 255))
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
@@ -145,6 +145,7 @@ def main():
                     movement = True
                     print("[INFO] Movement detected")
                     start = datetime.datetime.now()
+                    count = 1
             else:
                 if asd[2] > 300:
                     do_i_shoot = False
@@ -215,6 +216,7 @@ def main():
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
                     # print(list(data.distance_mm[0]))
+                    print(asd)
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
                     count += 1
 
