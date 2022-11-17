@@ -217,7 +217,7 @@ def main():
                 else:
                     # print(f"Object at {sum(asd) / 3} mm")
                     # print(list(data.distance_mm[0]))
-                    print(asd)
+                    print(asd, sum(asd) / len(asd))
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0], sum(asd) / len(asd))
                     count += 1
 
