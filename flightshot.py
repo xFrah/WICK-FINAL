@@ -19,7 +19,7 @@ from helpers import get_white_mask, erode
 do_i_shoot = False
 camera_buffer = []
 lock = threading.Lock()
-target_distance = 150
+target_distance = 170
 
 
 def get_palette(name):
@@ -137,13 +137,14 @@ def main():
             asd = sorted(data.distance_mm[0][:16])[:3]
             if not movement:
                 if asd[2] < 300:
-                    print(asd)
+
                     # pixels.fill((255, 255, 255))
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
+                    print(asd, sum(asd) / len(asd))
                     start = datetime.datetime.now()
                     count = 1
             else:
