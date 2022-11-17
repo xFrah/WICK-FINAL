@@ -108,7 +108,7 @@ def tof_setup():
     print("[INFO] Done!")
     vl53.set_resolution(8 * 8)
     vl53.set_ranging_frequency_hz(15)
-    vl53.set_integration_time_ms(1)
+    # vl53.set_integration_time_ms(1)
     vl53.start_ranging()
     return vl53
 
@@ -135,8 +135,9 @@ def main():
         if vl53.data_ready():
             data = vl53.get_data()
             asd = sorted(data.distance_mm[0])[:5]
+            print(asd)
             if not movement:
-                if asd[2] < 200:
+                if asd[2] < 300:
                     # pixels.fill((255, 255, 255))
                     camera_buffer = {}
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0], sum(asd) / len(asd))}
@@ -145,7 +146,7 @@ def main():
                     print("[INFO] Movement detected")
                     start = datetime.datetime.now()
             else:
-                if asd[2] > 200:
+                if asd[2] > 300:
                     do_i_shoot = False
                     movement = False
                     while len(camera_buffer) == 0:
