@@ -230,7 +230,7 @@ def inference(image, interpreter):
     common.set_input(interpreter, image)
     interpreter.invoke()
     output = classify.get_classes(interpreter, top_k=1)
-    return label_dict[output[0]], output[1]
+    return label_dict[output[0][0]], output[0][1]
     # for i in range(len(output_data)):
     #     print(f"{label_dict[i]}: {output_data[i]}")
     # argmax = np.argmax(output_data)
