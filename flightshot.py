@@ -116,8 +116,8 @@ def setup_camera():
         end="")
 
     succ = {}
-    succ[cv.CAP_PROP_FRAME_WIDTH] = cap.set(cv.CAP_PROP_FRAME_WIDTH, 800)
-    succ[cv.CAP_PROP_FRAME_HEIGHT] = cap.set(cv.CAP_PROP_FRAME_HEIGHT, 600)
+    succ[cv.CAP_PROP_FRAME_WIDTH] = cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
+    succ[cv.CAP_PROP_FRAME_HEIGHT] = cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
     succ[cv.CAP_PROP_FPS] = cap.set(cv.CAP_PROP_FPS, 60)
     time.sleep(2)
     succ[cv.CAP_PROP_FOURCC] = cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
@@ -151,7 +151,7 @@ def setup_led():
 def change_to_green(pixels):
     for i in range(0, 255, 5):
         pixels.fill((0, i, 0))
-        #pixels.show()
+        pixels.show()
         time.sleep(0.03)
 
 
@@ -159,7 +159,7 @@ def change_to_green(pixels):
 def black_from_green(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((0, i, 0))
-        #pixels.show()
+        pixels.show()
         time.sleep(0.03)
 
 
@@ -167,7 +167,7 @@ def black_from_green(pixels):
 def change_to_red(pixels):
     for i in range(0, 255, 5):
         pixels.fill((i, 0, 0))
-        #pixels.show()
+        pixels.show()
         time.sleep(0.03)
 
 
@@ -175,7 +175,7 @@ def change_to_red(pixels):
 def black_from_red(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((i, 0, 0))
-        #pixels.show()
+        pixels.show()
         time.sleep(0.03)
 
 
