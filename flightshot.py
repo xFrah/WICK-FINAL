@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import json
 import math
 import time
 
@@ -236,6 +237,12 @@ def grab_buffer():
     return copy
 
 
+# function to write dictionary to json file
+def write_to_json(data, filename='data.json'):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
@@ -329,6 +336,7 @@ def main():
                         black_from_green(pixels)
                     else:
                         black_from_red(pixels)
+                    write_to_json({"id": 0, "riempimento": 0, "timestamp_last_svuotamento": datetime.datetime.now(), "wrong_class_counte": 0, "current_class": "paper"})
                     count = 0
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
