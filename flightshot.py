@@ -246,7 +246,7 @@ def write_to_json(data, filename='data.json'):
 
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
-    pixels.fill((255, 255, 255))
+    #pixels.fill((255, 255, 255))
     #pixels.show()
     do_i_shoot = True
     time.sleep(0.125)
