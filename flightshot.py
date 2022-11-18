@@ -139,7 +139,7 @@ def setup_camera():
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
-    pixels.show()
+    #pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
 
@@ -148,7 +148,7 @@ def setup_led():
 def change_to_green(pixels):
     for i in range(0, 255, 5):
         pixels.fill((0, i, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -156,7 +156,7 @@ def change_to_green(pixels):
 def black_from_green(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((0, i, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -164,7 +164,7 @@ def black_from_green(pixels):
 def change_to_red(pixels):
     for i in range(0, 255, 5):
         pixels.fill((i, 0, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -172,7 +172,7 @@ def change_to_red(pixels):
 def black_from_red(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((i, 0, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -246,13 +246,13 @@ def write_to_json(data, filename='data.json'):
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
-    pixels.show()
+    #pixels.show()
     do_i_shoot = True
     time.sleep(0.125)
     do_i_shoot = False
     if return_to_black:
         pixels.fill((0, 0, 0))
-        pixels.show()
+        #pixels.show()
     buffer = grab_buffer()
     if len(buffer) > 0:
         print(f"[INFO] Background frame count: {len(buffer)}")
@@ -278,12 +278,17 @@ def inference(image, interpreter):
     # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
-def main():
-    pixels = setup_led()
+def timed_fill(color, pixels):
+    r, g, b, w = pixels._parse_color(color)
     for i in range(24):
-        pixels[i] = (0, 255, 0)
+        pixels._set_item(i, r, g, b, w)
         pixels.show()
         time.sleep(1)
+
+
+def main():
+    pixels = setup_led()
+    timed_fill((0, 255, 0), pixels)
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
@@ -301,7 +306,7 @@ def main():
             if not movement:
                 if len(asd) > 0:
                     pixels.fill((255, 255, 255))
-                    pixels.show()
+                    #pixels.show()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
@@ -314,7 +319,7 @@ def main():
                     do_i_shoot = False
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
-                    pixels.show()
+                    #pixels.show()
                     movement = False
                     print(
                         f"[INFO] Stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
