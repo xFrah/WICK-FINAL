@@ -141,6 +141,7 @@ def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
     pixels.show()
+    time.sleep(2)
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
 
