@@ -303,11 +303,11 @@ def main():
     movement = False
     start = datetime.datetime.now()
     tof_buffer = {}
+    setup_not_done = False
     background = grab_background(pixels)
     _, frame = cap.read()
     cv.imshow("frame", frame)
     cv.waitKey(0)
-    setup_not_done = False
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
