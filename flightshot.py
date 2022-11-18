@@ -278,10 +278,6 @@ def inference(image, interpreter):
     # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
-for i in range(24):
-    pixels[i] = (255, 255, 255)
-
-
 def main():
     pixels = setup_led()
     for i in range(24):
