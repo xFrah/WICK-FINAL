@@ -306,7 +306,7 @@ def main():
                     pixels.show()
                     movement = False
                     print(
-                        f"[INFO] Movement stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        f"[INFO] Stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
 
                     # camera_buffer is time: frame, frame_number
                     # tof_buffer is time: (full_matrix, distance)
@@ -316,7 +316,7 @@ def main():
                     print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
                     print(f"[INFO] Distances: {[(round(dist[0].microsecond / 1000, 2), dist[1][1]) for dist in tof_buffer.items()]}")
                     print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][0]) for frame in buffer.items()]}")
-                    print(f"[INFO] Time distance: {abs(time_target_item[0] - closest_frame_item[0]).total_seconds()}")
+                    print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() / 1000, 2)}ms")
 
                     label, score = show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter)
 
