@@ -280,7 +280,6 @@ def inference(image, interpreter):
 
 def main():
     pixels = setup_led()
-    time.sleep(3)
     for i in range(24):
         pixels[i] = (0, 255, 0)
         pixels.show()
