@@ -309,7 +309,7 @@ def main():
     background = grab_background(pixels)
     _, frame = cap.read()
     cv.imshow("frame", frame)
-    cv.waitKey(0)
+    cv.waitKey(0) & 0xFF
     change_to_green(pixels)
     black_from_green(pixels)
     while True:
