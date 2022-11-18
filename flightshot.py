@@ -38,9 +38,10 @@ def get_diff(frame, background):
     try:
         x, y, w, h = cv.boundingRect(
             np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
-        return x, y, w, h
+        return (x, y, w, h), thresh
     except ValueError:
         print("[WARN] No contours found")
+    return thresh
 
 
 def show_results(tof_frame, camera_frame, background, interpreter):
@@ -69,7 +70,7 @@ def show_results(tof_frame, camera_frame, background, interpreter):
     img = img.resize((240, 240), resample=Image.NEAREST)
     img = numpy.array(img)
 
-    rect = get_diff(camera_frame, background)
+    rect, diff = get_diff(camera_frame, background)
     if rect:
         x, y, w, h = rect
         img = cv.rectangle(camera_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
@@ -84,7 +85,8 @@ def show_results(tof_frame, camera_frame, background, interpreter):
 
     # cv.imshow("Diff", thresh)
     cv.imshow("Cropped", cropped)
-    cv.imshow("Camera", camera_frame)
+    #cv.imshow("Camera", camera_frame)
+    cv.imshow("Diff", diff)
     cv.waitKey(1) & 0xFF
     return label, score
 
