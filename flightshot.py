@@ -294,7 +294,7 @@ def timed_fill(pixels):
 
 def main():
     pixels = setup_led()
-    threading.Thread(target=timed_fill, args=(pixels,)).start()
+    #threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
@@ -304,12 +304,14 @@ def main():
     movement = False
     start = datetime.datetime.now()
     tof_buffer = {}
-    global setup_not_done
-    setup_not_done = False
+    #global setup_not_done
+    #setup_not_done = False
     background = grab_background(pixels)
     _, frame = cap.read()
     cv.imshow("frame", frame)
     cv.waitKey(0)
+    change_to_green(pixels)
+    black_from_green(pixels)
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
