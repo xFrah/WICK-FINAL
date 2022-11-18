@@ -374,7 +374,7 @@ def main():
                         if vl53.data_ready():
                             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
                             avg = sum(data) / len(data)
-                            percentage = (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)
+                            percentage = 1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)
                             print(f"[INFO] {avg}mm, {percentage * 100}%")
                             write_to_json({"id": 0, "riempimento": percentage, "timestamp_last_svuotamento": last_svuotamento, "wrong_class_counter": wrong_class_counter, "current_class": current_class})
                             break
