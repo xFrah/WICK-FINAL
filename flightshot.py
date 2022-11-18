@@ -149,6 +149,7 @@ def setup_led():
 
 # change leds gradually to green
 def change_to_green(pixels):
+    print(print(pixels))
     pixels.fill((0, 0, 0))
     pixels.show()
     for i in range(0, 255, 5):
