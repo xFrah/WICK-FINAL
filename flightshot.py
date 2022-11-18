@@ -44,7 +44,7 @@ def get_diff(frame, background):
     return thresh
 
 
-def show_results(tof_frame, camera_frame, background, interpreter):
+def show_results(tof_frame, camera_frame, background, interpreter, pixels):
     temp = numpy.array(tof_frame).reshape((4, 4))
     temp = [list(reversed(col)) for col in zip(*temp)]
     temp = flip_matrix(temp)
@@ -82,6 +82,16 @@ def show_results(tof_frame, camera_frame, background, interpreter):
             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
             label, score = inference(cropped, interpreter)
             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
+
+            if label == "paper":
+                change_to_green(pixels)
+            else:
+                change_to_red(pixels)
+            background = grab_background(pixels, return_to_black=False)
+            if label == "paper":
+                black_from_green(pixels)
+            else:
+                black_from_red(pixels)
 
     # cv.imshow("Diff", thresh)
     cv.imshow("Cropped", cropped)
@@ -349,17 +359,7 @@ def main():
                     print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][1]) for frame in buffer.items()]}")
                     print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() * 1000, 2)}ms")
 
-                    label, score = show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter)
-
-                    if label == "paper":
-                        change_to_green(pixels)
-                    else:
-                        change_to_red(pixels)
-                    background = grab_background(pixels, return_to_black=False)
-                    if label == "paper":
-                        black_from_green(pixels)
-                    else:
-                        black_from_red(pixels)
+                    show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter, pixels)
                     write_to_json({"id": 0, "riempimento": 0, "timestamp_last_svuotamento": datetime.datetime.now(), "wrong_class_counter": 0, "current_class": "paper"})
                     count = 0
                 else:
