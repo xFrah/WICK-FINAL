@@ -321,7 +321,7 @@ def main():
             if not movement:
                 if len(asd) > 0:
                     pixels.fill((255, 255, 255))
-                    #pixels.show()
+                    pixels.show()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
