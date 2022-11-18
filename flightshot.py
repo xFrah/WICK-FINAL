@@ -298,6 +298,7 @@ def main():
     threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
     global do_i_shoot
+    global setup_not_done
     count = 0
     movement = False
     start = datetime.datetime.now()
@@ -306,6 +307,7 @@ def main():
     _, frame = cap.read()
     cv.imshow("frame", frame)
     cv.waitKey(0)
+    setup_not_done = False
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
