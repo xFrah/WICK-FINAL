@@ -307,9 +307,9 @@ def main():
     #global setup_not_done
     #setup_not_done = False
     background = grab_background(pixels)
-    _, frame = cap.read()
-    cv.imshow("frame", frame)
-    cv.waitKey(0) & 0xFF
+    #_, frame = cap.read()
+    #cv.imshow("frame", frame)
+    #cv.waitKey(0) & 0xFF
     change_to_green(pixels)
     black_from_green(pixels)
     while True:
