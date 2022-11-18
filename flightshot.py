@@ -353,7 +353,7 @@ def main():
                         change_to_green(pixels)
                     else:
                         change_to_red(pixels)
-                    background = grab_background(pixels)
+                    background = grab_background(pixels, return_to_black=False)
                     if label == "paper":
                         black_from_green(pixels)
                     else:
