@@ -345,6 +345,10 @@ def main():
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
                     pixels.show()
+                    pixels.fill((1, 1, 1))
+                    pixels.show()
+                    pixels.fill((1, 1, 1))
+                    pixels.show()
                     movement = False
                     print(
                         f"[INFO] Stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
