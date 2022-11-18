@@ -281,6 +281,7 @@ def inference(image, interpreter):
 def timed_fill(color, pixels):
     r, g, b, w = pixels._parse_color(color)
     for i in range(24):
+        print(f"[INFO] Filling {i} pixel")
         pixels._set_item(i, r, g, b, w)
         pixels.show()
         time.sleep(1)
