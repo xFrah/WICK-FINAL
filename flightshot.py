@@ -22,6 +22,7 @@ camera_buffer = {}
 lock = threading.Lock()
 target_distance = 150
 label_dict = {0: "plastic", 1: "paper"}
+setup_not_done = True
 
 
 def get_diff(frame, background):
@@ -278,18 +279,20 @@ def inference(image, interpreter):
     # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
-def timed_fill(color, pixels):
-    r, g, b, w = pixels._parse_color(color)
-    for i in range(24):
-        print(f"[INFO] Filling {i} pixel")
-        pixels._set_item(i, r, g, b, w)
-        pixels.show()
-        time.sleep(1)
+def timed_fill(pixels):
+    global setup_not_done
+    while setup_not_done:
+        for i in range(0, 255, 5):
+            pixels.fill((0, 0, i))
+            time.sleep(0.03)
+        for i in range(0, 255, 5)[::-1]:
+            pixels.fill((0, 0, i))
+            time.sleep(0.03)
 
 
 def main():
     pixels = setup_led()
-    timed_fill((0, 255, 0), pixels)
+    threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
@@ -300,6 +303,9 @@ def main():
     start = datetime.datetime.now()
     tof_buffer = {}
     background = grab_background(pixels)
+    _, frame = cap.read()
+    cv.imshow("frame", frame)
+    cv.waitKey(0)
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
