@@ -236,15 +236,16 @@ def grab_buffer():
     return copy
 
 
-def grab_background(pixels):
+def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
     pixels.show()
     do_i_shoot = True
     time.sleep(0.125)
     do_i_shoot = False
-    pixels.fill((0, 0, 0))
-    pixels.show()
+    if return_to_black:
+        pixels.fill((0, 0, 0))
+        pixels.show()
     buffer = grab_buffer()
     if len(buffer) > 0:
         print(f"[INFO] Background frame count: {len(buffer)}")
