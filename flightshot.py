@@ -140,7 +140,7 @@ def setup_camera():
 def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
-    pixels.show()
+    #pixels.show()
     print("[INFO] LEDs configured: {}".format(pixels))
     return pixels
 
@@ -246,7 +246,7 @@ def write_to_json(data, filename='data.json'):
 
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
-    #pixels.fill((255, 255, 255))
+    pixels.fill((255, 255, 255))
     #pixels.show()
     do_i_shoot = True
     time.sleep(0.125)
@@ -308,13 +308,14 @@ def main():
     _, frame = cap.read()
     cv.imshow("frame", frame)
     cv.waitKey(0)
+
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
-                    #pixels.fill((255, 255, 255))
+                    pixels.fill((255, 255, 255))
                     #pixels.show()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
