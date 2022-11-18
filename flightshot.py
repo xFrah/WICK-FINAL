@@ -23,6 +23,12 @@ lock = threading.Lock()
 target_distance = 150
 label_dict = {0: "plastic", 1: "paper"}
 setup_not_done = True
+current_class = "paper"
+wrong_class_counter = 0
+last_svuotamento = datetime.datetime.now()
+bin_id = 0
+altezza_cestino = 560
+soglia_pieno = 200
 
 
 def get_diff(frame, background):
@@ -82,16 +88,6 @@ def show_results(tof_frame, camera_frame, background, interpreter, pixels):
             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
             label, score = inference(cropped, interpreter)
             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
-
-            if label == "paper":
-                change_to_green(pixels)
-            else:
-                change_to_red(pixels)
-            background = grab_background(pixels, return_to_black=False)
-            if label == "paper":
-                black_from_green(pixels)
-            else:
-                black_from_red(pixels)
 
     # cv.imshow("Diff", thresh)
     cv.imshow("Cropped", cropped)
@@ -363,8 +359,24 @@ def main():
                     print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][1]) for frame in buffer.items()]}")
                     print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() * 1000, 2)}ms")
 
-                    show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter, pixels)
-                    write_to_json({"id": 0, "riempimento": 0, "timestamp_last_svuotamento": datetime.datetime.now(), "wrong_class_counter": 0, "current_class": "paper"})
+                    label, score = show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter, pixels)
+                    if label == "paper":
+                        change_to_green(pixels)
+                    else:
+                        change_to_red(pixels)
+                    background = grab_background(pixels, return_to_black=False)
+                    if label == "paper":
+                        black_from_green(pixels)
+                    else:
+                        black_from_red(pixels)
+
+                    while True:
+                        if vl53.data_ready():
+                            data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
+                            avg = sum(data) / len(data)
+                            percentage = (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)
+                            write_to_json({"id": 0, "riempimento": percentage, "timestamp_last_svuotamento": last_svuotamento, "wrong_class_counter": wrong_class_counter, "current_class": current_class})
+                            break
                     count = 0
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
