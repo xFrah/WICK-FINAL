@@ -149,7 +149,7 @@ def setup_led():
 def change_to_green(pixels):
     for i in range(0, 255, 5):
         pixels.fill((0, i, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -157,7 +157,7 @@ def change_to_green(pixels):
 def black_from_green(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((0, i, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -165,7 +165,7 @@ def black_from_green(pixels):
 def change_to_red(pixels):
     for i in range(0, 255, 5):
         pixels.fill((i, 0, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -173,7 +173,7 @@ def change_to_red(pixels):
 def black_from_red(pixels):
     for i in range(0, 255, 5)[::-1]:
         pixels.fill((i, 0, 0))
-        pixels.show()
+        #pixels.show()
         time.sleep(0.03)
 
 
@@ -284,11 +284,11 @@ def timed_fill(pixels):
     while setup_not_done:
         for i in range(0, 255, 5):
             pixels.fill((0, 0, i))
-            pixels.show()
+            #pixels.show()
             time.sleep(0.03)
         for i in range(0, 255, 5)[::-1]:
             pixels.fill((0, 0, i))
-            pixels.show()
+            #pixels.show()
             time.sleep(0.03)
 
 
@@ -332,7 +332,7 @@ def main():
                     do_i_shoot = False
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
-                    #pixels.show()
+                    pixels.show()
                     movement = False
                     print(
                         f"[INFO] Stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
@@ -364,7 +364,7 @@ def main():
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
 
-        time.sleep(0.002)  # Avoid polling *too* fast
+        time.sleep(0.003)  # Avoid polling *too* fast
 
 
 if __name__ == '__main__':
