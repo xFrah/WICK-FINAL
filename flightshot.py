@@ -278,9 +278,17 @@ def inference(image, interpreter):
     # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
+for i in range(24):
+    pixels[i] = (255, 255, 255)
+
+
 def main():
-    interpreter = setup_edgetpu()
     pixels = setup_led()
+    for i in range(24):
+        pixels[i] = (0, 255, 0)
+        pixels.show()
+        time.sleep(1)
+    interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
     vl53 = tof_setup()
@@ -336,7 +344,7 @@ def main():
                         black_from_green(pixels)
                     else:
                         black_from_red(pixels)
-                    write_to_json({"id": 0, "riempimento": 0, "timestamp_last_svuotamento": datetime.datetime.now(), "wrong_class_counte": 0, "current_class": "paper"})
+                    write_to_json({"id": 0, "riempimento": 0, "timestamp_last_svuotamento": datetime.datetime.now(), "wrong_class_counter": 0, "current_class": "paper"})
                     count = 0
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
