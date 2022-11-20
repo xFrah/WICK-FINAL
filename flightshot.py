@@ -90,8 +90,8 @@ def show_results(tof_frame, camera_frame, background, interpreter, pixels):
             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
     # cv.imshow("Diff", thresh)
-    cv.imshow("Cropped", cropped)
-    #cv.imshow("Camera", camera_frame)
+    #cv.imshow("Cropped", cropped)
+    cv.imshow("Camera", camera_frame)
     cv.imshow("Diff", diff)
     cv.waitKey(1) & 0xFF
     return label, score
