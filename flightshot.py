@@ -399,7 +399,7 @@ def get_trash_level(vl53):
         if vl53.data_ready():
             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
             avg = sum(data) / len(data)
-            percentage = (1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)) * 100
+            percentage = int((1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)) * 100)
             return avg, percentage
         time.sleep(0.003)
 
