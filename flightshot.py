@@ -128,7 +128,7 @@ def setup_camera():
     succ = {}
     succ[cv.CAP_PROP_FRAME_WIDTH] = cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
     succ[cv.CAP_PROP_FRAME_HEIGHT] = cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
-    succ[cv.CAP_PROP_FPS] = cap.set(cv.CAP_PROP_FPS, 60)
+    succ[cv.CAP_PROP_FPS] = cap.set(cv.CAP_PROP_FPS, 120)
     time.sleep(2)
     succ[cv.CAP_PROP_FOURCC] = cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
     # time.sleep(2)
