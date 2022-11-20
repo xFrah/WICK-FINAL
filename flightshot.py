@@ -2,6 +2,9 @@
 import datetime
 import json
 import math
+import os
+import random
+import signal
 import time
 
 import numpy as np
@@ -18,17 +21,21 @@ from pycoral.adapters import classify
 import cv2 as cv
 
 do_i_shoot = False
+setup_not_done = True
+data_ready = False
 camera_buffer = {}
-lock = threading.Lock()
+data_buffer = {}
+camera_lock = threading.Lock()
+data_lock = threading.Lock()
 target_distance = 150
 label_dict = {0: "plastic", 1: "paper"}
-setup_not_done = True
 current_class = "paper"
 wrong_class_counter = 0
 last_svuotamento = datetime.datetime.now()
 bin_id = 0
 altezza_cestino = 600
 soglia_pieno = 200
+valid_classes = ["Plastica", "Carta"]
 
 
 def get_diff(frame, background):
@@ -90,7 +97,7 @@ def show_results(tof_frame, camera_frame, background, interpreter, pixels):
             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
     # cv.imshow("Diff", thresh)
-    #cv.imshow("Cropped", cropped)
+    # cv.imshow("Cropped", cropped)
     cv.imshow("Camera", camera_frame)
     cv.imshow("Diff", diff)
     cv.waitKey(1) & 0xFF
@@ -127,7 +134,7 @@ def setup_camera():
     succ[cv.CAP_PROP_FPS] = cap.set(cv.CAP_PROP_FPS, 60)
     time.sleep(2)
     succ[cv.CAP_PROP_FOURCC] = cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-    #time.sleep(2)
+    # time.sleep(2)
     succ[cv.CAP_PROP_AUTO_EXPOSURE] = cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     time.sleep(2)
     succ[cv.CAP_PROP_EXPOSURE] = cap.set(cv.CAP_PROP_EXPOSURE, 12)
@@ -215,9 +222,93 @@ def camera_thread(cap):
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-            with lock:
+            with camera_lock:
                 camera_buffer = temp.copy()
-            # last_applied = datetime.datetime.now()
+
+
+def data_manager_thread():
+    global data_ready
+    # instantiate mqtt client
+
+    while True:
+        time.sleep(30)
+        if data_ready:
+            print("[INFO] Data is ready, saving & uploading...")
+            with data_lock:
+                data = data_buffer.copy()
+                data_buffer.clear()
+                data_ready = False
+            save_buffer = {
+                "riempimento": data["riempimento"][-1],
+                "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
+                "wrong_class_counter": data["wrong_class_counter"][-1]
+            }
+            # todo send save_buffer via mqtt
+
+            with open("data.json", "w") as f:
+                json.dump(save_buffer, f)
+
+            add_lines_csv(data)
+            print("[INFO] Data saved.")
+
+
+def add_lines_csv(data):
+    with open("history.csv", "a") as f:
+        for percentage, timestamp, wrong_class_counter in zip(data["riempimento"], data["timestamp"], data["wrong_class_counter"]):
+            f.write(f"{percentage},{timestamp},{wrong_class_counter}\n")
+
+
+def create_csv_file():
+    with open("history.csv", "w") as f:
+        f.write("riempimento,timestamp,wrong_class_counter\n")
+
+
+def json_setup():
+    global bin_id
+    global current_class
+
+    if not os.path.exists("history.csv"):
+        create_csv_file()
+
+    if not os.path.exists("config.json"):
+        with open("history.json", "w") as f:
+            json.dump({"id": random.randint(0, 65534), "current_class": "None"}, f)
+        print(f'[INFO] Created config.json with id {bin_id}, edit "current_class" field to continue..."')
+        kill()
+    else:
+        with open("history.json", "r") as f:
+            data = json.load(f)
+        try:
+            bin_id = data["id"]
+            current_class = data["current_class"]
+        except KeyError:
+            print("[ERROR] config.json is corrupted, the program will run with id 65535 and class paper, but you should delete the config file and/or reconfigure.")
+            bin_id = 65535
+            current_class = "paper"
+            return
+        if not isinstance(bin_id, int):
+            print('[ERROR] "bin_id" is not an int, please edit config.json')
+            kill()
+        if not isinstance(current_class, str):
+            print('[ERROR] "current_class" is not a valid input, please edit config.json(did you put the quotes?)')
+            kill()
+        if current_class not in valid_classes:
+            print(f'[ERROR] "{current_class}" is not a valid material, please edit config.json')
+            kill()
+        print(f"[INFO] Loaded config.json, id: {bin_id}, current_class: {current_class}")
+
+
+# close all the threads and end the process
+def kill():
+    os.kill(os.getpid(), signal.SIGTERM)
+
+
+def pass_data(data_dict):
+    global data_ready
+    with data_lock:
+        data_ready = True
+        for key, value in data_dict.items():
+            data_buffer[key] = data_buffer.get(key, []) + [value]
 
 
 def tof_setup():
@@ -240,7 +331,7 @@ def grab_buffer():
     global camera_buffer
     while len(camera_buffer) == 0:
         pass
-    with lock:
+    with camera_lock:
         copy = camera_buffer.copy()
         camera_buffer = {}
     return copy
@@ -281,10 +372,6 @@ def inference(image, interpreter):
     interpreter.invoke()
     output = classify.get_classes(interpreter, top_k=1)
     return label_dict[output[0][0]], output[0][1]
-    # for i in range(len(output_data)):
-    #     print(f"{label_dict[i]}: {output_data[i]}")
-    # argmax = np.argmax(output_data)
-    # print(f"Predicted class: {label_dict[argmax]}, {int(output_data[argmax]*100)}%")
 
 
 def timed_fill(pixels):
@@ -292,34 +379,61 @@ def timed_fill(pixels):
     while setup_not_done:
         for i in range(0, 255, 5):
             pixels.fill((0, 0, i))
-            #pixels.show()
+            # pixels.show()
             time.sleep(0.03)
         for i in range(0, 255, 5)[::-1]:
             pixels.fill((0, 0, i))
-            #pixels.show()
+            # pixels.show()
             time.sleep(0.03)
 
 
-def main():
+def get_trash_level(vl53):
+    while True:
+        if vl53.data_ready():
+            data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
+            avg = sum(data) / len(data)
+            percentage = (1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)) * 100
+            print(f"[INFO] {avg}mm, {percentage}%")
+            return avg, percentage
+        time.sleep(0.003)
+
+
+def get_frame_at_distance(tof_buffer, cap_buffer, distance):
+    # camera_buffer is time: frame, frame_number
+    # tof_buffer is time: (full_matrix, distance)
+    time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - distance))
+    closest_frame_item = min(cap_buffer.items(),
+                             key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
+    print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
+    print(f"[INFO] Distances: {[(round(dist[0].microsecond / 1000, 2), dist[1][1]) for dist in tof_buffer.items()]}")
+    print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][1]) for frame in cap_buffer.items()]}")
+    print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() * 1000, 2)}ms")
+    return time_target_item[1][0], closest_frame_item[1][0]
+
+
+def setup():
     pixels = setup_led()
-    #threading.Thread(target=timed_fill, args=(pixels,)).start()
+    # threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
+    threading.Thread(target=data_manager_thread).start()
     vl53 = tof_setup()
+    tof_buffer = {}
+    # global setup_not_done
+    # setup_not_done = False
+    background = grab_background(pixels)
+    change_to_green(pixels)
+    black_from_green(pixels)
+    return pixels, interpreter, cap, vl53, background, tof_buffer
+
+
+def main():
     global do_i_shoot
+    pixels, interpreter, cap, vl53, background, tof_buffer = setup()
     count = 0
     movement = False
     start = datetime.datetime.now()
-    tof_buffer = {}
-    #global setup_not_done
-    #setup_not_done = False
-    background = grab_background(pixels)
-    #_, frame = cap.read()
-    #cv.imshow("frame", frame)
-    #cv.waitKey(0) & 0xFF
-    change_to_green(pixels)
-    black_from_green(pixels)
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
@@ -347,20 +461,12 @@ def main():
                     pixels.fill((1, 1, 1))
                     pixels.show()
                     movement = False
-                    print(
-                        f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
+                    print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
-                    # camera_buffer is time: frame, frame_number
-                    # tof_buffer is time: (full_matrix, distance)
-                    time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - target_distance))
-                    closest_frame_item = min(buffer.items(),
-                                             key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
-                    print(f"[INFO] Target is frame {closest_frame_item[1][1]} at {time_target_item[1][1]}mm")
-                    print(f"[INFO] Distances: {[(round(dist[0].microsecond / 1000, 2), dist[1][1]) for dist in tof_buffer.items()]}")
-                    print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][1]) for frame in buffer.items()]}")
-                    print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() * 1000, 2)}ms")
+                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, target_distance)
 
-                    label, score = show_results(time_target_item[1][0], closest_frame_item[1][0], background, interpreter, pixels)
+                    label, score = show_results(tof_target_frame, camera_target_frame, background, interpreter, pixels)
+
                     if label == "paper":
                         change_to_green(pixels)
                     else:
@@ -371,15 +477,11 @@ def main():
                     else:
                         black_from_red(pixels)
 
-                    while True:
-                        if vl53.data_ready():
-                            data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
-                            avg = sum(data) / len(data)
-                            percentage = 1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)
-                            print(f"[INFO] {avg}mm, {percentage * 100}%")
-                            write_to_json({"id": 0, "riempimento": percentage, "timestamp_last_svuotamento": last_svuotamento, "wrong_class_counter": wrong_class_counter, "current_class": current_class})
-                            break
+                    avg, percentage = get_trash_level(vl53)
+                    print(f"[INFO] {avg}mm, {percentage * 100}%")
+                    pass_data({"riempimento": percentage, "wrong_class_counter": wrong_class_counter, "timestamp": str(now.isoformat())})
                     count = 0
+                    print("[INFO] Waiting for movement...")
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
