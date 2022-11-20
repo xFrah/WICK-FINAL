@@ -278,7 +278,8 @@ def files_setup():
 
     if not os.path.exists("config.json"):
         with open("config.json", "w") as f:
-            json.dump({"id": random.randint(0, 65534), "current_class": "None"}, f)
+            bin_id = random.randint(0, 65534)
+            json.dump({"id": bin_id, "current_class": "None"}, f)
         print(f'[INFO] Created config.json with id {bin_id}, edit "current_class" field to continue..."')
         kill()
     else:
