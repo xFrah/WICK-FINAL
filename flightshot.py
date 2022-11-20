@@ -316,7 +316,11 @@ def files_setup():
             current_class = "paper"
             errors += 1
 
-        print(f"[INFO] Loaded config.json, id: {bin_id}, current_class: {current_class}")
+        if errors > 0:
+            print(f"[ERROR] WICK couldn't start normally, {errors} errors occurred.")
+        else:
+            printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
+            print(f"[INFO] Loaded config.json successfully:\n{printable_list}\neverything is fine...")
 
 
 # close all the threads and end the process
