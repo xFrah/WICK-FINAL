@@ -338,6 +338,7 @@ def main():
             else:
                 if len(asd) == 0:
                     do_i_shoot = False
+                    now = datetime.datetime.now()
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
                     pixels.show()
@@ -347,7 +348,7 @@ def main():
                     pixels.show()
                     movement = False
                     print(
-                        f"[INFO] Stopped, FPS: {(count / (datetime.datetime.now() - start).total_seconds(), len(buffer) / (datetime.datetime.now() - start).total_seconds())}")
+                        f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
                     # camera_buffer is time: frame, frame_number
                     # tof_buffer is time: (full_matrix, distance)
