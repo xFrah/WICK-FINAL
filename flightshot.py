@@ -254,7 +254,7 @@ def data_manager_thread():
                 json.dump(save_buffer, f)
 
             add_lines_csv(data)
-            print(f"[INFO] Data saved in {datetime.datetime.now() - start}s.")
+            print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
 
 
 def add_lines_csv(data):
