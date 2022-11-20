@@ -266,6 +266,7 @@ def add_lines_csv(data):
 def create_csv_file():
     with open("history.csv", "w") as f:
         f.write("riempimento,timestamp,wrong_class_counter\n")
+    print("[INFO] CSV file created.")
 
 
 def files_setup():
@@ -276,12 +277,12 @@ def files_setup():
         create_csv_file()
 
     if not os.path.exists("config.json"):
-        with open("history.json", "w") as f:
+        with open("config.json", "w") as f:
             json.dump({"id": random.randint(0, 65534), "current_class": "None"}, f)
         print(f'[INFO] Created config.json with id {bin_id}, edit "current_class" field to continue..."')
         kill()
     else:
-        with open("history.json", "r") as f:
+        with open("config.json", "r") as f:
             data = json.load(f)
         try:
             bin_id = data["id"]
