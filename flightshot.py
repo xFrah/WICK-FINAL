@@ -233,6 +233,7 @@ def data_manager_thread():
     while True:
         time.sleep(30)
         if data_ready:
+            start = datetime.datetime.now()
             print("[INFO] Data is ready, saving & uploading...")
             with data_lock:
                 data = data_buffer.copy()
@@ -249,7 +250,7 @@ def data_manager_thread():
                 json.dump(save_buffer, f)
 
             add_lines_csv(data)
-            print("[INFO] Data saved.")
+            print(f"[INFO] Data saved in {datetime.datetime.now() - start}s.")
 
 
 def add_lines_csv(data):
@@ -393,7 +394,6 @@ def get_trash_level(vl53):
             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
             avg = sum(data) / len(data)
             percentage = (1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)) * 100
-            print(f"[INFO] {avg}mm, {percentage}%")
             return avg, percentage
         time.sleep(0.003)
 
