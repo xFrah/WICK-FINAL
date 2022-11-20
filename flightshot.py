@@ -153,10 +153,11 @@ def setup_camera():
 
 
 def setup_led():
+    print("[INFO] Configuring LEDs: ", end="")
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
     pixels.show()
-    print("[INFO] LEDs configured: {}".format(pixels))
+    print("Done")
     return pixels
 
 
@@ -193,11 +194,10 @@ def black_from_red(pixels):
 
 
 def setup_edgetpu():
-    print("[INFO] Setting up EdgeTPU")
+    print("[INFO] Configuring EdgeTPU: ", end="")
     interpreter = edgetpu.make_interpreter("/home/fra/Desktop/WICK-FINAL/model_quant_edgetpu.tflite")
-    print("[INFO] EdgeTPU configured: {}".format(interpreter))
     interpreter.allocate_tensors()
-    print("[INFO] Tensors allocated")
+    print("Done")
     return interpreter
 
 
@@ -228,8 +228,6 @@ def camera_thread(cap):
 
 def data_manager_thread():
     global data_ready
-    # instantiate mqtt client
-
     while True:
         time.sleep(30)
         if data_ready:
@@ -320,7 +318,7 @@ def files_setup():
             print(f"[ERROR] WICK couldn't start normally, {errors} errors occurred.")
         else:
             printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
-            print(f"[INFO] Loaded config.json successfully:\n{printable_list}\neverything is fine...")
+            print(f"[INFO] Loaded config.json successfully:\n{printable_list}")
 
 
 # close all the threads and end the process
@@ -337,13 +335,13 @@ def pass_data(data_dict):
 
 
 def tof_setup():
-    print("[INFO] Uploading firmware, please wait...")
+    print("[INFO] Configuring ToF: ", end="")
     vl53 = vl53l5cx.VL53L5CX()
-    print("[INFO] Done!")
     vl53.set_resolution(4 * 4)
     vl53.set_ranging_frequency_hz(60)
     vl53.set_integration_time_ms(5)
     vl53.start_ranging()
+    print("[INFO] Done!")
     return vl53
 
 
