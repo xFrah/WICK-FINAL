@@ -145,7 +145,7 @@ def setup_camera():
     while c < 100:
         _, frame = cap.read()
         c += 1
-    print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [cap.get(item) if value else 'FAILED' for item, value in succ.items()]))}")
+    print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
     return cap
 
 
