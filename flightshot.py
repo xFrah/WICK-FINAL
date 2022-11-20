@@ -123,7 +123,7 @@ pal = get_palette("plasma")
 
 def setup_camera():
     cap = cv.VideoCapture(0)
-    print("[INFO] Configuring camera:", end=" ")
+    print("[INFO] Configuring camera:", end=" ", flush=True)
 
     succ = {}
     succ[cv.CAP_PROP_FRAME_WIDTH] = cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
@@ -150,7 +150,7 @@ def setup_camera():
 
 
 def setup_led():
-    print("[INFO] Configuring LEDs:", end=" ")
+    print("[INFO] Configuring LEDs:", end=" ", flush=True)
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
     pixels.show()
@@ -191,7 +191,7 @@ def black_from_red(pixels):
 
 
 def setup_edgetpu():
-    print("[INFO] Configuring EdgeTPU:", end=" ")
+    print("[INFO] Configuring EdgeTPU:", end=" ", flush=True)
     interpreter = edgetpu.make_interpreter("/home/fra/Desktop/WICK-FINAL/model_quant_edgetpu.tflite")
     interpreter.allocate_tensors()
     print("Done.")
@@ -259,7 +259,7 @@ def add_lines_csv(data):
 
 
 def create_csv_file():
-    print("[INFO] Creating csv file:", end=" ")
+    print("[INFO] Creating csv file:", end=" ", flush=True)
     with open("history.csv", "w") as f:
         f.write("riempimento,timestamp,wrong_class_counter\n")
     print("Done.")
@@ -333,13 +333,13 @@ def pass_data(data_dict):
 
 
 def tof_setup():
-    print("[INFO] Configuring ToF:", end=" ")
+    print("[INFO] Configuring ToF:", end=" ", flush=True)
     vl53 = vl53l5cx.VL53L5CX()
     vl53.set_resolution(4 * 4)
     vl53.set_ranging_frequency_hz(60)
     vl53.set_integration_time_ms(5)
     vl53.start_ranging()
-    print("[INFO] Done.")
+    print("Done.")
     return vl53
 
 
