@@ -138,7 +138,7 @@ def setup_camera():
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
     # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
-    print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])))
+    #print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])))
 
     c = 0
     start = datetime.datetime.now()
