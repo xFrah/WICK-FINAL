@@ -33,8 +33,8 @@ current_class = "paper"
 wrong_class_counter = 0
 last_svuotamento = datetime.datetime.now()
 bin_id = 0
-altezza_cestino = 600
-soglia_pieno = 200
+bin_height = 600
+bin_threshold = 200
 valid_classes = ["plastic", "paper"]
 
 
@@ -272,36 +272,50 @@ def create_csv_file():
 def files_setup():
     global bin_id
     global current_class
+    global bin_height
+    global bin_threshold
+
+    errors = 0
+
+    bin_id = random.randint(0, 65534)
+    default_dict = {"bin_id": bin_id, "current_class": "None", "bin_height": 600, "bin_threshold": 200}
 
     if not os.path.exists("history.csv"):
         create_csv_file()
 
     if not os.path.exists("config.json"):
         with open("config.json", "w") as f:
-            bin_id = random.randint(0, 65534)
-            json.dump({"id": bin_id, "current_class": "None"}, f)
+            json.dump(default_dict, f)
         print(f'[INFO] Created config.json with id {bin_id}, edit "current_class" field to continue..."')
         kill()
     else:
         with open("config.json", "r") as f:
             data = json.load(f)
+        for key, value in default_dict.items():
+            value_type = type(value)
+            if not isinstance(data[key], value_type):
+                print(f'[ERROR] Value {data[key]} for "{key}" is not of class {value_type}(default is {value}), you should delete the config file and/or reconfigure.')
+                data[key] = value
+                errors += 1
+
         try:
-            bin_id = data["id"]
+            bin_id = data["bin_id"]
             current_class = data["current_class"]
+            bin_height = data["bin_height"]
+            bin_threshold = data["bin_threshold"]
         except KeyError:
-            print("[ERROR] config.json is corrupted, the program will run with id 65535 and class paper, but you should delete the config file and/or reconfigure.")
+            print("[ERROR] config.json is corrupted, the program will run with default settings and id 65535, but you should delete the config file and/or reconfigure.")
             bin_id = 65535
             current_class = "paper"
-            return
-        if not isinstance(bin_id, int):
-            print('[ERROR] "bin_id" is not an int, please edit config.json')
-            kill()
-        if not isinstance(current_class, str):
-            print('[ERROR] "current_class" is not a valid input, please edit config.json(did you put the quotes?)')
-            kill()
+            bin_height = 600
+            bin_threshold = 200
+            errors += 1
+
         if current_class not in valid_classes:
-            print(f'[ERROR] "{current_class}" is not a valid material, please edit config.json')
-            kill()
+            print(f'[ERROR] "{current_class}" is not a valid material, defaulting to "paper", please edit config.json')
+            current_class = "paper"
+            errors += 1
+
         print(f"[INFO] Loaded config.json, id: {bin_id}, current_class: {current_class}")
 
 
@@ -399,7 +413,7 @@ def get_trash_level(vl53):
         if vl53.data_ready():
             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
             avg = sum(data) / len(data)
-            percentage = int((1 - (avg - soglia_pieno) / (altezza_cestino - soglia_pieno)) * 100)
+            percentage = int((1 - (avg - bin_threshold) / (bin_height - bin_threshold)) * 100)
             return avg, percentage
         time.sleep(0.003)
 
