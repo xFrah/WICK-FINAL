@@ -35,7 +35,7 @@ last_svuotamento = datetime.datetime.now()
 bin_id = 0
 altezza_cestino = 600
 soglia_pieno = 200
-valid_classes = ["Plastica", "Carta"]
+valid_classes = ["plastic", "paper"]
 
 
 def get_diff(frame, background):
