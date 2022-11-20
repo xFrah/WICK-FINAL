@@ -233,6 +233,10 @@ def data_manager_thread():
     while True:
         time.sleep(30)
         if data_ready:
+            if len(data_buffer) == 0:
+                print("[WARN] Data buffer is empty")
+                data_ready = False
+                continue
             start = datetime.datetime.now()
             print("[INFO] Data is ready, saving & uploading...")
             with data_lock:
@@ -264,7 +268,7 @@ def create_csv_file():
         f.write("riempimento,timestamp,wrong_class_counter\n")
 
 
-def json_setup():
+def files_setup():
     global bin_id
     global current_class
 
@@ -412,6 +416,7 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 
 def setup():
+    files_setup()
     pixels = setup_led()
     # threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
