@@ -485,7 +485,7 @@ def main():
                         black_from_red(pixels)
 
                     avg, percentage = get_trash_level(vl53)
-                    print(f"[INFO] {avg}mm, {percentage * 100}%")
+                    print(f"[INFO] {avg}mm, {percentage}%")
                     pass_data({"riempimento": percentage, "wrong_class_counter": wrong_class_counter, "timestamp": str(now.isoformat())})
                     count = 0
                     print("[INFO] Waiting for movement...")
