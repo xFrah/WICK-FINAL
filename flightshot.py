@@ -123,10 +123,7 @@ pal = get_palette("plasma")
 
 def setup_camera():
     cap = cv.VideoCapture(0)
-    print("[INFO] Setting up camera")
-    print(
-        f"[INFO] Changed {(cap.get(cv.CAP_PROP_FRAME_WIDTH), cap.get(cv.CAP_PROP_FRAME_HEIGHT), cap.get(cv.CAP_PROP_FPS))} to (",
-        end="")
+    print("[INFO] Configuring camera: ", end="")
 
     succ = {}
     succ[cv.CAP_PROP_FRAME_WIDTH] = cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
@@ -141,14 +138,14 @@ def setup_camera():
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
     # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
-    print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])) + ")")
+    print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])))
 
     c = 0
     start = datetime.datetime.now()
     while c < 100:
         _, frame = cap.read()
         c += 1
-    print("[INFO] Camera setup complete, FPS: {}".format(100 / (datetime.datetime.now() - start).total_seconds()))
+    print(f"Done, {str(tuple([100 / (datetime.datetime.now() - start).total_seconds()] + [cap.get(item) if value else 'FAILED' for item, value in succ.items()]))}")
     return cap
 
 
@@ -157,7 +154,7 @@ def setup_led():
     pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
     pixels.fill((0, 0, 0))
     pixels.show()
-    print("Done")
+    print("Done.")
     return pixels
 
 
@@ -197,7 +194,7 @@ def setup_edgetpu():
     print("[INFO] Configuring EdgeTPU: ", end="")
     interpreter = edgetpu.make_interpreter("/home/fra/Desktop/WICK-FINAL/model_quant_edgetpu.tflite")
     interpreter.allocate_tensors()
-    print("Done")
+    print("Done.")
     return interpreter
 
 
@@ -262,9 +259,10 @@ def add_lines_csv(data):
 
 
 def create_csv_file():
+    print("[INFO] Creating csv file: ", end="")
     with open("history.csv", "w") as f:
         f.write("riempimento,timestamp,wrong_class_counter\n")
-    print("[INFO] CSV file created.")
+    print("Done.")
 
 
 def files_setup():
@@ -341,7 +339,7 @@ def tof_setup():
     vl53.set_ranging_frequency_hz(60)
     vl53.set_integration_time_ms(5)
     vl53.start_ranging()
-    print("[INFO] Done!")
+    print("[INFO] Done.")
     return vl53
 
 
