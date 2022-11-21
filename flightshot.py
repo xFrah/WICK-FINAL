@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from psutil import virtual_memory
 
 import helpers
 import threading
@@ -45,20 +46,21 @@ def watchdog_thread():
 def data_manager_thread():
     thread = threading.current_thread()
     thread.setName("Data Manager")
+    global data_ready
     while True:
         time.sleep(30)
         ping(thread)
         if data_ready:
             if len(data_buffer) == 0:
                 print("[WARN] Data buffer is empty")
-                flightshot.data_ready = False
+                data_ready = False
                 continue
             start = datetime.datetime.now()
             print("[INFO] Data is ready, saving & uploading...")
             with data_lock:
                 data = data_buffer.copy()
                 data_buffer.clear()
-                flightshot.data_ready = False
+                data_ready = False
             save_buffer = {
                 "riempimento": data["riempimento"][-1],
                 "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
@@ -76,28 +78,29 @@ def data_manager_thread():
 def camera_thread(cap: cv.VideoCapture):
     thread = threading.currentThread()
     thread.setName("Camera")
+    global camera_buffer
     ram_is_ok = True
     while True:
         _, frame = cap.read()
         if frame:
             ping(thread)
-        if flightshot.do_i_shoot:
+        if do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
             temp = {}
-            while flightshot.do_i_shoot and ram_is_ok:
+            while do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp
-                ram_is_ok = psutil.virtual_memory()[2] < 70
+                ram_is_ok = virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
-                while flightshot.do_i_shoot:
+                while do_i_shoot:
                     pass
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
             with camera_lock:
-                flightshot.camera_buffer = temp.copy()
+                camera_buffer = temp.copy()
 
 
 def show_results(tof_frame, camera_frame, diff, cropped=None):
@@ -124,11 +127,9 @@ def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
     pixels.show()
-    print("[INFO] Grabbing background...")
     do_i_shoot = True
     time.sleep(0.125)
     do_i_shoot = False
-    print("[INFO] Background grabbed")
     if return_to_black:
         pixels.fill((0, 0, 0))
         pixels.show()
