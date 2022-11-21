@@ -125,14 +125,12 @@ def grab_buffer():
 
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
-    pixels.fill((255, 255, 255))
-    pixels.show()
+    fill(pixels, (255, 255, 255))
     do_i_shoot = True
     time.sleep(0.125)
     do_i_shoot = False
     if return_to_black:
-        pixels.fill((0, 0, 0))
-        pixels.show()
+        fill(pixels, (0, 0, 0))
     buffer = grab_buffer()
     if len(buffer) > 0:
         print(f"[INFO] Background frame count: {len(buffer)}")
@@ -189,7 +187,7 @@ def main():
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
-                    pixels.fill((255, 255, 255))
+                    fill(pixels, (255, 255, 255))
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
@@ -202,7 +200,7 @@ def main():
                     do_i_shoot = False
                     now = datetime.datetime.now()
                     buffer = grab_buffer()
-                    pixels.fill((1, 1, 1))
+                    fill(pixels, (1, 1, 1))
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
