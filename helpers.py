@@ -1,12 +1,15 @@
 import os
+import signal
 from uuid import uuid4
 
 import cv2 as cv
 import imageio
+import numpy
 import numpy as np
+from PIL import Image
 
 # function to join two numpy arrays
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, cm
 from scipy.signal import find_peaks
 
 
@@ -196,3 +199,31 @@ def get_mask(frame, first_cnt):
     mask = np.zeros(frame.shape[:2], np.uint8)
     cv.drawContours(mask, [first_cnt], 0, 255, -1)
     return mask
+
+
+def kill():
+    os.kill(os.getpid(), signal.SIGTERM)
+
+
+# function to flip matrix horizontally
+def flip_matrix(matrix):
+    return numpy.flip(matrix, 1)
+
+
+def get_diff(frame, background):
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gray = cv.GaussianBlur(gray, (21, 21), 0)
+    background = cv.cvtColor(background, cv.COLOR_BGR2GRAY)
+    background = cv.GaussianBlur(background, (21, 21), 0)
+    frameDelta = cv.absdiff(background, gray)
+    thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
+    thresh = cv.dilate(thresh, None, iterations=2)
+
+    conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    try:
+        x, y, w, h = cv.boundingRect(
+            np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
+        return (x, y, w, h), thresh
+    except ValueError:
+        print("[WARN] No contours found")
+    return thresh

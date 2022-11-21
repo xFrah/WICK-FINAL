@@ -1,7 +1,21 @@
+import datetime
+import json
 import os
 import random
+import threading
+import time
 
-from flightshot import valid_classes
+from flightshot import valid_classes, data_lock, data_buffer, last_svuotamento
+from watchdog import ping
+
+
+def pass_data(data_dict):
+    global data_ready
+    with data_lock:
+        data_ready = True
+        for key, value in data_dict.items():
+            data_buffer[key] = data_buffer.get(key, []) + [value]
+
 
 
 def add_lines_csv(data):
@@ -69,3 +83,35 @@ def files_setup():
         else:
             printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
             print(f"[INFO] Loaded config.json successfully:\n{printable_list}")
+
+
+def data_manager_thread():
+    global data_ready
+    thread = threading.current_thread()
+    thread.setName("Data Manager")
+    while True:
+        time.sleep(30)
+        ping(thread)
+        if data_ready:
+            if len(data_buffer) == 0:
+                print("[WARN] Data buffer is empty")
+                data_ready = False
+                continue
+            start = datetime.datetime.now()
+            print("[INFO] Data is ready, saving & uploading...")
+            with data_lock:
+                data = data_buffer.copy()
+                data_buffer.clear()
+                data_ready = False
+            save_buffer = {
+                "riempimento": data["riempimento"][-1],
+                "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
+                "wrong_class_counter": data["wrong_class_counter"][-1]
+            }
+            # todo send save_buffer via mqtt
+
+            with open("data.json", "w") as f:
+                json.dump(save_buffer, f)
+
+            add_lines_csv(data)
+            print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")

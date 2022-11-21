@@ -1,7 +1,8 @@
 import datetime
 import time
 
-from flightshot import pings, kill
+from flightshot import pings
+from helpers import kill
 
 
 def watchdog_thread():
