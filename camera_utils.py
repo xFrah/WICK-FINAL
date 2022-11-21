@@ -4,7 +4,8 @@ import psutil
 import cv2 as cv
 import time
 
-from flightshot import do_i_shoot, camera_lock
+import flightshot
+from flightshot import camera_lock
 from watchdog import ping
 
 
@@ -37,7 +38,6 @@ def setup_camera():
 
 
 def camera_thread(cap: cv.VideoCapture):
-    global camera_buffer
     thread = threading.currentThread()
     thread.setName("Camera")
     ram_is_ok = True
@@ -45,20 +45,20 @@ def camera_thread(cap: cv.VideoCapture):
         _, frame = cap.read()
         if frame:
             ping(thread)
-        if do_i_shoot:
+        if flightshot.do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
             temp = {}
-            while do_i_shoot and ram_is_ok:
+            while flightshot.do_i_shoot and ram_is_ok:
                 _, frame = cap.read()
                 lentemp = len(temp)
                 temp[datetime.datetime.now()] = frame, lentemp
                 ram_is_ok = psutil.virtual_memory()[2] < 70
             if not ram_is_ok:
                 print("[WARN] RAM is too high, waiting for next session")
-                while do_i_shoot:
+                while flightshot.do_i_shoot:
                     pass
                 print("[WARN] Broken session has finished, waiting for next one...")
             else:
                 print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
             with camera_lock:
-                camera_buffer = temp.copy()
+                flightshot.camera_buffer = temp.copy()

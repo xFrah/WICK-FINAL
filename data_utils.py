@@ -5,7 +5,9 @@ import random
 import threading
 import time
 
+import flightshot
 from flightshot import valid_classes, data_lock, data_buffer, last_svuotamento
+from helpers import kill
 from watchdog import ping
 
 
@@ -15,7 +17,6 @@ def pass_data(data_dict):
         data_ready = True
         for key, value in data_dict.items():
             data_buffer[key] = data_buffer.get(key, []) + [value]
-
 
 
 def add_lines_csv(data):
@@ -86,7 +87,6 @@ def files_setup():
 
 
 def data_manager_thread():
-    global data_ready
     thread = threading.current_thread()
     thread.setName("Data Manager")
     while True:
@@ -95,14 +95,14 @@ def data_manager_thread():
         if data_ready:
             if len(data_buffer) == 0:
                 print("[WARN] Data buffer is empty")
-                data_ready = False
+                flightshot.data_ready = False
                 continue
             start = datetime.datetime.now()
             print("[INFO] Data is ready, saving & uploading...")
             with data_lock:
                 data = data_buffer.copy()
                 data_buffer.clear()
-                data_ready = False
+                flightshot.data_ready = False
             save_buffer = {
                 "riempimento": data["riempimento"][-1],
                 "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
