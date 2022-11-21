@@ -243,10 +243,12 @@ def main():
 
                     avg, percentage = get_trash_level(vl53)
                     print(f"[INFO] {avg}mm, {percentage}%")
+                    ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
+                    print(ddd[0].shape, ddd[-1].shape)
                     pass_data({"riempimento": percentage,
                                "wrong_class_counter": wrong_class_counter,
                                "timestamp": str(now.isoformat()),
-                               "images": [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
+                               "images": ddd
                                })
                     count = 0
                     print("[INFO] Waiting for movement...")
