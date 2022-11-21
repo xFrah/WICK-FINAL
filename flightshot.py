@@ -72,7 +72,8 @@ def data_manager_thread():
                 json.dump(save_buffer, f)
 
             add_lines_csv(data)
-            helpers.save_images_linux(data["images"], "images")
+            flat_list = [item for sublist in data["images"] for item in sublist]
+            helpers.save_images_linux(flat_list, "images")
             print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
 
 
