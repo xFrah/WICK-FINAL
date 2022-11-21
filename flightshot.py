@@ -238,7 +238,7 @@ def main():
                     pass_data({"riempimento": percentage,
                                "wrong_class_counter": wrong_class_counter,
                                "timestamp": str(now.isoformat()),
-                               "images": list(sorted(buffer.values(), key=lambda d: d[1][1]))
+                               "images": list(sorted(buffer.values(), key=lambda d: d[1]))
                                })
                     count = 0
                     print("[INFO] Waiting for movement...")
