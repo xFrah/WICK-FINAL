@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow_model_optimization as tfmot
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.utils import to_categorical
-from pyimagesearch.lenet import LeNet
+from lenet import LeNet
 from imutils import paths
 import matplotlib.pyplot as plt
 import numpy as np

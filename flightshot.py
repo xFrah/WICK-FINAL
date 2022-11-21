@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 import datetime
 import json
-import math
-import os
-import random
 import signal
-import time
-
 import numpy as np
 import psutil
-from lib import neopixel_spidev as neo
 import vl53l5cx_ctypes as vl53l5cx
 import numpy
 from PIL import Image
@@ -35,7 +29,11 @@ last_svuotamento = datetime.datetime.now()
 bin_id = 0
 bin_height = 600
 bin_threshold = 200
-valid_classes = ["plastic", "paper"]
+valid_classes = set(label_dict.values())
+pings = {}
+
+from leds_utils import *
+from files_utils import *
 
 
 def get_diff(frame, background):
@@ -138,7 +136,7 @@ def setup_camera():
     succ[cv.CAP_PROP_GAIN] = cap.set(cv.CAP_PROP_GAIN, 100)
     # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
-    #print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])))
+    # print(str(tuple([cap.get(item) if value else "FAILED" for item, value in succ.items()])))
 
     c = 0
     start = datetime.datetime.now()
@@ -147,47 +145,6 @@ def setup_camera():
         c += 1
     print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
     return cap
-
-
-def setup_led():
-    print("[INFO] Configuring LEDs:", end=" ", flush=True)
-    pixels = neo.NeoPixelSpiDev(0, 0, n=24, pixel_order=neo.GRB)
-    pixels.fill((0, 0, 0))
-    pixels.show()
-    print("Done.")
-    return pixels
-
-
-# change leds gradually to green
-def change_to_green(pixels):
-    for i in range(0, 255, 5):
-        pixels.fill((0, i, 0))
-        pixels.show()
-        time.sleep(0.03)
-
-
-# change leds gradually to green
-def black_from_green(pixels):
-    for i in range(0, 255, 5)[::-1]:
-        pixels.fill((0, i, 0))
-        pixels.show()
-        time.sleep(0.03)
-
-
-# change leds gradually to green
-def change_to_red(pixels):
-    for i in range(0, 255, 5):
-        pixels.fill((i, 0, 0))
-        pixels.show()
-        time.sleep(0.03)
-
-
-# change leds gradually to green
-def black_from_red(pixels):
-    for i in range(0, 255, 5)[::-1]:
-        pixels.fill((i, 0, 0))
-        pixels.show()
-        time.sleep(0.03)
 
 
 def setup_edgetpu():
@@ -201,9 +158,12 @@ def setup_edgetpu():
 # function that begins to take pictures
 def camera_thread(cap):
     global camera_buffer
+    thread = threading.currentThread()
     ram_is_ok = True
     while True:
         _, frame = cap.read()
+        # todo check if this adds overhead
+        ping(thread)
         if do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
             temp = {}
@@ -225,8 +185,10 @@ def camera_thread(cap):
 
 def data_manager_thread():
     global data_ready
+    thread = threading.current_thread()
     while True:
         time.sleep(30)
+        ping(thread)
         if data_ready:
             if len(data_buffer) == 0:
                 print("[WARN] Data buffer is empty")
@@ -252,71 +214,13 @@ def data_manager_thread():
             print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
 
 
-def add_lines_csv(data):
-    with open("history.csv", "a") as f:
-        for percentage, timestamp, wrong_class_counter in zip(data["riempimento"], data["timestamp"], data["wrong_class_counter"]):
-            f.write(f"{percentage},{timestamp},{wrong_class_counter}\n")
-
-
-def create_csv_file():
-    print("[INFO] Creating csv file:", end=" ", flush=True)
-    with open("history.csv", "w") as f:
-        f.write("riempimento,timestamp,wrong_class_counter\n")
-    print("Done.")
-
-
-def files_setup():
-    global bin_id
-    global current_class
-    global bin_height
-    global bin_threshold
-
-    errors = 0
-
-    bin_id = random.randint(0, 65534)
-    default_dict = {"bin_id": bin_id, "current_class": "None", "bin_height": 600, "bin_threshold": 200}
-
-    if not os.path.exists("history.csv"):
-        create_csv_file()
-
-    if not os.path.exists("config.json"):
-        with open("config.json", "w") as f:
-            json.dump(default_dict, f)
-        print(f'[INFO] Created config.json with id {bin_id}, edit "current_class" field to continue..."')
-        kill()
-    else:
-        with open("config.json", "r") as f:
-            data = json.load(f)
-        for key, value in default_dict.items():
-            value_type = type(value)
-            if not isinstance(data[key], value_type):
-                print(f'[ERROR] Value {data[key]} for "{key}" is not of class {value_type}(default is {value}), you should delete the config file and/or reconfigure.')
-                data[key] = value
-                errors += 1
-
-        try:
-            bin_id = data["bin_id"]
-            current_class = data["current_class"]
-            bin_height = data["bin_height"]
-            bin_threshold = data["bin_threshold"]
-        except KeyError:
-            print("[ERROR] config.json is corrupted, the program will run with default settings and id 65535, but you should delete the config file and/or reconfigure.")
-            bin_id = 65535
-            current_class = "paper"
-            bin_height = 600
-            bin_threshold = 200
-            errors += 1
-
-        if current_class not in valid_classes:
-            print(f'[ERROR] "{current_class}" is not a valid material, defaulting to "paper", please edit config.json')
-            current_class = "paper"
-            errors += 1
-
-        if errors > 0:
-            print(f"[ERROR] WICK couldn't start normally, {errors} errors occurred.")
-        else:
-            printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
-            print(f"[INFO] Loaded config.json successfully:\n{printable_list}")
+def watchdog_thread():
+    while True:
+        time.sleep(5)
+        # get thread by native id
+        # print(threading.enumerate())
+        # print(threading.get_native_id())
+        # print(threading.get_native_id())
 
 
 # close all the threads and end the process
@@ -358,12 +262,6 @@ def grab_buffer():
     return copy
 
 
-# function to write dictionary to json file
-def write_to_json(data, filename='data.json'):
-    with open(filename, 'w') as f:
-        json.dump(data, f, indent=4, default=str)
-
-
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
@@ -395,19 +293,6 @@ def inference(image, interpreter):
     return label_dict[output[0][0]], output[0][1]
 
 
-def timed_fill(pixels):
-    global setup_not_done
-    while setup_not_done:
-        for i in range(0, 255, 5):
-            pixels.fill((0, 0, i))
-            # pixels.show()
-            time.sleep(0.03)
-        for i in range(0, 255, 5)[::-1]:
-            pixels.fill((0, 0, i))
-            # pixels.show()
-            time.sleep(0.03)
-
-
 def get_trash_level(vl53):
     while True:
         if vl53.data_ready():
@@ -416,6 +301,10 @@ def get_trash_level(vl53):
             percentage = int((1 - (avg - bin_threshold) / (bin_height - bin_threshold)) * 100)
             return avg, percentage
         time.sleep(0.003)
+
+
+def ping(name):
+    pings[name] = datetime.datetime.now()
 
 
 def get_frame_at_distance(tof_buffer, cap_buffer, distance):
@@ -446,10 +335,13 @@ def setup():
     background = grab_background(pixels)
     change_to_green(pixels)
     black_from_green(pixels)
+    threading.Thread(target=watchdog_thread, daemon=True, name="Watchdog").start()
     return pixels, interpreter, cap, vl53, background, tof_buffer
 
 
 def main():
+    thread = threading.current_thread()
+    print(f'[INFO] Main thread "{thread}" started.')
     global do_i_shoot
     pixels, interpreter, cap, vl53, background, tof_buffer = setup()
     count = 0
@@ -458,6 +350,7 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
+            ping(thread)
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
@@ -477,15 +370,12 @@ def main():
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
                     pixels.show()
-                    pixels.fill((1, 1, 1))
-                    pixels.show()
-                    pixels.fill((1, 1, 1))
-                    pixels.show()
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
                     tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, target_distance)
 
+                    # todo get inference out of there
                     label, score = show_results(tof_target_frame, camera_target_frame, background, interpreter, pixels)
 
                     if label == "paper":
