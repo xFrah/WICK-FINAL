@@ -23,7 +23,7 @@ label_dict: dict[int, str] = {0: "plastic", 1: "paper"}
 valid_classes: set[str] = set(label_dict.values())
 pings: dict[threading.Thread, datetime.datetime] = {}
 
-from leds_utils import *
+from new_led_utils import *
 from data_utils import *
 from tof_utils import *
 from watchdog import *
@@ -190,7 +190,6 @@ def main():
             if not movement:
                 if len(asd) > 0:
                     pixels.fill((255, 255, 255))
-                    pixels.show()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     do_i_shoot = True
                     movement = True
@@ -204,7 +203,6 @@ def main():
                     now = datetime.datetime.now()
                     buffer = grab_buffer()
                     pixels.fill((1, 1, 1))
-                    pixels.show()
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
