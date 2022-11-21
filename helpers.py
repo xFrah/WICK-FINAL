@@ -3,7 +3,6 @@ import signal
 from uuid import uuid4
 
 import cv2 as cv
-import imageio
 import numpy
 import numpy as np
 from PIL import Image

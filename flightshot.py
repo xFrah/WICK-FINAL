@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
 
 import helpers
-from leds_utils import *
-from data_utils import *
-from tof_utils import *
-from watchdog import *
-from edgetpu_utils import *
-from camera_utils import *
+import threading
+import datetime
 
 do_i_shoot = False
 setup_not_done = True
@@ -25,6 +21,13 @@ bin_threshold = 200
 label_dict: dict[int, str] = {0: "plastic", 1: "paper"}
 valid_classes: set[str] = set(label_dict.values())
 pings: dict[threading.Thread, datetime.datetime] = {}
+
+from leds_utils import *
+from data_utils import *
+from tof_utils import *
+from watchdog import *
+from edgetpu_utils import *
+from camera_utils import *
 
 
 def show_results(tof_frame, camera_frame, diff, cropped=None):
