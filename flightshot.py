@@ -30,10 +30,11 @@ bin_id = 0
 bin_height = 600
 bin_threshold = 200
 valid_classes = set(label_dict.values())
-pings = {}
+pings: dict[threading.Thread, datetime.datetime] = {}
 
 from leds_utils import *
 from files_utils import *
+from watchdog import *
 
 
 def get_diff(frame, background):
@@ -156,14 +157,15 @@ def setup_edgetpu():
 
 
 # function that begins to take pictures
-def camera_thread(cap):
+def camera_thread(cap: cv.VideoCapture):
     global camera_buffer
     thread = threading.currentThread()
+    thread.setName("Camera")
     ram_is_ok = True
     while True:
         _, frame = cap.read()
-        # todo check if this adds overhead
-        ping(thread)
+        if frame:
+            ping(thread)
         if do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
             temp = {}
@@ -186,6 +188,7 @@ def camera_thread(cap):
 def data_manager_thread():
     global data_ready
     thread = threading.current_thread()
+    thread.setName("Data Manager")
     while True:
         time.sleep(30)
         ping(thread)
@@ -212,15 +215,6 @@ def data_manager_thread():
 
             add_lines_csv(data)
             print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
-
-
-def watchdog_thread():
-    while True:
-        time.sleep(5)
-        # get thread by native id
-        # print(threading.enumerate())
-        # print(threading.get_native_id())
-        # print(threading.get_native_id())
 
 
 # close all the threads and end the process
@@ -303,10 +297,6 @@ def get_trash_level(vl53):
         time.sleep(0.003)
 
 
-def ping(name):
-    pings[name] = datetime.datetime.now()
-
-
 def get_frame_at_distance(tof_buffer, cap_buffer, distance):
     # camera_buffer is time: frame, frame_number
     # tof_buffer is time: (full_matrix, distance)
@@ -341,6 +331,7 @@ def setup():
 
 def main():
     thread = threading.current_thread()
+    thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
     global do_i_shoot
     pixels, interpreter, cap, vl53, background, tof_buffer = setup()
