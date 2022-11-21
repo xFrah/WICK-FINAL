@@ -236,5 +236,6 @@ def save_images_linux(images, folder_name):
     if not os.path.exists(path):
         os.mkdir(path)
     uuid = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+    print(f"Saving images to {path}/{uuid}-*.png")
     for i, image in enumerate(images):
         cv.imwrite(f"{path}/{uuid}-{i}.png", image)
