@@ -2,16 +2,8 @@ import json
 import os
 import random
 
-from flightshot import valid_classes, data_lock, data_buffer
+from flightshot import valid_classes
 from helpers import kill
-
-
-def pass_data(data_dict):
-    global data_ready
-    with data_lock:
-        data_ready = True
-        for key, value in data_dict.items():
-            data_buffer[key] = data_buffer.get(key, []) + [value]
 
 
 def add_lines_csv(data):

@@ -124,6 +124,14 @@ def grab_buffer():
     return copy
 
 
+def pass_data(data_dict):
+    global data_ready
+    with data_lock:
+        data_ready = True
+        for key, value in data_dict.items():
+            data_buffer[key] = data_buffer.get(key, []) + [value]
+
+
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     fill(pixels, (255, 255, 255))
