@@ -183,7 +183,6 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            ping(thread)
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
@@ -200,6 +199,7 @@ def main():
                     do_i_shoot = False
                     now = datetime.datetime.now()
                     buffer = grab_buffer()
+                    buffer = buffer[1:] if len(buffer) > 1 else buffer
                     fill(pixels, (1, 1, 1))
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
@@ -240,6 +240,7 @@ def main():
                 else:
                     tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
+            ping(thread)
 
         time.sleep(0.003)  # Avoid polling *too* fast
 
