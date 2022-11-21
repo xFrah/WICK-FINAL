@@ -124,9 +124,11 @@ def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     pixels.fill((255, 255, 255))
     pixels.show()
+    print("[INFO] Grabbing background...")
     do_i_shoot = True
     time.sleep(0.125)
     do_i_shoot = False
+    print("[INFO] Background grabbed")
     if return_to_black:
         pixels.fill((0, 0, 0))
         pixels.show()
