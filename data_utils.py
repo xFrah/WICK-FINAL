@@ -1,14 +1,9 @@
-import datetime
 import json
 import os
 import random
-import threading
-import time
 
-import flightshot
-from flightshot import valid_classes, data_lock, data_buffer, last_svuotamento
+from flightshot import valid_classes, data_lock, data_buffer
 from helpers import kill
-from watchdog import ping
 
 
 def pass_data(data_dict):
@@ -85,33 +80,3 @@ def files_setup():
             printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
             print(f"[INFO] Loaded config.json successfully:\n{printable_list}")
 
-
-def data_manager_thread():
-    thread = threading.current_thread()
-    thread.setName("Data Manager")
-    while True:
-        time.sleep(30)
-        ping(thread)
-        if data_ready:
-            if len(data_buffer) == 0:
-                print("[WARN] Data buffer is empty")
-                flightshot.data_ready = False
-                continue
-            start = datetime.datetime.now()
-            print("[INFO] Data is ready, saving & uploading...")
-            with data_lock:
-                data = data_buffer.copy()
-                data_buffer.clear()
-                flightshot.data_ready = False
-            save_buffer = {
-                "riempimento": data["riempimento"][-1],
-                "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
-                "wrong_class_counter": data["wrong_class_counter"][-1]
-            }
-            # todo send save_buffer via mqtt
-
-            with open("data.json", "w") as f:
-                json.dump(save_buffer, f)
-
-            add_lines_csv(data)
-            print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")

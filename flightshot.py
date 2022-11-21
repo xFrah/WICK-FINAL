@@ -30,6 +30,76 @@ from edgetpu_utils import *
 from camera_utils import *
 
 
+def watchdog_thread():
+    while True:
+        time.sleep(5)
+        for key, value in pings.items():
+            if (datetime.datetime.now() - value).total_seconds() > 70:
+                print(f"[ERROR] Thread [{key.getName()}] is not responding, killing...")
+                kill()
+            elif not key.is_alive():
+                print(f"[ERROR] Thread [{key.getName()}] is not responding, killing...")
+                kill()
+
+
+def data_manager_thread():
+    thread = threading.current_thread()
+    thread.setName("Data Manager")
+    while True:
+        time.sleep(30)
+        ping(thread)
+        if data_ready:
+            if len(data_buffer) == 0:
+                print("[WARN] Data buffer is empty")
+                flightshot.data_ready = False
+                continue
+            start = datetime.datetime.now()
+            print("[INFO] Data is ready, saving & uploading...")
+            with data_lock:
+                data = data_buffer.copy()
+                data_buffer.clear()
+                flightshot.data_ready = False
+            save_buffer = {
+                "riempimento": data["riempimento"][-1],
+                "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
+                "wrong_class_counter": data["wrong_class_counter"][-1]
+            }
+            # todo send save_buffer via mqtt
+
+            with open("data.json", "w") as f:
+                json.dump(save_buffer, f)
+
+            add_lines_csv(data)
+            print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
+
+
+def camera_thread(cap: cv.VideoCapture):
+    thread = threading.currentThread()
+    thread.setName("Camera")
+    ram_is_ok = True
+    while True:
+        _, frame = cap.read()
+        if frame:
+            ping(thread)
+        if flightshot.do_i_shoot:
+            # temp = {datetime.datetime.now(): (frame, 0)}
+            temp = {}
+            while flightshot.do_i_shoot and ram_is_ok:
+                _, frame = cap.read()
+                lentemp = len(temp)
+                temp[datetime.datetime.now()] = frame, lentemp
+                ram_is_ok = psutil.virtual_memory()[2] < 70
+            if not ram_is_ok:
+                print("[WARN] RAM is too high, waiting for next session")
+                while flightshot.do_i_shoot:
+                    pass
+                print("[WARN] Broken session has finished, waiting for next one...")
+            else:
+                print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
+            with camera_lock:
+                flightshot.camera_buffer = temp.copy()
+
+
 def show_results(tof_frame, camera_frame, diff, cropped=None):
     render_tof(tof_frame)
 
