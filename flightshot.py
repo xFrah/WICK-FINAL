@@ -199,7 +199,7 @@ def main():
                     do_i_shoot = False
                     now = datetime.datetime.now()
                     buffer = grab_buffer()
-                    buffer = buffer[1:] if len(buffer) > 1 else buffer
+                    buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
                     fill(pixels, (1, 1, 1))
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
