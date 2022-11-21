@@ -48,7 +48,7 @@ def data_manager_thread():
     thread.setName("Data Manager")
     global data_ready
     while True:
-        time.sleep(30)
+        time.sleep(20)
         ping(thread)
         if data_ready:
             if len(data_buffer) == 0:
@@ -72,6 +72,7 @@ def data_manager_thread():
                 json.dump(save_buffer, f)
 
             add_lines_csv(data)
+            helpers.save_images_linux(data["images"], "images")
             print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
 
 
@@ -234,7 +235,11 @@ def main():
 
                     avg, percentage = get_trash_level(vl53)
                     print(f"[INFO] {avg}mm, {percentage}%")
-                    pass_data({"riempimento": percentage, "wrong_class_counter": wrong_class_counter, "timestamp": str(now.isoformat())})
+                    pass_data({"riempimento": percentage,
+                               "wrong_class_counter": wrong_class_counter,
+                               "timestamp": str(now.isoformat()),
+                               "images": list(sorted(buffer.values(), key=lambda d: d[1][1]))
+                               })
                     count = 0
                     print("[INFO] Waiting for movement...")
                 else:

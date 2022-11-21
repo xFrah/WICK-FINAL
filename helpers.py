@@ -1,3 +1,4 @@
+import datetime
 import os
 import signal
 from uuid import uuid4
@@ -227,3 +228,13 @@ def get_diff(frame, background):
     except ValueError:
         print("[WARN] No contours found")
     return thresh
+
+
+# function to save list of images in new folder in current working directory linux
+def save_images_linux(images, folder_name):
+    path = os.getcwd() + "/" + folder_name
+    if not os.path.exists(path):
+        os.mkdir(path)
+    uuid = datetime.datetime.now().strftime('%Y%m-%d%H-%M%S-') + str(uuid4())
+    for i, image in enumerate(images):
+        cv.imwrite(f"{path}/{uuid}-{i}.png", image)
