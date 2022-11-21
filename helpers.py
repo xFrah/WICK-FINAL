@@ -7,6 +7,7 @@ import imageio
 import numpy
 import numpy as np
 from PIL import Image
+import imageio
 
 # function to join two numpy arrays
 from matplotlib import pyplot as plt, cm
