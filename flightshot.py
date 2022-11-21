@@ -82,7 +82,7 @@ def camera_thread(cap: cv.VideoCapture):
     ram_is_ok = True
     while True:
         _, frame = cap.read()
-        if frame:
+        if frame is not None:
             ping(thread)
         if do_i_shoot:
             # temp = {datetime.datetime.now(): (frame, 0)}
