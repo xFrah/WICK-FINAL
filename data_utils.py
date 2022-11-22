@@ -2,6 +2,8 @@ import datetime
 import json
 import os
 import random
+import time
+
 import paho.mqtt.client as mqtt
 
 from flightshot import config_and_data, mqtt_client
@@ -79,6 +81,7 @@ def files_setup():
             if not mqtt_client or not mqtt_client.is_connected():
                 print("[ERROR] MQTT client is not connected, reinitializing...")
                 # todo setup_mqtt()
+            time.sleep(5)
         if not data:
             print("[ERROR] Wizard failed to get config through MQTT, killing...")
             kill()
