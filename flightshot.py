@@ -30,9 +30,8 @@ config_and_data = {
     "valid_classes": ["plastic", "paper"]
 }
 
-
-from mqtt_utils import *
 from new_led_utils import *
+from mqtt_utils import *
 from data_utils import *
 from tof_utils import *
 from watchdog import *
@@ -192,11 +191,8 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 
 def setup():
-    pixels = setup_led()
     global setup_not_done
     # start thread for function to change leds from black to yellow
-    threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
-    threaddino.start()
     files_setup()
     # threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
