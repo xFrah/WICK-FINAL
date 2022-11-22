@@ -275,7 +275,6 @@ def main():
 
 
 if __name__ == '__main__':
-    labels = {0: "plastic", 1: "paper"}
     config_and_data = {
         "target_distance": 150,
         "current_class": "paper",
@@ -284,8 +283,8 @@ if __name__ == '__main__':
         "bin_id": 0,
         "bin_height": 600,
         "bin_threshold": 200,
-        "label_dict": labels,
-        "valid_classes": set(labels.values())
+        "label_dict": {0: "plastic", 1: "paper"},
+        "valid_classes": ["plastic", "paper"]
     }
 
     do_i_shoot = False
