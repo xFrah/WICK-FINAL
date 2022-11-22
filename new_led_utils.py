@@ -77,6 +77,3 @@ def black_from_red(strip):
             strip.setPixelColor(y, Color(i, 0, 0))
         strip.show()
         time.sleep(0.03)
-
-
-#colorWipe(strip, Color(0, 0, 0), 10)

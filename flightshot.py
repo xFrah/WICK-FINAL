@@ -3,6 +3,7 @@ from typing import Any
 
 import numpy
 from psutil import virtual_memory
+from rpi_ws281x import PixelStrip, Color
 
 import helpers
 import threading
@@ -145,6 +146,22 @@ def pass_data(data_dict):
             data_buffer[key] = data_buffer.get(key, []) + [value]
 
 
+# function to change leds from black to yellow
+def change_to_yellow(strip):
+    global setup_not_done
+    while setup_not_done:
+        for i in range(0, 255, 5):
+            for y in range(strip.numPixels()):
+                strip.setPixelColor(y, Color(i, i, 0))
+            strip.show()
+            time.sleep(0.03)
+        for i in range(0, 255, 5)[::-1]:
+            for y in range(strip.numPixels()):
+                strip.setPixelColor(y, Color(i, i, 0))
+            strip.show()
+            time.sleep(0.03)
+
+
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     fill(pixels, (255, 255, 255))
@@ -175,8 +192,12 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 
 def setup():
-    files_setup()
     pixels = setup_led()
+    global setup_not_done
+    # start thread for function to change leds from black to yellow
+    threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
+    threaddino.start()
+    files_setup()
     # threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
     cap = setup_camera()
@@ -184,8 +205,9 @@ def setup():
     threading.Thread(target=data_manager_thread).start()
     vl53 = tof_setup()
     tof_buffer = {}
-    # global setup_not_done
-    # setup_not_done = False
+    setup_not_done = False
+    while threaddino.is_alive():
+        pass
     background = grab_background(pixels)
     change_to_green(pixels)
     black_from_green(pixels)
@@ -202,6 +224,7 @@ def main():
     count = 0
     movement = False
     start = datetime.datetime.now()
+    print("[INFO] Ready for action!")
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
