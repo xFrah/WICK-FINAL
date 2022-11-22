@@ -31,7 +31,7 @@ mqtt_client_id = "flightshot"
 
 from mqtt_utils import *
 
-mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id)
+mqtt_client: mqtt.Client
 
 from new_led_utils import *
 from data_utils import *
@@ -177,7 +177,8 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 
 def setup():
-    setup_mqtt("localhost")
+    global mqtt_client
+    mqtt_client = setup_mqtt("localhost")
     files_setup()
     pixels = setup_led()
     # threading.Thread(target=timed_fill, args=(pixels,)).start()
