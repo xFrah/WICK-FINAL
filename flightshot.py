@@ -11,6 +11,15 @@ import helpers
 import threading
 import datetime
 
+do_i_shoot = False
+setup_not_done = True
+data_ready = False
+camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
+data_buffer: dict[str, Any] = {}
+pings: dict[threading.Thread, datetime.datetime] = {}
+camera_lock = threading.Lock()
+data_lock = threading.Lock()
+
 config_and_data = {
     "target_distance": 150,
     "current_class": "paper",
@@ -287,15 +296,6 @@ def main():
 
 
 if __name__ == '__main__':
-    do_i_shoot = False
-    setup_not_done = True
-    data_ready = False
-    camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
-    data_buffer: dict[str, Any] = {}
-    pings: dict[threading.Thread, datetime.datetime] = {}
-    camera_lock = threading.Lock()
-    data_lock = threading.Lock()
-
     from new_led_utils import *
     threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
     threaddino.start()
