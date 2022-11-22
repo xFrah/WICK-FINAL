@@ -4,7 +4,7 @@ from pycoral.adapters import common
 from pycoral.adapters import classify
 import cv2 as cv
 
-from flightshot import label_dict
+from flightshot import config_and_data
 
 
 def setup_edgetpu():
@@ -25,4 +25,4 @@ def inference(image, interpreter):
     common.set_input(interpreter, image)
     interpreter.invoke()
     output = classify.get_classes(interpreter, top_k=1)
-    return label_dict[output[0][0]], output[0][1]
+    return config_and_data["label_dict"][output[0][0]], output[0][1]
