@@ -11,6 +11,18 @@ import helpers
 import threading
 import datetime
 
+config_and_data = {
+    "target_distance": 150,
+    "current_class": "paper",
+    "wrong_class_counter": 0,
+    "last_svuotamento": datetime.datetime.now(),
+    "bin_id": 0,
+    "bin_height": 600,
+    "bin_threshold": 200,
+    "label_dict": {0: "plastic", 1: "paper"},
+    "valid_classes": ["plastic", "paper"]
+}
+
 
 # function to change leds from black to yellow
 def change_to_yellow(strip):
@@ -275,18 +287,6 @@ def main():
 
 
 if __name__ == '__main__':
-    config_and_data = {
-        "target_distance": 150,
-        "current_class": "paper",
-        "wrong_class_counter": 0,
-        "last_svuotamento": datetime.datetime.now(),
-        "bin_id": 0,
-        "bin_height": 600,
-        "bin_threshold": 200,
-        "label_dict": {0: "plastic", 1: "paper"},
-        "valid_classes": ["plastic", "paper"]
-    }
-
     do_i_shoot = False
     setup_not_done = True
     data_ready = False
