@@ -89,7 +89,9 @@ def files_setup():
             bin_id = data["bin_id"]
         except KeyError:
             return deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...")
+
         if mqtt_client and mqtt_client.is_connected():
+            # todo why does it return null?
             received = il_fantastico_viaggio_del_bagarozzo_mark(bin_id)
             if received:
                 if received == data:
@@ -100,8 +102,8 @@ def files_setup():
                         json.dump(data, f)
                     data = received
                     print("Done.")
-        else:
-            print("[ERROR] Wizard failed to get config through MQTT.")
+            else:
+                print("[ERROR] Wizard failed to get config through MQTT.")
         for key, value_type in default_dict.items():
             if not isinstance(data[key], value_type):
                 deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...")
