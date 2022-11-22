@@ -6,8 +6,8 @@ import time
 
 import paho.mqtt.client as mqtt
 
-from flightshot import config_and_data, mqtt_client
-from mqtt_utils import topic, setup_mqtt
+from flightshot import config_and_data
+from mqtt_utils import topic, setup_mqtt, mqtt_client
 from helpers import kill
 
 received_config = None
