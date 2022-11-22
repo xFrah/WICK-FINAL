@@ -104,6 +104,8 @@ def files_setup():
                     print("Done.")
             else:
                 print("[ERROR] Wizard failed to get config through MQTT.")
+        else:
+            print("[ERROR] MQTT client is not connected, skipping config update.")
         for key, value_type in default_dict.items():
             if not isinstance(data[key], value_type):
                 deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...")
