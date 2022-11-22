@@ -197,11 +197,11 @@ def setup():
 
 
 def main():
+    pixels, interpreter, cap, vl53, background, tof_buffer = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
     global do_i_shoot
-    pixels, interpreter, cap, vl53, background, tof_buffer = setup()
     count = 0
     movement = False
     start = datetime.datetime.now()
