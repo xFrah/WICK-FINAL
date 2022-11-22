@@ -8,8 +8,6 @@ import threading
 import time
 from rpi_ws281x import PixelStrip, Color
 
-from flightshot import change_to_yellow
-
 # LED strip configuration:
 LED_COUNT = 24        # Number of LED pixels.
 LED_PIN = 18          # GPIO pin connected to the pixels (18 uses PWM!).
@@ -84,5 +82,3 @@ def black_from_red(strip):
 
 
 pixels = setup_led()
-threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
-threaddino.start()

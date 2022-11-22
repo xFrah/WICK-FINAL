@@ -30,7 +30,26 @@ config_and_data = {
     "valid_classes": ["plastic", "paper"]
 }
 
+# function to change leds from black to yellow
+def change_to_yellow(strip):
+    global setup_not_done
+    print("[INFO] Changing leds to yellow")
+    while setup_not_done:
+        for i in range(0, 255, 5):
+            for y in range(strip.numPixels()):
+                strip.setPixelColor(y, Color(i, i, 0))
+            strip.show()
+            time.sleep(0.03)
+        for i in range(0, 255, 5)[::-1]:
+            for y in range(strip.numPixels()):
+                strip.setPixelColor(y, Color(i, i, 0))
+            strip.show()
+            time.sleep(0.03)
+
+
 from new_led_utils import *
+threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
+threaddino.start()
 from mqtt_utils import *
 from data_utils import *
 from tof_utils import *
@@ -143,23 +162,6 @@ def pass_data(data_dict):
         data_ready = True
         for key, value in data_dict.items():
             data_buffer[key] = data_buffer.get(key, []) + [value]
-
-
-# function to change leds from black to yellow
-def change_to_yellow(strip):
-    global setup_not_done
-    print("[INFO] Changing leds to yellow")
-    while setup_not_done:
-        for i in range(0, 255, 5):
-            for y in range(strip.numPixels()):
-                strip.setPixelColor(y, Color(i, i, 0))
-            strip.show()
-            time.sleep(0.03)
-        for i in range(0, 255, 5)[::-1]:
-            for y in range(strip.numPixels()):
-                strip.setPixelColor(y, Color(i, i, 0))
-            strip.show()
-            time.sleep(0.03)
 
 
 def grab_background(pixels, return_to_black=True):
