@@ -6,6 +6,8 @@ import paho.mqtt.client as mqtt
 from helpers import kill
 
 topic = "wick/"
+mqtt_host = "cock"
+mqtt_client_id = "flightshot"
 
 
 def on_connect(client, userdata, flags, rc):
@@ -45,3 +47,6 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
         else:
             print("Done.")
     return client
+
+
+mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id)

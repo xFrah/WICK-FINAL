@@ -26,13 +26,8 @@ config_and_data = {
 }
 
 pings: dict[threading.Thread, datetime.datetime] = {}
-mqtt_host = "cock"
-mqtt_client_id = "flightshot"
 
 from mqtt_utils import *
-
-mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id)
-
 from new_led_utils import *
 from data_utils import *
 from tof_utils import *
