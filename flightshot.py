@@ -12,16 +12,26 @@ camera_buffer = {}
 data_buffer = {}
 camera_lock = threading.Lock()
 data_lock = threading.Lock()
-target_distance = 150
-current_class = "paper"
-wrong_class_counter = 0
-last_svuotamento = datetime.datetime.now()
-bin_id = 0
-bin_height = 600
-bin_threshold = 200
-label_dict: dict[int, str] = {0: "plastic", 1: "paper"}
-valid_classes: set[str] = set(label_dict.values())
+
+config_and_data = {
+    "target_distance": 150,
+    "current_class": "paper",
+    "wrong_class_counter": 0,
+    "last_svuotamento": datetime.datetime.now(),
+    "bin_id": 0,
+    "bin_height": 600,
+    "bin_threshold": 200,
+    "label_dict": {0: "plastic", 1: "paper"},
+    "valid_classes": ["plastic", "paper"]
+}
+
 pings: dict[threading.Thread, datetime.datetime] = {}
+mqtt_host = "cock"
+mqtt_client_id = "flightshot"
+
+from mqtt_utils import *
+
+mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id)
 
 from new_led_utils import *
 from data_utils import *
@@ -63,10 +73,9 @@ def data_manager_thread():
                 data_ready = False
             save_buffer = {
                 "riempimento": data["riempimento"][-1],
-                "timestamp_last_svuotamento": str(last_svuotamento.isoformat()),
+                "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
                 "wrong_class_counter": data["wrong_class_counter"][-1]
             }
-            # todo send save_buffer via mqtt
 
             with open("data.json", "w") as f:
                 json.dump(save_buffer, f)
@@ -75,6 +84,11 @@ def data_manager_thread():
             flat_list = [item for sublist in data["images"] for item in sublist]
             helpers.save_images_linux(flat_list, "images")
             print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
+            # if time is 12 pm or 6 pm, upload data
+            if datetime.datetime.now().hour in [12, 18]:
+                print("[INFO] Uploading data...")
+                # todo upload
+                print("[INFO] Data uploaded.")
 
 
 def camera_thread(cap: cv.VideoCapture):
@@ -214,7 +228,7 @@ def main():
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
-                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, target_distance)
+                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
 
                     rect, diff = helpers.get_diff(camera_target_frame, background)
                     if rect:
@@ -247,7 +261,7 @@ def main():
                     ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
                     print(ddd[0].shape, ddd[-1].shape)
                     pass_data({"riempimento": percentage,
-                               "wrong_class_counter": wrong_class_counter,
+                               "wrong_class_counter": config_and_data["wrong_class_counter"],
                                "timestamp": str(now.isoformat()),
                                "images": ddd
                                })
