@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from typing import Any
+
+import numpy
 from psutil import virtual_memory
 
 import helpers
@@ -8,8 +11,9 @@ import datetime
 do_i_shoot = False
 setup_not_done = True
 data_ready = False
-camera_buffer = {}
-data_buffer = {}
+camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
+data_buffer: dict[str, Any] = {}
+pings: dict[threading.Thread, datetime.datetime] = {}
 camera_lock = threading.Lock()
 data_lock = threading.Lock()
 
@@ -25,7 +29,6 @@ config_and_data = {
     "valid_classes": ["plastic", "paper"]
 }
 
-pings: dict[threading.Thread, datetime.datetime] = {}
 
 from mqtt_utils import *
 from new_led_utils import *
