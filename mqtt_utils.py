@@ -18,7 +18,6 @@ def on_connect(client, userdata, flags, rc):
 def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeout=10, connection_timeout=10):
     client: mqtt.Client = None
     start = datetime.datetime.now()
-    print("COCK")
     while (not client or not client.is_connected()) and (datetime.datetime.now() - start).total_seconds() < timeout:
         print("[INFO] Configuring MQTT client:", end=" ", flush=True)
         try:
@@ -34,7 +33,6 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             client.connect(ip, port=port, keepalive=100)
         except:
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
-            print((datetime.datetime.now() - start).total_seconds())
             time.sleep(5)
             continue
         start2 = datetime.datetime.now()
