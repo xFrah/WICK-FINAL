@@ -11,27 +11,6 @@ import helpers
 import threading
 import datetime
 
-do_i_shoot = False
-setup_not_done = True
-data_ready = False
-camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
-data_buffer: dict[str, Any] = {}
-pings: dict[threading.Thread, datetime.datetime] = {}
-camera_lock = threading.Lock()
-data_lock = threading.Lock()
-
-config_and_data = {
-    "target_distance": 150,
-    "current_class": "paper",
-    "wrong_class_counter": 0,
-    "last_svuotamento": datetime.datetime.now(),
-    "bin_id": 0,
-    "bin_height": 600,
-    "bin_threshold": 200,
-    "label_dict": {0: "plastic", 1: "paper"},
-    "valid_classes": ["plastic", "paper"]
-}
-
 
 # function to change leds from black to yellow
 def change_to_yellow(strip):
@@ -296,6 +275,28 @@ def main():
 
 
 if __name__ == '__main__':
+    labels = {0: "plastic", 1: "paper"}
+    config_and_data = {
+        "target_distance": 150,
+        "current_class": "paper",
+        "wrong_class_counter": 0,
+        "last_svuotamento": datetime.datetime.now(),
+        "bin_id": 0,
+        "bin_height": 600,
+        "bin_threshold": 200,
+        "label_dict": labels,
+        "valid_classes": set(labels.values())
+    }
+
+    do_i_shoot = False
+    setup_not_done = True
+    data_ready = False
+    camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
+    data_buffer: dict[str, Any] = {}
+    pings: dict[threading.Thread, datetime.datetime] = {}
+    camera_lock = threading.Lock()
+    data_lock = threading.Lock()
+
     from new_led_utils import *
     threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
     threaddino.start()
