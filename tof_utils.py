@@ -4,8 +4,8 @@ import numpy
 import vl53l5cx_ctypes as vl53l5cx
 from matplotlib import cm
 
-from flightshot import bin_threshold, bin_height
 from helpers import flip_matrix
+from flightshot import config_and_data
 from PIL import Image
 
 
@@ -25,7 +25,7 @@ def get_trash_level(vl53):
         if vl53.data_ready():
             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]
             avg = sum(data) / len(data)
-            percentage = int((1 - (avg - bin_threshold) / (bin_height - bin_threshold)) * 100)
+            percentage = int((1 - (avg - config_and_data["bin_threshold"]) / (config_and_data["bin_height"] - config_and_data["bin_threshold"])) * 100)
             return avg, percentage
         time.sleep(0.003)
 

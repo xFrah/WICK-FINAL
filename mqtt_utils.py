@@ -13,7 +13,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(topic)
 
 
-def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeout=30, connection_timeout=10):
+def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeout=20, connection_timeout=10):
     client: mqtt.Client = None
     start = datetime.datetime.now()
     while (not client or not client.is_connected()) and (datetime.datetime.now() - start).total_seconds() < timeout:
