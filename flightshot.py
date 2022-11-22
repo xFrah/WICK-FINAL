@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import time
 from typing import Any
 
 import numpy
 from psutil import virtual_memory
 from rpi_ws281x import PixelStrip, Color
+import cv2 as cv
 
 import helpers
 import threading
@@ -56,18 +58,6 @@ def change_to_yellow(strip):
             strip.setPixelColor(y, Color(i, i, 0))
         strip.show()
         time.sleep(0.03)
-
-
-from new_led_utils import *
-
-threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
-threaddino.start()
-from mqtt_utils import *
-from data_utils import *
-from tof_utils import *
-from watchdog import *
-from edgetpu_utils import *
-from camera_utils import *
 
 
 def watchdog_thread():
@@ -308,4 +298,13 @@ def main():
 
 
 if __name__ == '__main__':
+    from new_led_utils import *
+    threaddino = threading.Thread(target=change_to_yellow, args=(pixels,))
+    threaddino.start()
+    from mqtt_utils import *
+    from data_utils import *
+    from tof_utils import *
+    from watchdog import *
+    from edgetpu_utils import *
+    from camera_utils import *
     main()
