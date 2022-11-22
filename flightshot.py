@@ -37,27 +37,27 @@ config_and_data = {
 def change_to_yellow(strip):
     global setup_not_done
     print("[INFO] Changing leds to yellow")
-    for i in range(0, 40, 5):
+    for i in range(0, 20, 5):
         for y in range(strip.numPixels()):
             strip.setPixelColor(y, Color(i, i, 0))
         strip.show()
-        time.sleep(0.03)
+        time.sleep(0.06)
     while setup_not_done:
-        for i in range(40, 255, 5):
+        for i in range(20, 255, 5):
             for y in range(strip.numPixels()):
                 strip.setPixelColor(y, Color(i, i, 0))
             strip.show()
             time.sleep(0.03)
-        for i in range(40, 255, 5)[::-1]:
+        for i in range(20, 255, 5)[::-1]:
             for y in range(strip.numPixels()):
                 strip.setPixelColor(y, Color(i, i, 0))
             strip.show()
             time.sleep(0.03)
-    for i in range(0, 40, 5)[::-1]:
+    for i in range(0, 20, 5)[::-1]:
         for y in range(strip.numPixels()):
             strip.setPixelColor(y, Color(i, i, 0))
         strip.show()
-        time.sleep(0.03)
+        time.sleep(0.06)
 
 
 def watchdog_thread():
@@ -197,9 +197,7 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 def setup():
     global setup_not_done
-    # start thread for function to change leds from black to yellow
     files_setup()
-    # threading.Thread(target=timed_fill, args=(pixels,)).start()
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
