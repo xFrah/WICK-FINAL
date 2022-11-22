@@ -148,6 +148,7 @@ def pass_data(data_dict):
 # function to change leds from black to yellow
 def change_to_yellow(strip):
     global setup_not_done
+    print("[INFO] Changing leds to yellow")
     while setup_not_done:
         for i in range(0, 255, 5):
             for y in range(strip.numPixels()):
