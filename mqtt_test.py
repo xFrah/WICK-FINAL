@@ -1,10 +1,11 @@
 import datetime
+import json
 import time
 
 import paho.mqtt.client as mqtt
 
 established = False
-topic = "wick/"
+topic = "Wick/"
 broker_address = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
@@ -48,8 +49,8 @@ def setup_mqtt():
     print("Subscribing to topic", topic)
     client.subscribe(topic)
     print("Publishing message to topic", topic)
-    client.publish(topic, "OFF")
-    time.sleep(4)  # wait
+    client.publish(topic, json.dumps({"bin_id": 51333, "cfg": True}))
+    time.sleep(10)  # wait
     client.loop_stop()  # stop the loop
 
 
