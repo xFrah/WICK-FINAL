@@ -41,6 +41,10 @@ def try_to_disconnect(client):
         client.disconnect()
     except:
         pass
+    try:
+        client.loop_stop()
+    except:
+        pass
 
 
 def setup_mqtt(timeout=40, connection_timeout=5):
@@ -54,12 +58,13 @@ def setup_mqtt(timeout=40, connection_timeout=5):
         client.on_log = on_log
         print("[INFO] Connecting to broker...")
         conn_now = datetime.datetime.now()
+
         try:
             client.connect(mqtt_host, port=port)
         except:
             print("[ERROR] Connection failed, retrying...")
             try_to_disconnect(client)
-            time.sleep(3)
+            time.sleep(2)
             continue
 
         client.loop_start()  # start the loop
@@ -69,12 +74,15 @@ def setup_mqtt(timeout=40, connection_timeout=5):
         except:
             print("[ERROR] Subscription failed!")
             try_to_disconnect(client)
+            time.sleep(2)
+            continue
         while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
             time.sleep(0.1)
     if established:
-        print("[INFO] MQTT connection established!")
+        print("[INFO] Received CONNACK!!! MQTT connection established!")
         return client
     else:
+        try_to_disconnect(client)
         return print("[ERROR] MQTT connection failed!")
 
 
