@@ -10,9 +10,13 @@ mqtt_host = "3.18.123.221"
 mqtt_client_id = "flightshot"
 port = 9001
 
+established = False
+
 
 def on_connect(client, userdata, flags, rc):
+    global established
     print("[INFO] Connected with result code " + str(rc))
+    established = True
     client.subscribe(topic)
 
 
@@ -38,9 +42,9 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             continue
         #client.subscribe(topic)
         start2 = datetime.datetime.now()
-        while not client.is_connected() and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
+        while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
             pass
-        if not client.is_connected():
+        if not established:
             print("\n[ERROR] MQTT connection timed out, retrying in 5 seconds...")
             time.sleep(5)
             continue
