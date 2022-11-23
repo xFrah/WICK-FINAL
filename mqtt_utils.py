@@ -6,9 +6,9 @@ import paho.mqtt.client as mqtt
 from helpers import kill
 
 topic = "Wick/"
-mqtt_host = "broker.mqttdashboard.com"
+mqtt_host = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
-port = 8000
+port = 9001
 
 established = False
 
@@ -18,7 +18,7 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         established = True  # set flag
         print("connected OK Returned code=", rc)
-        client.subscribe(topic)
+        # client.subscribe(topic)
     else:
         print("Bad connection Returned code= ", rc)
 
@@ -39,11 +39,11 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
         try:
             client.loop_start()
             print(client.connect(ip, port=port, keepalive=60))
+            client.subscribe(topic)
         except:
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
             continue
-        # client.subscribe(topic)
         start2 = datetime.datetime.now()
         while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
             time.sleep(0.1)
