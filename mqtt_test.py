@@ -9,6 +9,7 @@ mqtt_host = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
 
+
 def on_connect(client, userdata, flags, rc):
     global established
     if rc == 0:
@@ -25,38 +26,33 @@ def on_connect_fail(client, userdata, flags, rc):
 
 
 def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, timeout=10, connection_timeout=100000):
-    client: mqtt.Client = None
-    start = datetime.datetime.now()
-    while (not client or not established) and (datetime.datetime.now() - start).total_seconds() < timeout:
-        print("[INFO] Configuring MQTT client:", end=" ", flush=True)
-        try:
-            client = mqtt.Client(client_id=client_id)
-            client.on_connect = on_connect
-            client.on_connect_fail = on_connect_fail
-            client.username_pw_set(client_id, password)
-        except:
-            print("\n[ERROR] Error while configuring MQTT client, retrying in 5 seconds...")
-            time.sleep(5)
-            continue
-        try:
-            print(client.connect(ip, port=port, keepalive=60))
-            client.loop_start()
-            print(client.subscribe(topic))
-            # client.loop_forever()
-        except:
-            print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
-            time.sleep(5)
-            continue
-        start2 = datetime.datetime.now()
-        while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
-            time.sleep(0.1)
-        if not established:
-            print("\n[ERROR] MQTT connection timed out, retrying in 5 seconds...")
-            time.sleep(5)
-            continue
-        else:
-            print("Done.")
-    return client
+    ############
+    def on_message(client, userdata, message):
+        print("message received ", str(message.payload.decode("utf-8")))
+        print("message topic=", message.topic)
+        print("message qos=", message.qos)
+        print("message retain flag=", message.retain)
+
+    def on_connect(client, userdata, message):
+        print("Connected to MQTT broker")
+
+    ########################################
+    broker_address = "stream.lifesensor.cloud"
+    topic = "Wick/"
+    # broker_address="iot.eclipse.org"
+    print("creating new instance")
+    client = mqtt.Client("P1")  # create new instance
+    client.on_message = on_message  # attach function to callback
+    client.on_connect = on_connect  # attach function to callback
+    print("connecting to broker")
+    client.connect(broker_address)  # connect to broker
+    client.loop_start()  # start the loop
+    print("Subscribing to topic", topic)
+    client.subscribe(topic)
+    print("Publishing message to topic", topic)
+    client.publish(topic, "OFF")
+    time.sleep(4)  # wait
+    client.loop_stop()  # stop the loop
 
 
 setup_mqtt("stream.lifesensor.cloud", "Beam1", "Gaspardo1801", 9001, 10, 100000)
