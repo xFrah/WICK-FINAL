@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 from helpers import kill
 
 topic = "Wick/"
-mqtt_host = "stream.lifesensor.cloud"
+mqtt_host = "3.18.123.221"
 mqtt_client_id = "flightshot"
 port = 9001
 
