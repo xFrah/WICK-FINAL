@@ -25,10 +25,10 @@ def on_message(client, userdata, message):
         # print("message received ", str(message.payload.decode("utf-8")))
         rx_buffer = json.loads(message.payload)
         data_ready = True
-    print("message received ", str(message.payload.decode("utf-8")))
-    print("message topic=", message.topic)
-    #print("message qos=", message.qos)
-    #print("message retain flag=", message.retain)
+    print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
+    # print("message topic=", message.topic)
+    # print("message qos=", message.qos)
+    # print("message retain flag=", message.retain)
 
 
 def get_next_message(timeout=10):
