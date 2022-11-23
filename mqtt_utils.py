@@ -26,7 +26,7 @@ def on_connect(client, userdata, flags, rc):
 def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, timeout=10, connection_timeout=100000):
     client: mqtt.Client = None
     start = datetime.datetime.now()
-    while (not client or not client.is_connected()) and (datetime.datetime.now() - start).total_seconds() < timeout:
+    while (not client or not established) and (datetime.datetime.now() - start).total_seconds() < timeout:
         print("[INFO] Configuring MQTT client:", end=" ", flush=True)
         try:
             client = mqtt.Client(client_id=client_id)
@@ -38,7 +38,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
             continue
         try:
             client.loop_start()
-            print(client.connect(ip, port=port, keepalive=0))
+            print(client.connect(ip, port=port, keepalive=60))
         except:
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
