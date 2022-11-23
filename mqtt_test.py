@@ -4,7 +4,7 @@ import time
 import paho.mqtt.client as mqtt
 
 established = False
-topic = "Wick/"
+topic = "wick/"
 broker_address = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
@@ -36,7 +36,6 @@ def setup_mqtt():
         print("log: ", buf)
 
     ########################################
-    topic = "Wick/"
     # broker_address="iot.eclipse.org"
     print("creating new instance")
     client = mqtt.Client("P1")  # create new instance
