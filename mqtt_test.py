@@ -40,7 +40,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
         print("log: ", buf)
 
     ########################################
-    broker_address = "stream.lifesensor.cloud"
+    broker_address = "iot.eclipse.org"
     topic = "Wick/"
     # broker_address="iot.eclipse.org"
     print("creating new instance")
