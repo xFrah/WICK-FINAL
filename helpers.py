@@ -1,6 +1,8 @@
 import datetime
 import os
+import re
 import signal
+import uuid
 from uuid import uuid4
 
 import cv2 as cv
@@ -228,6 +230,11 @@ def get_diff(frame, background):
     except ValueError:
         print("[WARN] No contours found")
     return thresh
+
+
+def get_mac_address():
+    mac_address = ':'.join(re.findall('..', '%012x' % uuid.getnode()))
+    return mac_address
 
 
 # function to save list of images in new folder in current working directory linux

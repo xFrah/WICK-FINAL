@@ -5,7 +5,7 @@ import time
 
 import paho.mqtt.client as mqtt
 
-from helpers import kill
+from helpers import get_mac_address
 
 topic = "wick"
 mqtt_host = "stream.lifesensor.cloud"
@@ -63,6 +63,10 @@ def on_log(client, userdata, level, buf):
     print("log: ", buf)
 
 
+def is_for_me_uwu(config):
+    return config["bin_id"] == mac
+
+
 def try_to_disconnect(client):
     try:
         client.disconnect()
@@ -75,15 +79,19 @@ def try_to_disconnect(client):
 
 
 def setup_mqtt(timeout=40, connection_timeout=5):
+    global established
+    global mqtt_client
     client: mqtt.Client = None
+    mqtt_client = None
+    established = False
     start = datetime.datetime.now()
     print("[INFO] Initializing MQTT...")
     while (not client or not established) and (datetime.datetime.now() - start).total_seconds() < timeout:
         client = mqtt.Client("test", protocol=mqtt.MQTTv31, transport='websockets')  # create new instance
         client.on_message = on_message  # attach function to callback
         client.on_connect = on_connect  # attach function to callback
-        #client.on_log = on_log
-        print("[INFO] Connecting to broker...")
+        # client.on_log = on_log
+        print("[MQTT] Connecting to broker...")
         conn_now = datetime.datetime.now()
 
         try:
@@ -95,7 +103,7 @@ def setup_mqtt(timeout=40, connection_timeout=5):
             continue
 
         client.loop_start()  # start the loop
-        print("[INFO] Subscribing to topic", topic)
+        print("[MQTT] Subscribing to topic", topic)
         try:
             client.subscribe(topic)
         except:
@@ -106,11 +114,14 @@ def setup_mqtt(timeout=40, connection_timeout=5):
         while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
             time.sleep(0.1)
     if established:
-        print("[INFO] Received CONNACK!!! MQTT connection established!")
+        print("[MQTT] Received CONNACK!!! MQTT connection established!")
+        mqtt_client = client
         return client
     else:
         try_to_disconnect(client)
         return print("[ERROR] MQTT connection failed!")
 
 
+mac = get_mac_address()
 mqtt_client: mqtt.Client = setup_mqtt()
+

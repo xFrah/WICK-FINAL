@@ -67,6 +67,7 @@ def check_config_integrity(config, dont_kill=False):
         bin_threshold = config["bin_threshold"]
         if current_class not in config_and_data["valid_classes"]:
             return deconfigure_and_kill(f'[ERROR] "{current_class}" is not a valid material, deleting config.json and killing...') if not dont_kill else False
+        print("[INFO] Config file is valid.")
         return bin_id, current_class, bin_height, bin_threshold
     except KeyError:
         return deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...") if not dont_kill else False
@@ -84,11 +85,14 @@ def files_setup():
             print("[ERROR] Couldn't get config from MQTT, retrying...")
             if not mqtt_client or not mqtt_client.is_connected():
                 print("[ERROR] MQTT client is not connected, reinitializing...")
-                # todo setup_mqtt()
-            time.sleep(5)
+                setup_mqtt()
         if not data:
             print("[ERROR] Wizard failed to get config through MQTT, killing...")
             kill()
+        else:
+            print("[INFO] Wizard got config through MQTT, saving to config.json")
+            with open("config.json", "w") as f:
+                json.dump(data, f)
     else:
         with open("config.json", "r") as f:
             data = json.load(f)
