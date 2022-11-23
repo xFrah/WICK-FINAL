@@ -5,9 +5,9 @@ import paho.mqtt.client as mqtt
 
 established = False
 topic = "Wick/"
-broker_address = "stream.lifesensor.cloud"
+broker_address = "broker.hivemq.com"
 mqtt_client_id = "Beam1"
-port = 9001
+port = 1883
 
 
 def on_connect(client, userdata, flags, rc):
