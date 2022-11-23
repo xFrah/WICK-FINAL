@@ -54,7 +54,7 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
     except:
         return print("[ERROR] An error occurred in wizard setup...")
 
-    print("Done.")
+    print("Done, ", received_config)
     return received_config
 
 
