@@ -6,23 +6,24 @@ import paho.mqtt.client as mqtt
 from helpers import kill
 
 topic = "Wick/"
-mqtt_host = "3.18.123.221"
-mqtt_client_id = "flightshot"
-port = 9001
+mqtt_host = "ef26534955764ab6a513c83692903320.s2.eu.hivemq.cloud"
+mqtt_client_id = "Beam1"
+port = 8883
 
 established = False
 
 
 def on_connect(client, userdata, flags, rc):
-    if rc==0:
-        established=True #set flag
-        print("connected OK Returned code=",rc)
+    global established
+    if rc == 0:
+        established = True  # set flag
+        print("connected OK Returned code=", rc)
         client.subscribe(topic)
     else:
         print("Bad connection Returned code= ", rc)
 
 
-def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeout=10, connection_timeout=100000):
+def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, timeout=10, connection_timeout=100000):
     client: mqtt.Client = None
     start = datetime.datetime.now()
     while (not client or not client.is_connected()) and (datetime.datetime.now() - start).total_seconds() < timeout:
@@ -30,7 +31,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
         try:
             client = mqtt.Client(client_id=client_id)
             client.on_connect = on_connect
-            # todo client.username_pw_set(client_id, password)
+            client.username_pw_set(client_id, password)
         except:
             print("\n[ERROR] Error while configuring MQTT client, retrying in 5 seconds...")
             time.sleep(5)
@@ -42,7 +43,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
             continue
-        #client.subscribe(topic)
+        # client.subscribe(topic)
         start2 = datetime.datetime.now()
         while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
             time.sleep(0.1)
