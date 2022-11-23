@@ -71,7 +71,11 @@ def setup_mqtt(timeout=40, connection_timeout=5):
             try_to_disconnect(client)
         while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
             time.sleep(0.1)
-    return client
+    if established:
+        print("[INFO] MQTT connection established!")
+        return client
+    else:
+        return print("[ERROR] MQTT connection failed!")
 
 
 mqtt_client: mqtt.Client = setup_mqtt()
