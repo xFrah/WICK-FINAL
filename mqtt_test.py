@@ -5,10 +5,6 @@ import time
 import paho.mqtt.client as mqtt
 
 established = False
-topic = "Wick/"
-broker_address = "stream.lifesensor.cloud"
-mqtt_client_id = "Beam1"
-port = 9001
 
 
 def on_connect_fail(client, userdata, flags, rc):
@@ -39,19 +35,22 @@ def setup_mqtt():
     ########################################
     # broker_address="iot.eclipse.org"
     print("creating new instance")
-    client = mqtt.Client("P1")  # create new instance
+    client = mqtt.Client("test", protocol=mqtt.MQTTv31)  # create new instance
     client.on_message = on_message  # attach function to callback
     client.on_connect = on_connect  # attach function to callback
     client.on_log = on_log
     print("connecting to broker")
-    client.connect(broker_address, port)  # connect to broker
-    client.loop_start()  # start the loop
+    client.connect("3.18.123.221", 9001)  # connect to broker
+    #client.loop_start()  # start the loop
+    topic = "wick"
     print("Subscribing to topic", topic)
-    client.subscribe(topic)
+    client.subscribe(topic, qos=2)
     print("Publishing message to topic", topic)
-    client.publish(topic, json.dumps({"bin_id": 51333, "cfg": True}))
-    time.sleep(10)  # wait
-    client.loop_stop()  # stop the loop
+    asd = json.dumps({"bin_id": 51333, "config": True})
+    print(asd)
+    client.publish(topic, asd, qos=0)
+    #time.sleep(10)  # wait
+    client.loop_forever()
 
 
 setup_mqtt()
