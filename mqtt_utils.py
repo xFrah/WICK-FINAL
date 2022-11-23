@@ -24,7 +24,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
         try:
             client = mqtt.Client(client_id=client_id, clean_session=True, userdata=None, protocol=mqtt.MQTTv311,
                                  transport="tcp")
-            #client.on_connect = on_connect
+            # client.on_connect = on_connect
             # todo client.username_pw_set(client_id, password)
         except:
             print("\n[ERROR] Error while configuring MQTT client, retrying in 5 seconds...")
@@ -36,6 +36,8 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
             continue
+        client.subscribe(topic)
+        client.loop_start()
         start2 = datetime.datetime.now()
         while not client.is_connected() and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
             pass
