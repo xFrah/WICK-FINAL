@@ -10,15 +10,15 @@ mqtt_client_id = "Beam1"
 port = 1883
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(userdata, flags, result):
     global established
-    if rc == 0:
+    if result == 0:
         established = True  # set flag
-        client.connected_flag = True  # set flag
-        print("connected OK Returned code=", rc)
+        #client.connected_flag = True  # set flag
+        print("connected OK Returned code=", result)
         # client.subscribe(topic)
     else:
-        print("Bad connection Returned code= ", rc)
+        print("Bad connection Returned code= ", result)
 
 
 def on_connect_fail(client, userdata, flags, rc):
