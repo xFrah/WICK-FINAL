@@ -26,7 +26,7 @@ def create_csv_file():
 
 # wizard setup
 def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
-    print("[INFO] Getting config through MQTT:", end=" ", flush=True)
+    print("[INFO] Getting config through MQTT...")
     try:
         if not mqtt_client.is_connected():
             return print("[ERROR] MQTT client is not connected, exiting wizard...")
@@ -44,7 +44,6 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
     except:
         return print("[ERROR] An error occurred in wizard setup...")
 
-    print("Done, ", received_config)
     return received_config
 
 
