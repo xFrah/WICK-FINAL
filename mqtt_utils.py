@@ -84,7 +84,7 @@ def setup_mqtt(timeout=40, connection_timeout=5):
         client = mqtt.Client("test", protocol=mqtt.MQTTv31, transport='websockets')  # create new instance
         client.on_message = on_message  # attach function to callback
         client.on_connect = on_connect  # attach function to callback
-        client.on_log = on_log
+        #client.on_log = on_log
         print("[INFO] Connecting to broker...")
         conn_now = datetime.datetime.now()
 
