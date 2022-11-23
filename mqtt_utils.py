@@ -6,9 +6,9 @@ import paho.mqtt.client as mqtt
 from helpers import kill
 
 topic = "Wick/"
-mqtt_host = "ef26534955764ab6a513c83692903320.s2.eu.hivemq.cloud"
+mqtt_host = "broker.mqttdashboard.com"
 mqtt_client_id = "Beam1"
-port = 8883
+port = 8000
 
 established = False
 
