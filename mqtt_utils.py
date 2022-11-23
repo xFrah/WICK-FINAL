@@ -42,10 +42,10 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
             time.sleep(5)
             continue
         try:
-            #client.loop_start()
+            client.loop_start()
             print(client.connect(ip, port=port, keepalive=60))
             print(client.subscribe(topic))
-            client.loop_forever()
+            #client.loop_forever()
         except:
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
