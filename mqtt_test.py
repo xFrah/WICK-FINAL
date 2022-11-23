@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 
 established = False
 topic = "Wick/"
-mqtt_host = "stream.lifesensor.cloud"
+broker_address = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
 
@@ -40,7 +40,6 @@ def setup_mqtt():
         print("log: ", buf)
 
     ########################################
-    broker_address = "stream.lifesensor.cloud"
     topic = "Wick/"
     # broker_address="iot.eclipse.org"
     print("creating new instance")
@@ -49,7 +48,7 @@ def setup_mqtt():
     client.on_connect = on_connect  # attach function to callback
     client.on_log = on_log
     print("connecting to broker")
-    client.connect(broker_address)  # connect to broker
+    client.connect(broker_address, port)  # connect to broker
     client.loop_start()  # start the loop
     print("Subscribing to topic", topic)
     client.subscribe(topic)
