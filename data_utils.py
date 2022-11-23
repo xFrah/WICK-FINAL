@@ -25,7 +25,7 @@ def create_csv_file():
 
 
 # wizard setup
-def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
+def il_fantastico_viaggio_del_bagarozzo_mark():
     print("[INFO] Getting config through MQTT...")
     try:
         if not mqtt_client.is_connected():
@@ -33,18 +33,15 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
 
         mqtt_client.publish(topic, json.dumps({"bin_id": 51333, "config": True}))
 
-        received_config = get_next_message()
-
         start = datetime.datetime.now()
-        while not received_config and mqtt_client.is_connected() and (datetime.datetime.now() - start).total_seconds() < 10:
-            pass
+        while (datetime.datetime.now() - start).total_seconds() < 10:
+            if received_config := get_next_message():
+                return received_config
 
         if not mqtt_client.is_connected():
             return print("[ERROR] MQTT connection lost during wizard setup, exiting wizard...")
     except:
         return print("[ERROR] An error occurred in wizard setup...")
-
-    return received_config
 
 
 def deconfigure_and_kill(cause):
@@ -80,8 +77,7 @@ def files_setup():
     start = datetime.datetime.now()
     if not os.path.exists("config.json"):
         print("[INFO] Trying to get config through MQTT")
-        bin_id = random.randint(0, 65534)
-        while not (data := il_fantastico_viaggio_del_bagarozzo_mark(bin_id)) and (datetime.datetime.now() - start).total_seconds() < 60:
+        while not (data := il_fantastico_viaggio_del_bagarozzo_mark()) and (datetime.datetime.now() - start).total_seconds() < 60:
             print("[ERROR] Couldn't get config from MQTT, retrying...")
             if not mqtt_client or not mqtt_client.is_connected():
                 print("[ERROR] MQTT client is not connected, reinitializing...")
@@ -97,9 +93,9 @@ def files_setup():
         with open("config.json", "r") as f:
             data = json.load(f)
         # make it crash anyway if it can't unpack
-        bin_id, current_class, bin_height, bin_threshold = check_config_integrity(data)
+        check_config_integrity(data)
         if mqtt_client and mqtt_client.is_connected():
-            received = il_fantastico_viaggio_del_bagarozzo_mark(bin_id)  # todo why does it return null?
+            received = il_fantastico_viaggio_del_bagarozzo_mark()  # todo why does it return null?
             if received:
                 if check_config_integrity(received, dont_kill=True):
                     if received == data:

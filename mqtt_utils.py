@@ -17,13 +17,19 @@ arriving_data_lock = threading.Lock()
 data_ready = False
 rx_buffer = None
 
+valid = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
+
 
 def on_message(client, userdata, message):
+    py_var = json.loads(message.payload)
+    # todo activate this
+    # if not is_for_me_uwu(py_var):
+    #     return
     global rx_buffer
     global data_ready
     with arriving_data_lock:
         # print("message received ", str(message.payload.decode("utf-8")))
-        rx_buffer = json.loads(message.payload)
+        rx_buffer = py_var
         data_ready = True
     print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
     # print("message topic=", message.topic)
