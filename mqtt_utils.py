@@ -32,6 +32,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             continue
         try:
             print(client.connect(ip, port=port, keepalive=0))
+            client.loop_start()
         except:
             print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
             time.sleep(5)
