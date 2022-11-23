@@ -25,7 +25,7 @@ def on_connect_fail(client, userdata, flags, rc):
     print("Connection failed")
 
 
-def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, timeout=10, connection_timeout=100000):
+def setup_mqtt():
     ############
     def on_message(client, userdata, message):
         print("message received ", str(message.payload.decode("utf-8")))
@@ -40,7 +40,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
         print("log: ", buf)
 
     ########################################
-    broker_address = "iot.eclipse.org"
+    broker_address = "stream.lifesensor.cloud"
     topic = "Wick/"
     # broker_address="iot.eclipse.org"
     print("creating new instance")
@@ -59,4 +59,4 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
     client.loop_stop()  # stop the loop
 
 
-setup_mqtt("stream.lifesensor.cloud", "Beam1", "Gaspardo1801", 9001, 10, 100000)
+setup_mqtt()
