@@ -14,10 +14,12 @@ established = False
 
 
 def on_connect(client, userdata, flags, rc):
-    global established
-    print("[INFO] Connected with result code " + str(rc))
-    established = True
-    client.subscribe(topic)
+    if rc==0:
+        established=True #set flag
+        print("connected OK Returned code=",rc)
+        client.subscribe(topic)
+    else:
+        print("Bad connection Returned code= ", rc)
 
 
 def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeout=10, connection_timeout=100000):
