@@ -36,7 +36,6 @@ config_and_data = {
 # function to change leds from black to yellow
 def change_to_yellow(strip):
     global setup_not_done
-    print("[INFO] Changing leds to yellow")
     for i in range(0, 20, 5):
         for y in range(strip.numPixels()):
             strip.setPixelColor(y, Color(i, i, 0))
@@ -95,6 +94,8 @@ def data_manager_thread():
                 "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
                 "wrong_class_counter": data["wrong_class_counter"][-1]
             }
+            # todo send data to server
+            # todo send data to mqtt
 
             with open("data.json", "w") as f:
                 json.dump(save_buffer, f)

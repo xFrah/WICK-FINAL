@@ -5,9 +5,10 @@ import paho.mqtt.client as mqtt
 
 from helpers import kill
 
-topic = "wick/"
-mqtt_host = "cock"
+topic = "Wick/"
+mqtt_host = "http://stream.lifesensor.cloud"
 mqtt_client_id = "flightshot"
+port = 9001
 
 
 def on_connect(client, userdata, flags, rc):
@@ -47,4 +48,4 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
     return client
 
 
-mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id)
+mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id, port=port)
