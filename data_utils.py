@@ -35,7 +35,7 @@ def il_fantastico_viaggio_del_bagarozzo_mark():
 
         start = datetime.datetime.now()
         while (datetime.datetime.now() - start).total_seconds() < 10:
-            if received_config := get_next_message():
+            if (received_config := get_next_message()) and len(received_config) > 2:
                 return received_config
 
         if not mqtt_client.is_connected():
