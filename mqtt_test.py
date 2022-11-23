@@ -35,20 +35,20 @@ def setup_mqtt():
     ########################################
     # broker_address="iot.eclipse.org"
     print("creating new instance")
-    client = mqtt.Client("test", protocol=mqtt.MQTTv31)  # create new instance
+    client = mqtt.Client("test", protocol=mqtt.MQTTv31, transport='websockets')  # create new instance
     client.on_message = on_message  # attach function to callback
     client.on_connect = on_connect  # attach function to callback
     client.on_log = on_log
     print("connecting to broker")
-    client.connect("3.18.123.221", 9001)  # connect to broker
+    client.connect("stream.lifesensor.cloud", port=9001)  # connect to broker
     #client.loop_start()  # start the loop
     topic = "wick"
     print("Subscribing to topic", topic)
-    client.subscribe(topic, qos=2)
+    client.subscribe(topic)
     print("Publishing message to topic", topic)
     asd = json.dumps({"bin_id": 51333, "config": True})
     print(asd)
-    client.publish(topic, asd, qos=0)
+    client.publish(topic, asd)
     #time.sleep(10)  # wait
     client.loop_forever()
 

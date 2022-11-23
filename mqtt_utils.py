@@ -1,11 +1,12 @@
 import datetime
+import json
 import time
 
 import paho.mqtt.client as mqtt
 
 from helpers import kill
 
-topic = "Wick/"
+topic = "wick"
 mqtt_host = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
@@ -13,53 +14,63 @@ port = 9001
 established = False
 
 
+def on_message(client, userdata, message):
+    print("message received ", str(message.payload.decode("utf-8")))
+    print("message topic=", message.topic)
+    print("message qos=", message.qos)
+    print("message retain flag=", message.retain)
+
+
 def on_connect(client, userdata, flags, rc):
     global established
     if rc == 0:
         established = True  # set flag
+        client.connected_flag = True  # set flag
         print("connected OK Returned code=", rc)
         # client.subscribe(topic)
     else:
         print("Bad connection Returned code= ", rc)
 
 
-def on_connect_fail(client, userdata, flags, rc):
-    print("Connection failed")
+def on_log(client, userdata, level, buf):
+    print("log: ", buf)
 
 
-def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, timeout=10, connection_timeout=100000):
+def try_to_disconnect(client):
+    try:
+        client.disconnect()
+    except:
+        pass
+
+
+def setup_mqtt(timeout=40, connection_timeout=5):
     client: mqtt.Client = None
     start = datetime.datetime.now()
+    print("[INFO] Initializing MQTT...")
     while (not client or not established) and (datetime.datetime.now() - start).total_seconds() < timeout:
-        print("[INFO] Configuring MQTT client:", end=" ", flush=True)
+        client = mqtt.Client("test", protocol=mqtt.MQTTv31, transport='websockets')  # create new instance
+        client.on_message = on_message  # attach function to callback
+        client.on_connect = on_connect  # attach function to callback
+        client.on_log = on_log
+        print("[INFO] Connecting to broker...")
+        conn_now = datetime.datetime.now()
         try:
-            client = mqtt.Client(client_id=client_id)
-            client.on_connect = on_connect
-            client.on_connect_fail = on_connect_fail
-            client.username_pw_set(client_id, password)
+            client.connect(mqtt_host, port=port)
         except:
-            print("\n[ERROR] Error while configuring MQTT client, retrying in 5 seconds...")
-            time.sleep(5)
+            print("[ERROR] Connection failed, retrying...")
+            try_to_disconnect(client)
+            time.sleep(3)
             continue
-        try:
-            client.loop_start()
-            print(client.connect(ip, port=port, keepalive=60))
-            print(client.subscribe(topic))
-            #client.loop_forever()
-        except:
-            print("\n[ERROR] Error while connecting to MQTT broker, retrying in 5 seconds...")
-            time.sleep(5)
-            continue
-        start2 = datetime.datetime.now()
-        while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
+        while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
             time.sleep(0.1)
-        if not established:
-            print("\n[ERROR] MQTT connection timed out, retrying in 5 seconds...")
-            time.sleep(5)
-            continue
-        else:
-            print("Done.")
+        client.loop_start()  # start the loop
+        print("[INFO] Subscribing to topic", topic)
+        try:
+            client.subscribe(topic)
+        except:
+            print("[ERROR] Subscription failed!")
+            try_to_disconnect(client)
     return client
 
 
-mqtt_client: mqtt.Client = setup_mqtt(mqtt_host, mqtt_client_id, port=port)
+mqtt_client: mqtt.Client = setup_mqtt()
