@@ -5,20 +5,9 @@ import paho.mqtt.client as mqtt
 
 established = False
 topic = "Wick/"
-broker_address = "broker.hivemq.com"
+broker_address = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
-port = 1883
-
-
-def on_connect(userdata, flags, result):
-    global established
-    if result == 0:
-        established = True  # set flag
-        #client.connected_flag = True  # set flag
-        print("connected OK Returned code=", result)
-        # client.subscribe(topic)
-    else:
-        print("Bad connection Returned code= ", result)
+port = 9001
 
 
 def on_connect_fail(client, userdata, flags, rc):
@@ -33,8 +22,15 @@ def setup_mqtt():
         print("message qos=", message.qos)
         print("message retain flag=", message.retain)
 
-    def on_connect(client, userdata, message):
-        print("Connected to MQTT broker")
+    def on_connect(client, userdata, flags, rc):
+        global established
+        if rc == 0:
+            established = True  # set flag
+            client.connected_flag = True  # set flag
+            print("connected OK Returned code=", rc)
+            # client.subscribe(topic)
+        else:
+            print("Bad connection Returned code= ", rc)
 
     def on_log(client, userdata, level, buf):
         print("log: ", buf)
