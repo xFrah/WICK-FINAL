@@ -55,10 +55,8 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         established = True  # set flag
         client.connected_flag = True  # set flag
-        print("connected OK Returned code=", rc)
-        # client.subscribe(topic)
     else:
-        print("Bad connection Returned code= ", rc)
+        print("[MQTT] Bad connection, returned code= ", rc)
 
 
 def on_log(client, userdata, level, buf):
