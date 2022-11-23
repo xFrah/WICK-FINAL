@@ -22,8 +22,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
     while (not client or not client.is_connected()) and (datetime.datetime.now() - start).total_seconds() < timeout:
         print("[INFO] Configuring MQTT client:", end=" ", flush=True)
         try:
-            client = mqtt.Client(client_id=client_id, clean_session=True, userdata=None, protocol=mqtt.MQTTv311,
-                                 transport="tcp")
+            client = mqtt.Client(client_id=client_id)
             client.on_connect = on_connect
             # todo client.username_pw_set(client_id, password)
         except:
