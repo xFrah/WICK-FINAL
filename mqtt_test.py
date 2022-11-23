@@ -38,8 +38,8 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
             time.sleep(5)
             continue
         try:
-            client.loop_start()
             print(client.connect(ip, port=port, keepalive=60))
+            client.loop_start()
             print(client.subscribe(topic))
             # client.loop_forever()
         except:
