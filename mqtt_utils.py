@@ -23,6 +23,7 @@ def on_message(client, userdata, message):
     global data_ready
     with arriving_data_lock:
         rx_buffer = json.load(message.payload)
+        print("message received ", str(message.payload.decode("utf-8")))
         data_ready = True
     print("message received ", str(message.payload.decode("utf-8")))
     print("message topic=", message.topic)
