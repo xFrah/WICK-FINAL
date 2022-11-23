@@ -1,5 +1,6 @@
 import datetime
 import json
+import threading
 import time
 
 import paho.mqtt.client as mqtt
@@ -12,13 +13,40 @@ mqtt_client_id = "Beam1"
 port = 9001
 
 established = False
+arriving_data_lock = threading.Lock()
+data_ready = False
+rx_buffer = None
 
 
 def on_message(client, userdata, message):
+    global rx_buffer
+    global data_ready
+    with arriving_data_lock:
+        rx_buffer = json.load(message.payload.decode("utf-8"))
+        data_ready = True
     print("message received ", str(message.payload.decode("utf-8")))
     print("message topic=", message.topic)
     print("message qos=", message.qos)
     print("message retain flag=", message.retain)
+
+
+def get_next_message(timeout=10):
+    global rx_buffer
+    global data_ready
+    start = datetime.datetime.now()
+    while not data_ready and (datetime.datetime.now() - start).total_seconds() < timeout:
+        time.sleep(0.1)
+    if data_ready:
+        with arriving_data_lock:
+            data_ready = False
+            if rx_buffer:
+                tmp = rx_buffer
+                rx_buffer = None
+                return tmp
+            else:
+                return None
+    else:
+        return None
 
 
 def on_connect(client, userdata, flags, rc):

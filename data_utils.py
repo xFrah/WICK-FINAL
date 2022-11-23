@@ -7,10 +7,8 @@ import time
 import paho.mqtt.client as mqtt
 
 from flightshot import config_and_data
-from mqtt_utils import topic, setup_mqtt, mqtt_client
+from mqtt_utils import topic, setup_mqtt, mqtt_client, get_next_message
 from helpers import kill
-
-received_config = None
 
 
 def add_lines_csv(data):
@@ -26,24 +24,16 @@ def create_csv_file():
     print("Done.")
 
 
-def on_message(client, userdata, msg):
-    global received_config
-    if received_config is None:
-        data = json.loads(msg.payload)
-        if "bin_id" in data:
-            if data["bin_id"] == config_and_data["bin_id"]:
-                received_config = data
-
-
 # wizard setup
 def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
     print("[INFO] Getting config through MQTT:", end=" ", flush=True)
     try:
-        mqtt_client.on_message = on_message
         if not mqtt_client.is_connected():
             return print("[ERROR] MQTT client is not connected, exiting wizard...")
 
         mqtt_client.publish(topic, json.dumps({"bin_id": 51333, "config": True}))
+
+        received_config = get_next_message()
 
         start = datetime.datetime.now()
         while not received_config and mqtt_client.is_connected() and (datetime.datetime.now() - start).total_seconds() < 10:
