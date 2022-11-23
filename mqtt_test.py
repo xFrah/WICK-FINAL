@@ -36,6 +36,9 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
     def on_connect(client, userdata, message):
         print("Connected to MQTT broker")
 
+    def on_log(client, userdata, level, buf):
+        print("log: ", buf)
+
     ########################################
     broker_address = "stream.lifesensor.cloud"
     topic = "Wick/"
@@ -44,6 +47,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Gaspardo1801", port=1883, ti
     client = mqtt.Client("P1")  # create new instance
     client.on_message = on_message  # attach function to callback
     client.on_connect = on_connect  # attach function to callback
+    client.on_log = on_log
     print("connecting to broker")
     client.connect(broker_address)  # connect to broker
     client.loop_start()  # start the loop
