@@ -43,7 +43,7 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
         if not mqtt_client.is_connected():
             return print("[ERROR] MQTT client is not connected, exiting wizard...")
 
-        mqtt_client.publish(topic, json.dumps({"bin_id": bin_id, "config": True}))
+        mqtt_client.publish(topic, json.dumps({"bin_id": 51333, "config": True}))
 
         start = datetime.datetime.now()
         while not received_config and mqtt_client.is_connected() and (datetime.datetime.now() - start).total_seconds() < 10:
