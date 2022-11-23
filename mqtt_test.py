@@ -13,6 +13,7 @@ def on_connect(client, userdata, flags, rc):
     global established
     if rc == 0:
         established = True  # set flag
+        client.connected_flag = True  # set flag
         print("connected OK Returned code=", rc)
         # client.subscribe(topic)
     else:
