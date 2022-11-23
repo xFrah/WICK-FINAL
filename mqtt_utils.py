@@ -45,7 +45,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
         #client.subscribe(topic)
         start2 = datetime.datetime.now()
         while not established and (datetime.datetime.now() - start2).total_seconds() < connection_timeout:
-            pass
+            time.sleep(0.1)
         if not established:
             print("\n[ERROR] MQTT connection timed out, retrying in 5 seconds...")
             time.sleep(5)
