@@ -40,8 +40,8 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
     print("[INFO] Getting config through MQTT:", end=" ", flush=True)
     try:
         mqtt_client.on_message = on_message
-        #if not mqtt_client.is_connected():
-        #    return print("[ERROR] MQTT client is not connected, exiting wizard...")
+        if not mqtt_client.is_connected():
+            return print("[ERROR] MQTT client is not connected, exiting wizard...")
 
         mqtt_client.publish(topic, json.dumps({"bin_id": bin_id, "cfg": True}))
 
@@ -49,8 +49,8 @@ def il_fantastico_viaggio_del_bagarozzo_mark(bin_id):
         while not received_config and mqtt_client.is_connected() and (datetime.datetime.now() - start).total_seconds() < 10:
             pass
 
-        #if not mqtt_client.is_connected():
-        #    return print("[ERROR] MQTT connection lost during wizard setup, exiting wizard...")
+        if not mqtt_client.is_connected():
+            return print("[ERROR] MQTT connection lost during wizard setup, exiting wizard...")
     except:
         return print("[ERROR] An error occurred in wizard setup...")
 
@@ -93,7 +93,7 @@ def files_setup():
         bin_id = random.randint(0, 65534)
         while not (data := il_fantastico_viaggio_del_bagarozzo_mark(bin_id)) and (datetime.datetime.now() - start).total_seconds() < 60:
             print("[ERROR] Couldn't get config from MQTT, retrying...")
-            if True or (not mqtt_client or not mqtt_client.is_connected()):
+            if not mqtt_client or not mqtt_client.is_connected():
                 print("[ERROR] MQTT client is not connected, reinitializing...")
                 # todo setup_mqtt()
             time.sleep(5)
@@ -105,7 +105,7 @@ def files_setup():
             data = json.load(f)
         # make it crash anyway if it can't unpack
         bin_id, current_class, bin_height, bin_threshold = check_config_integrity(data)
-        if True or (mqtt_client and mqtt_client.is_connected()):
+        if mqtt_client and mqtt_client.is_connected():
             received = il_fantastico_viaggio_del_bagarozzo_mark(bin_id)  # todo why does it return null?
             if received:
                 if check_config_integrity(received, dont_kill=True):
