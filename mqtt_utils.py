@@ -25,7 +25,7 @@ def setup_mqtt(ip, client_id="mqtt_user", password="Beam2020", port=1883, timeou
             client = mqtt.Client(client_id=client_id, clean_session=True, userdata=None, protocol=mqtt.MQTTv311,
                                  transport="tcp")
             client.on_connect = on_connect
-            client.username_pw_set(client_id, password)
+            # todo client.username_pw_set(client_id, password)
         except:
             print("\n[ERROR] Error while configuring MQTT client, retrying in 5 seconds...")
             time.sleep(5)
