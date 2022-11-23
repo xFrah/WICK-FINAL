@@ -61,8 +61,7 @@ def setup_mqtt(timeout=40, connection_timeout=5):
             try_to_disconnect(client)
             time.sleep(3)
             continue
-        while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
-            time.sleep(0.1)
+
         client.loop_start()  # start the loop
         print("[INFO] Subscribing to topic", topic)
         try:
@@ -70,6 +69,8 @@ def setup_mqtt(timeout=40, connection_timeout=5):
         except:
             print("[ERROR] Subscription failed!")
             try_to_disconnect(client)
+        while not established and (datetime.datetime.now() - conn_now).total_seconds() < connection_timeout:
+            time.sleep(0.1)
     return client
 
 
