@@ -5,7 +5,7 @@ import vl53l5cx_ctypes as vl53l5cx
 from matplotlib import cm
 
 from helpers import flip_matrix
-from flightshot import config_and_data
+from data_utils import config_and_data
 from PIL import Image
 
 

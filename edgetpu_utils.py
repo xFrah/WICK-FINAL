@@ -4,7 +4,7 @@ from pycoral.adapters import common
 from pycoral.adapters import classify
 import cv2 as cv
 
-from flightshot import config_and_data
+from data_utils import config_and_data
 
 
 def setup_edgetpu():
