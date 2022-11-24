@@ -66,11 +66,8 @@ class Camera:
 
     def grab_background(self, return_to_black=True):
         self.flash.fill((255, 255, 255))
-        print("1")
         self.shoot(timer=0.125, return_to_black=return_to_black)
-        print("2")
         buffer = self.grab_buffer()
-        print("3")
         if len(buffer) > 0:
             print(f"[INFO] Background frame count: {len(buffer)}")
             return max(buffer.values(), key=lambda d: d[1])[0]
@@ -86,7 +83,6 @@ class Camera:
             if frame is not None:
                 ping(thread)
             if self.do_i_shoot:
-                print("[INFO] Shooting")
                 # temp = {datetime.datetime.now(): (frame, 0)}
                 temp = {}
                 while self.do_i_shoot and ram_is_ok:
