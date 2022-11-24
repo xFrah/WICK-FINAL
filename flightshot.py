@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import numpy
-from psutil import virtual_memory
-import cv2 as cv
 
 import threading
 import datetime
@@ -10,10 +8,7 @@ import datetime
 from new_led_utils import LEDs
 import paho.mqtt.client as mqtt
 
-do_i_shoot = False
-camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
 pings: dict[threading.Thread, datetime.datetime] = {}
-camera_lock = threading.Lock()
 mqtt_client: mqtt.client = None
 
 print("[INFO] Starting...")
@@ -48,34 +43,6 @@ def watchdog_thread():
                 kill()
 
 
-def camera_thread(cap: cv.VideoCapture):
-    thread = threading.currentThread()
-    thread.setName("Camera")
-    global camera_buffer
-    ram_is_ok = True
-    while True:
-        _, frame = cap.read()
-        if frame is not None:
-            ping(thread)
-        if do_i_shoot:
-            # temp = {datetime.datetime.now(): (frame, 0)}
-            temp = {}
-            while do_i_shoot and ram_is_ok:
-                _, frame = cap.read()
-                lentemp = len(temp)
-                temp[datetime.datetime.now()] = frame, lentemp
-                ram_is_ok = virtual_memory()[2] < 70
-            if not ram_is_ok:
-                print("[WARN] RAM is too high, waiting for next session")
-                while do_i_shoot:
-                    pass
-                print("[WARN] Broken session has finished, waiting for next one...")
-            else:
-                print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-            with camera_lock:
-                camera_buffer = temp.copy()
-
-
 def show_results(tof_frame, camera_frame, diff, cropped=None):
     render_tof(tof_frame)
 
@@ -84,32 +51,6 @@ def show_results(tof_frame, camera_frame, diff, cropped=None):
     cv.imshow("Camera", camera_frame)
     cv.imshow("Diff", diff)
     cv.waitKey(1) & 0xFF
-
-
-def grab_buffer():
-    global camera_buffer
-    while len(camera_buffer) == 0:
-        pass
-    with camera_lock:
-        copy = camera_buffer.copy()
-        camera_buffer = {}
-    return copy
-
-
-def grab_background(leds: LEDs, return_to_black=True):
-    global do_i_shoot
-    leds.fill((255, 255, 255))
-    do_i_shoot = True
-    time.sleep(0.125)
-    do_i_shoot = False
-    if return_to_black:
-        leds.fill((0, 0, 0))
-    buffer = grab_buffer()
-    if len(buffer) > 0:
-        print(f"[INFO] Background frame count: {len(buffer)}")
-        return max(buffer.values(), key=lambda d: d[1])[0]
-    else:
-        print("[WARN] No background frames")
 
 
 def get_frame_at_distance(tof_buffer: dict[datetime.datetime, tuple[numpy.array, float]],
@@ -149,20 +90,19 @@ def setup():
     mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
     dm = DataManager(mqtt_client)
     interpreter = setup_edgetpu()
-    cap = setup_camera()
-    threading.Thread(target=camera_thread, args=(cap,)).start()
+    camera = Camera(leds)
     vl53 = tof_setup()
     tof_buffer = {}
     leds.stop_loading_animation()
-    background = grab_background(leds)
+    background = camera.grab_background()
     leds.change_to_green()
     leds.black_from_green()
     threading.Thread(target=watchdog_thread, daemon=True, name="Watchdog").start()
-    return leds, interpreter, cap, vl53, background, tof_buffer, dm
+    return leds, interpreter, camera, vl53, background, tof_buffer, dm
 
 
 def main():
-    leds, interpreter, cap, vl53, background, tof_buffer, dm = setup()
+    leds, interpreter, camera, vl53, background, tof_buffer, dm = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
@@ -177,9 +117,8 @@ def main():
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
-                    leds.fill((255, 255, 255))
+                    camera.shoot()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
-                    do_i_shoot = True
                     movement = True
                     print("[INFO] Movement detected")
                     print(asd, sum(asd) / len(asd))
@@ -187,11 +126,10 @@ def main():
                     count = 1
             else:
                 if len(asd) == 0:
-                    do_i_shoot = False
+                    camera.stop_shooting()
                     now = datetime.datetime.now()
-                    buffer = grab_buffer()
+                    buffer = camera.grab_buffer()
                     buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
-                    leds.fill((1, 1, 1))
                     movement = False
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
@@ -214,7 +152,7 @@ def main():
                                 leds.change_to_green()
                             else:
                                 leds.change_to_red()
-                            background = grab_background(return_to_black=False)
+                            background = camera.grab_background(return_to_black=False)
                             if label == "paper":
                                 leds.black_from_green()
                             else:
