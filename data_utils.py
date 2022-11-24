@@ -32,7 +32,7 @@ def update_cached_config(data):
         config_and_data["name"] = data["name"]
         config_and_data["bin_id"] = data["bin_id"]
         config_and_data["bin_height"] = data["bin_height"]
-        config_and_data["bin_threshold"] = data["bin_threshold"]
+        config_and_data["bin_threshold"] = data["bin_thresold"]
         config_and_data["current_class"] = data["current_class"]
     except KeyError:
         deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...")
