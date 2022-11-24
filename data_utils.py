@@ -135,12 +135,21 @@ class DataManager:
                     self.data_buffer.clear()
                     self.data_ready = False
                 save_buffer = {
-                    "riempimento": data["riempimento"][-1],
+                    "bin_id": helpers.get_mac_address(),
+                    "filling": data["riempimento"][-1],
                     "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
-                    "wrong_class_counter": data["wrong_class_counter"][-1]
+                    "wrong_class_counter": data["wrong_class_counter"][-1],
+                    "current_class": config_and_data["current_class"],
                 }
-                # todo send data to server
-                # todo send data to mqtt
+                mqtt_buffer = {
+
+                    "filling": 0,
+                    "timestamp_last_svuotamento": "2022-11-18 10:31:01.596146",
+                    "wrong_class_counter": 0,
+                    "current_class": "paper",
+                    "config": False
+                }
+                self.mqtt_client.publish(json.dumps(save_buffer))
 
                 with open("data.json", "w") as f:
                     json.dump(save_buffer, f)
@@ -152,7 +161,7 @@ class DataManager:
                 # if time is 12 pm or 6 pm, upload data
                 if datetime.datetime.now().hour in [12, 18]:
                     print("[INFO] Uploading data...")
-                    # todo upload
+                    self.upload_to_ftp()
                     print("[INFO] Data uploaded.")
 
     def pass_data(self, data_dict: dict[str, Any]):

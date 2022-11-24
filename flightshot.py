@@ -102,6 +102,7 @@ def setup():
     global mqtt_client
     leds = LEDs()
     mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
+    mqtt_client.try_to_connect()
     dm = DataManager(mqtt_client)
     interpreter = setup_edgetpu()
     camera = Camera(leds)
