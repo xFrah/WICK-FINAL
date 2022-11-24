@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 
 import numpy
 
@@ -6,6 +7,16 @@ import threading
 import datetime
 
 import paho.mqtt.client as mqtt
+
+import helpers
+from camera_utils import Camera
+from data_utils import DataManager
+from edgetpu_utils import inference, setup_edgetpu
+from mqtt_utils import MQTTExtendedClient
+from new_led_utils import LEDs
+from tof_utils import tof_setup, render_tof, get_trash_level
+from watchdog import ping
+import cv2 as cv
 
 pings: dict[threading.Thread, datetime.datetime] = {}
 mqtt_client: mqtt.Client = None
@@ -39,10 +50,10 @@ def watchdog_thread():
         for key, value in pings.items():
             if (datetime.datetime.now() - value).total_seconds() > 70:
                 print(f"[ERROR] Thread [{key.getName()}] is not responding, killing...")
-                kill()
+                helpers.kill()
             elif not key.is_alive():
                 print(f"[ERROR] Thread [{key.getName()}] is not responding, killing...")
-                kill()
+                helpers.kill()
 
 
 def show_results(tof_frame, camera_frame, diff, cropped=None):
@@ -125,7 +136,6 @@ def main():
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
-    global do_i_shoot
     count = 0
     movement = False
     start = datetime.datetime.now()
@@ -200,11 +210,4 @@ def main():
 
 
 if __name__ == '__main__':
-    from new_led_utils import *
-    from mqtt_utils import *
-    from data_utils import *
-    from tof_utils import *
-    from watchdog import *
-    from edgetpu_utils import *
-    from camera_utils import *
     main()
