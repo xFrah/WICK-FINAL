@@ -10,6 +10,7 @@ from ftplib import FTP
 
 import helpers
 from helpers import kill
+from sftp_utils import SFTP
 from watchdog import ping
 
 config_and_data = {
@@ -31,7 +32,7 @@ class DataManager:
         """
         Saves data to local and cloud.
         """
-        self.ftp_client: FTP = None
+        self.ftp_client: SFTP = None
         self.mqtt_client = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
@@ -173,17 +174,7 @@ class DataManager:
         """
         It connects to the FTP server.
         """
-        print("[INFO] Connecting to FTP...")
-        try:
-            self.ftp_client = FTP()
-            print("[INFO] FTP client initialized.")
-            self.ftp_client.connect(host="51.68.231.173", port=22)
-            print("[INFO] FTP client connected.")
-            self.ftp_client.login(user="ubuntu", passwd="5xNbsHbAy9jf")
-            print("[INFO] FTP client logged in.")
-            self.ftp_client.cwd('ubuntu')
-        except Exception as e:
-            print(f"[ERROR] An error occurred while connecting to FTP: \n{e}")
+        self.ftp_client = SFTP(hostname="51.68.231.173", username="ubuntu", password="5xNbsHbAy9jf", port=22)
 
     def upload_to_ftp(self):
         """
@@ -199,11 +190,9 @@ class DataManager:
         last = 0
         for i, image in enumerate(imlist):
             try:
-                with open(f"images/{image}", "rb") as f:
-                    self.ftp_client.storbinary(f"STOR {image}", f)
+                self.ftp_client.upload("images/" + image, "/home/ubuntu/images/" + image)
             except Exception as e:
                 print(f"[ERROR] Cause: {e}")
-                # print(f"[ERROR] Couldn't upload file {image}...")
                 errors += 1
             n = int(i / len(imlist) * 10)
             if n > last:
