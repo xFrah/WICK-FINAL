@@ -112,6 +112,7 @@ def setup():
     leds.stop_loading_animation()
     print("[INFO] Setup complete!")
     background = camera.grab_background()
+    print("[INFO] Background grabbed!")
     leds.change_to_green()
     leds.black_from_green()
     threading.Thread(target=watchdog_thread, daemon=True, name="Watchdog").start()
