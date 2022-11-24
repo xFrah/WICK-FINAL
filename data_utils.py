@@ -50,6 +50,7 @@ class DataManager:
         self.data_lock = threading.Lock()
         self.data_ready = False
         self.data_buffer: dict[str, Any] = {}
+        self.files_setup()
         self.data_manager_thread = threading.Thread(target=self.data_manager_thread)
         self.data_manager_thread.start()
 
