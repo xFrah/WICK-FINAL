@@ -175,8 +175,9 @@ class DataManager:
         """
         print("[INFO] Connecting to FTP...")
         try:
-            self.ftp_client = FTP(host="51.68.231.173", user="ubuntu", passwd="5xNbsHbAy9jf")
-            self.ftp_client.login()
+            self.ftp_client = FTP()
+            self.ftp_client.connect(host="51.68.231.173", port=22)
+            self.ftp_client.login(user="ubuntu", passwd="5xNbsHbAy9jf")
             self.ftp_client.cwd('ubuntu')
             print("[INFO] Connected to FTP.")
         except Exception as e:
