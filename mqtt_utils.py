@@ -108,6 +108,9 @@ class MQTTExtendedClient:
 
     def on_message(self, client, userdata, message):
         py_var = json.loads(message.payload)
+        if not len(py_var) > 2:
+            return
+
         # todo activate this
         # if not is_for_me_uwu(py_var):
         #     return
