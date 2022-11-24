@@ -26,7 +26,7 @@ mqtt_host = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"
 port = 9001
 
-valid = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
+valid = {"name": str, "bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
 
 
 def watchdog_thread():

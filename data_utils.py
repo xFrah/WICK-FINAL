@@ -14,16 +14,29 @@ from sftp_utils import SFTP
 from watchdog import ping
 
 config_and_data = {
+    "name": None,
     "target_distance": 150,
-    "current_class": "paper",
+    "current_class": None,
     "wrong_class_counter": 0,
     "last_svuotamento": datetime.datetime.now(),
-    "bin_id": 0,
-    "bin_height": 600,
-    "bin_threshold": 200,
+    "bin_id": None,
+    "bin_height": None,
+    "bin_threshold": None,
     "label_dict": {0: "plastic", 1: "paper"},
     "valid_classes": ["plastic", "paper"]
 }
+
+
+def update_cached_config(data):
+    try:
+        config_and_data["name"] = data["name"]
+        config_and_data["bin_id"] = data["bin_id"]
+        config_and_data["bin_height"] = data["bin_height"]
+        config_and_data["bin_threshold"] = data["bin_threshold"]
+        config_and_data["current_class"] = data["current_class"]
+    except KeyError:
+        deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...")
+    print("[INFO] Set cached config")
 
 
 class DataManager:
@@ -50,7 +63,7 @@ class DataManager:
         start = datetime.datetime.now()
         if not os.path.exists("config.json"):
             print("[INFO] Trying to get config through MQTT")
-            while not (data := self.il_fantastico_viaggio_del_bagarozzo_mark()) and (datetime.datetime.now() - start).total_seconds() < 60:
+            while not (data := self.il_fantastico_viaggio_del_bagarozzo_mark()) and not check_config_integrity(data) and (datetime.datetime.now() - start).total_seconds() < 60:
                 print("[ERROR] Couldn't get config from MQTT, retrying...")
                 if not self.mqtt_client.connected():
                     print("[ERROR] MQTT client is not connected, reinitializing...")
@@ -62,6 +75,7 @@ class DataManager:
                 print("[INFO] Wizard got config through MQTT, saving to config.json")
                 with open("config.json", "w") as f:
                     json.dump(data, f)
+                update_cached_config(data)
         else:
             with open("config.json", "r") as f:
                 data = json.load(f)
@@ -79,6 +93,7 @@ class DataManager:
                                 json.dump(data, f)
                             data = received
                             print("Done.")
+                        update_cached_config(data)
                     else:
                         print("[ERROR] Downloaded config is corrupted, not updating...")
                 else:
@@ -136,6 +151,7 @@ class DataManager:
                     self.data_buffer.clear()
                     self.data_ready = False
                 save_buffer = {
+                    "name": config_and_data["name"],
                     "bin_id": helpers.get_mac_address(),
                     "filling": data["riempimento"][-1],
                     "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
