@@ -39,7 +39,7 @@ class MQTTExtendedClient:
             print("[MQTT] Connecting to broker...")
             conn_now = datetime.datetime.now()
             try:
-                self.client.connect(mqtt_host, port=port)
+                self.client.connect(self.host, port=self.port)
             except:
                 print("[ERROR] Connection failed, retrying...")
                 self.try_to_disconnect()
@@ -47,9 +47,9 @@ class MQTTExtendedClient:
                 continue
 
             self.client.loop_start()  # start the loop
-            print("[MQTT] Subscribing to topic", topic)
+            print("[MQTT] Subscribing to topic", self.topic)
             try:
-                self.client.subscribe(topic)
+                self.client.subscribe(self.topic)
             except:
                 print("[ERROR] Subscription failed!")
                 self.try_to_disconnect()
