@@ -221,15 +221,17 @@ def get_diff(frame, background):
     frameDelta = cv.absdiff(background, gray)
     thresh = cv.threshold(frameDelta, 25, 255, cv.THRESH_BINARY)[1]
     thresh = cv.dilate(thresh, None, iterations=2)
-
-    conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    try:
+        conts, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    except:
+        print("[WARN] No contours found")
     try:
         x, y, w, h = cv.boundingRect(
             np.concatenate(np.array([cont for cont in conts if cv.contourArea(cont) > 20])))
         return (x, y, w, h), thresh
     except ValueError:
         print("[WARN] No contours found")
-    return thresh
+    return None, thresh
 
 
 def get_mac_address():
