@@ -189,7 +189,7 @@ class DataManager:
         print("[INFO] Uploading data to FTP...")
 
         errors = 0
-        imlist = os.listdir("images")[5]
+        imlist = [os.listdir("images")[5]]
         last = 0
         for i, image in enumerate(imlist):
             try:
