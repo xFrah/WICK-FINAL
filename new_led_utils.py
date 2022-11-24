@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import datetime
 import threading
 import time
 from rpi_ws281x import PixelStrip, Color
@@ -33,9 +32,6 @@ class LEDs:
         self.strip.begin()
         if start_yellow_loading:
             self.start_loading_animation()
-            start = datetime.datetime.now()
-            while not self.in_use_flag and (datetime.datetime.now() - start).seconds < 10:
-                time.sleep(0.1)
 
     def async_loading_animation(self):
         """
