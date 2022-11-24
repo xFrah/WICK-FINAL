@@ -10,7 +10,7 @@ import paho.mqtt.client as mqtt
 
 import helpers
 from camera_utils import Camera
-from data_utils import DataManager
+from data_utils import DataManager, config_and_data
 from edgetpu_utils import inference, setup_edgetpu
 from mqtt_utils import MQTTExtendedClient
 from new_led_utils import LEDs
@@ -21,17 +21,6 @@ import cv2 as cv
 mqtt_client: mqtt.Client = None
 
 print("[INFO] Starting...")
-config_and_data = {
-    "target_distance": 150,
-    "current_class": "paper",
-    "wrong_class_counter": 0,
-    "last_svuotamento": datetime.datetime.now(),
-    "bin_id": 0,
-    "bin_height": 600,
-    "bin_threshold": 200,
-    "label_dict": {0: "plastic", 1: "paper"},
-    "valid_classes": ["plastic", "paper"]
-}
 topic = "wick"
 mqtt_host = "stream.lifesensor.cloud"
 mqtt_client_id = "Beam1"

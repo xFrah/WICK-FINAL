@@ -8,9 +8,20 @@ from typing import Any
 import paho.mqtt.client as mqtt
 
 import helpers
-from flightshot import config_and_data
 from helpers import kill
 from watchdog import ping
+
+config_and_data = {
+    "target_distance": 150,
+    "current_class": "paper",
+    "wrong_class_counter": 0,
+    "last_svuotamento": datetime.datetime.now(),
+    "bin_id": 0,
+    "bin_height": 600,
+    "bin_threshold": 200,
+    "label_dict": {0: "plastic", 1: "paper"},
+    "valid_classes": ["plastic", "paper"]
+}
 
 
 class DataManager:
