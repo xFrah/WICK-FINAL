@@ -61,13 +61,21 @@ class DataManager:
         if not os.path.exists("history.csv"):
             create_csv_file()
 
-        start = datetime.datetime.now()
         if not os.path.exists("config.json"):
             print("[INFO] Trying to get config through MQTT")
-            while not (data := self.il_fantastico_viaggio_del_bagarozzo_mark()) and not check_config_integrity(data) and (datetime.datetime.now() - start).total_seconds() < 60:
-                print("[ERROR] Couldn't get config from MQTT, retrying...")
-                if not self.mqtt_client.connected():
-                    print("[ERROR] MQTT client is not connected, reinitializing...")
+            data = None
+            start = datetime.datetime.now()
+            while (datetime.datetime.now() - start).total_seconds() < 60:
+                data = self.il_fantastico_viaggio_del_bagarozzo_mark()
+                if not data:
+                    continue
+                elif check_config_integrity(data):
+                    break
+                else:
+                    continue
+                #print("[ERROR] Couldn't get config from MQTT, retrying...")
+                #if not self.mqtt_client.connected():
+                #    print("[ERROR] MQTT client is not connected, reinitializing...")
                     # todo reinitialize setup_mqtt()
             if not data:
                 print("[ERROR] Wizard failed to get config through MQTT, killing...")
@@ -258,13 +266,14 @@ def check_config_integrity(config, dont_kill=False):
     :param dont_kill: If True, the program will not kill itself if the config file is corrupted, defaults to False (optional)
     :return: the bin_id, current_class, bin_height, and bin_threshold.
     """
-    default_dict = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
+    default_dict = {"name": str, "bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
     for key, value_type in default_dict.items():
         if key not in config:
             return deconfigure_and_kill(f"[ERROR] {key} not found in config.json") if not dont_kill else False
         if not isinstance(config[key], value_type):
             return deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...") if not dont_kill else False
     try:
+        name = config["name"]
         bin_id = config["bin_id"]
         current_class = config["current_class"]
         bin_height = config["bin_height"]
