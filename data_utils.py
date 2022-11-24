@@ -207,6 +207,8 @@ def check_config_integrity(config, dont_kill=False):
     """
     default_dict = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
     for key, value_type in default_dict.items():
+        if key not in config:
+            return deconfigure_and_kill(f"[ERROR] {key} not found in config.json") if not dont_kill else False
         if not isinstance(config[key], value_type):
             return deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...") if not dont_kill else False
     try:

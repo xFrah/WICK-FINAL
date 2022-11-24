@@ -32,6 +32,9 @@ valid = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold"
 
 
 def watchdog_thread():
+    """
+    It checks if the threads are still alive. If they're not, it kills the program...
+    """
     while True:
         time.sleep(5)
         for key, value in pings.items():
@@ -44,6 +47,14 @@ def watchdog_thread():
 
 
 def show_results(tof_frame, camera_frame, diff, cropped=None):
+    """
+    Displays things on the screen
+
+    :param tof_frame: the depth frame from the ToF camera
+    :param camera_frame: the current frame from the camera
+    :param diff: the difference between the current frame and the background
+    :param cropped: the cropped image
+    """
     render_tof(tof_frame)
 
     # cv.imshow("Diff", thresh)
@@ -67,8 +78,7 @@ def get_frame_at_distance(tof_buffer: dict[datetime.datetime, tuple[numpy.array,
     :type cap_buffer: dict[datetime.datetime, tuple[numpy.array, int]]
     :type distance: int
     """
-    # camera_buffer is time: frame, frame_number
-    # tof_buffer is time: (full_matrix, distance)
+
     time_target_item = min(tof_buffer.items(), key=lambda d: abs(d[1][1] - distance))
     closest_frame_item = min(cap_buffer.items(),
                              key=lambda d: abs((d[0] - time_target_item[0]).total_seconds()))
@@ -80,10 +90,17 @@ def get_frame_at_distance(tof_buffer: dict[datetime.datetime, tuple[numpy.array,
 
 
 def get_mqtt_client():
+    """
+    :return: The mqtt_client object
+    """
     return mqtt_client
 
 
 def setup():
+    """
+    It sets up the camera, the LED strip, the VL53L0X sensor, the MQTT client, the TensorFlow interpreter, and the data manager
+    :return: leds, interpreter, camera, vl53, initial_background, empty_tof_buffer, datamanager
+    """
     global mqtt_client
     leds = LEDs()
     leds.start_loading_animation()
