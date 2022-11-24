@@ -15,7 +15,11 @@ from watchdog import ping
 
 
 class DataManager:
+
     def __init__(self, mqtt_client: mqtt.Client):
+        """
+        Saves data to local and cloud.
+        """
         self.mqtt_client = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
@@ -24,6 +28,9 @@ class DataManager:
         self.data_manager_thread.start()
 
     def files_setup(self):
+        """
+        Creates config.json if it doesn't exist or updates it if it is outdated.
+        """
         if not os.path.exists("history.csv"):
             create_csv_file()
 
@@ -70,6 +77,10 @@ class DataManager:
         print(f"[INFO] Configuration data:\n{printable_list}")
 
     def il_fantastico_viaggio_del_bagarozzo_mark(self):
+        """
+        It gets the config from the MQTT server
+        :return: The received config.
+        """
         print("[INFO] Getting config through MQTT...")
         try:
             if not self.mqtt_client.connected():
@@ -92,6 +103,9 @@ class DataManager:
             return print("[ERROR] An error occurred in wizard setup...")
 
     def data_manager_thread(self):
+        """
+        Thread that continuously checks if there is data to be sent or saved, if there is, it does the deed.
+        """
         thread = threading.current_thread()
         thread.setName("Data Manager")
         while True:
@@ -130,6 +144,12 @@ class DataManager:
                     print("[INFO] Data uploaded.")
 
     def pass_data(self, data_dict: dict[str, Any]):
+        """
+        It takes a dictionary of data, and updates the data buffer with it.
+
+        :param data_dict: A dictionary of data. Keys must be strings, and the values can be anything.
+        :type data_dict: dict[str, Any]
+        """
         with self.data_lock:
             self.data_ready = True
             for key, value in data_dict.items():
@@ -137,6 +157,11 @@ class DataManager:
 
 
 def add_lines_csv(data):
+    """
+    If the file exceeds 200 lines, delete the first 100 lines
+
+    :param data: a dictionary containing the following keys: "riempimento", "wrong_class_counter", "images"
+    """
     with open("history.csv", "a") as f:
         # if the files exceedes 200 lines, delete the first 100
         # lines = f.readlines()
@@ -149,6 +174,9 @@ def add_lines_csv(data):
 
 
 def create_csv_file():
+    """
+    It creates a csv file called history.csv and writes the header of the file
+    """
     print("[INFO] Creating csv file:", end=" ", flush=True)
     with open("history.csv", "w") as f:
         f.write("riempimento,timestamp,wrong_class_counter\n")
@@ -156,6 +184,11 @@ def create_csv_file():
 
 
 def deconfigure_and_kill(cause):
+    """
+    It deletes the config.json file and then kills the program
+
+    :param cause: The reason for the error
+    """
     print(cause)
     if os.path.exists("config.json"):
         os.remove("config.json")
@@ -164,6 +197,13 @@ def deconfigure_and_kill(cause):
 
 
 def check_config_integrity(config, dont_kill=False):
+    """
+    If the config file is valid, return resulting tuple. If the config file is invalid, delete it and kill the program, unless dont_kill==True.
+
+    :param config: The config.json file
+    :param dont_kill: If True, the program will not kill itself if the config file is corrupted, defaults to False (optional)
+    :return: the bin_id, current_class, bin_height, and bin_threshold.
+    """
     default_dict = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
     for key, value_type in default_dict.items():
         if not isinstance(config[key], value_type):
