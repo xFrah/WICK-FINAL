@@ -189,16 +189,7 @@ class DataManager:
         errors = 0
         imlist = [os.listdir("images")[5]]
         last = 0
-        for i, image in enumerate(imlist):
-            try:
-                self.ftp_client.upload("images/" + image, "/home/ubuntu/images/" + image)
-            except Exception as e:
-                print(f"[ERROR] Cause: {e}")
-                errors += 1
-            n = int(i / len(imlist) * 10)
-            if n > last:
-                print(f"{n*10}%", end="", flush=True)
-                last = n
+        self.ftp_client.upload_files(imlist, "images", "/home/ubuntu")
         print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
 
 
