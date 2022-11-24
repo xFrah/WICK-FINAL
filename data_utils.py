@@ -115,7 +115,7 @@ class DataManager:
                 return print("[ERROR] MQTT client is not connected, exiting wizard...")
 
             try:
-                self.mqtt_client.publish(json.dumps({"bin_id": 51333, "config": True}))
+                self.mqtt_client.publish(json.dumps({"bin_id": helpers.get_mac_address(), "config": True}))
             except:
                 return print("[ERROR] An error occurred while publishing MQTT packet, exiting wizard...")
 
