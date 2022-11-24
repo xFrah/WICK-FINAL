@@ -15,10 +15,9 @@ from edgetpu_utils import inference, setup_edgetpu
 from mqtt_utils import MQTTExtendedClient
 from new_led_utils import LEDs
 from tof_utils import tof_setup, render_tof, get_trash_level
-from watchdog import ping
+from watchdog import ping, pings
 import cv2 as cv
 
-pings: dict[threading.Thread, datetime.datetime] = {}
 mqtt_client: mqtt.Client = None
 
 print("[INFO] Starting...")

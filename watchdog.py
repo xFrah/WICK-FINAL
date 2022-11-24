@@ -1,6 +1,6 @@
 import datetime
-from flightshot import pings
 
+pings: dict[threading.Thread, datetime.datetime] = {}
 
 def ping(name):
     pings[name] = datetime.datetime.now()
