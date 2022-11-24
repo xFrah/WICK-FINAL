@@ -140,13 +140,6 @@ class DataManager:
                     "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
                     "wrong_class_counter": data["wrong_class_counter"][-1],
                     "current_class": config_and_data["current_class"],
-                }
-                mqtt_buffer = {
-
-                    "filling": 0,
-                    "timestamp_last_svuotamento": "2022-11-18 10:31:01.596146",
-                    "wrong_class_counter": 0,
-                    "current_class": "paper",
                     "config": False
                 }
                 self.mqtt_client.publish(json.dumps(save_buffer))
