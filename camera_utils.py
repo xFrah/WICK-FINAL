@@ -52,7 +52,7 @@ class Camera:
             self.stop_shooting(turn_black=return_to_black)
 
     def stop_shooting(self, turn_black=True):
-        self.do_i_shoot = True
+        self.do_i_shoot = False
         if turn_black:
             self.flash.fill((0, 0, 0))
 
