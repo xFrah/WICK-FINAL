@@ -134,8 +134,8 @@ class DataManager:
 
             if not self.mqtt_client.connected():
                 return print("[ERROR] MQTT connection lost during wizard setup, exiting wizard...")
-        except:
-            return print("[ERROR] An error occurred in wizard setup...")
+        except Exception as e:
+            return print(f"[ERROR] An error occurred in wizard setup... \n{e}")
 
     def data_manager_thread(self):
         """
