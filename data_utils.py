@@ -31,7 +31,7 @@ class DataManager:
         """
         Saves data to local and cloud.
         """
-        self.ftp_client = None
+        self.ftp_client: FTP = None
         self.mqtt_client = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
