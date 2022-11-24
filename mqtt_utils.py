@@ -108,6 +108,7 @@ class MQTTExtendedClient:
 
     def on_message(self, client, userdata, message):
         py_var = json.loads(message.payload)
+        print(message)
         if not len(py_var) > 2:
             return
 
