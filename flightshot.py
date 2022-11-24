@@ -29,32 +29,6 @@ config_and_data = {
 }
 
 
-# function to change leds from black to yellow
-def change_to_yellow(strip):
-    global setup_not_done
-    for i in range(0, 20, 5):
-        for y in range(strip.numPixels()):
-            strip.setPixelColor(y, Color(i, i, 0))
-        strip.show()
-        time.sleep(0.06)
-    while setup_not_done:
-        for i in range(20, 255, 5):
-            for y in range(strip.numPixels()):
-                strip.setPixelColor(y, Color(i, i, 0))
-            strip.show()
-            time.sleep(0.03)
-        for i in range(20, 255, 5)[::-1]:
-            for y in range(strip.numPixels()):
-                strip.setPixelColor(y, Color(i, i, 0))
-            strip.show()
-            time.sleep(0.03)
-    for i in range(0, 20, 5)[::-1]:
-        for y in range(strip.numPixels()):
-            strip.setPixelColor(y, Color(i, i, 0))
-        strip.show()
-        time.sleep(0.06)
-
-
 def watchdog_thread():
     while True:
         time.sleep(5)

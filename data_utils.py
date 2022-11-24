@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import random
 import threading
 import time
 from typing import Any
@@ -156,11 +155,12 @@ class DataManager:
                 self.data_buffer[key] = self.data_buffer.get(key, []) + [value]
 
 
-def add_lines_csv(data):
+def add_lines_csv(data: dict[str, Any]):
     """
     If the file exceeds 200 lines, delete the first 100 lines
 
     :param data: a dictionary containing the following keys: "riempimento", "wrong_class_counter", "images"
+    :type data: dict[str, Any]
     """
     with open("history.csv", "a") as f:
         # if the files exceedes 200 lines, delete the first 100
@@ -183,11 +183,12 @@ def create_csv_file():
     print("Done.")
 
 
-def deconfigure_and_kill(cause):
+def deconfigure_and_kill(cause: str):
     """
     It deletes the config.json file and then kills the program
 
     :param cause: The reason for the error
+    :type cause: str
     """
     print(cause)
     if os.path.exists("config.json"):
