@@ -186,10 +186,8 @@ class DataManager:
             print("[INFO] Initializing FTP client and connecting...")
             self.connect_to_ftp()
 
-        errors = 0
-        imlist = [os.listdir("images")[5]]
-        last = 0
-        self.ftp_client.upload_files(imlist, "images", "/home/ubuntu")
+        imlist = os.listdir("images")
+        errors = self.ftp_client.upload_files(imlist, "images", "/home/ubuntu/images")
         print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
 
 

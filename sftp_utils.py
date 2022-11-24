@@ -56,6 +56,6 @@ class SFTP:
                 errors += 1
             n = int(i / len(files) * 10)
             if n > last:
-                print(f"{n*10}%", end="", flush=True)
+                print(f"{n*10}% ", end="", flush=True)
                 last = n
-        return errors, len(files)
+        return errors
