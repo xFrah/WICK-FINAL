@@ -189,13 +189,14 @@ class DataManager:
         print("[INFO] Uploading data to FTP...")
 
         errors = 0
-        imlist = os.listdir("images")
+        imlist = os.listdir("images")[5]
         last = 0
         for i, image in enumerate(imlist):
             try:
                 with open(f"images/{image}", "rb") as f:
                     self.ftp_client.storbinary(f"STOR {image}", f)
-            except:
+            except Exception as e:
+                print(f"[ERROR] Cause: {e}")
                 # print(f"[ERROR] Couldn't upload file {image}...")
                 errors += 1
             n = int(i / len(imlist) * 10)
