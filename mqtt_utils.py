@@ -55,7 +55,7 @@ class MQTTExtendedClient:
                 self.try_to_disconnect()
                 time.sleep(2)
                 continue
-            while self.is_connected and (datetime.datetime.now() - conn_now).total_seconds() < self.conn_timeout:
+            while not self.is_connected and (datetime.datetime.now() - conn_now).total_seconds() < self.conn_timeout:
                 time.sleep(0.1)
         if not self.is_connected:
             self.try_to_disconnect()
