@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import time
-from typing import Any
 
 import numpy
 from psutil import virtual_memory
@@ -13,13 +11,11 @@ import datetime
 
 do_i_shoot = False
 setup_not_done = True
-data_ready = False
 camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
-data_buffer: dict[str, Any] = {}
 pings: dict[threading.Thread, datetime.datetime] = {}
 camera_lock = threading.Lock()
-data_lock = threading.Lock()
 
+print("[INFO] Starting...")
 config_and_data = {
     "target_distance": 150,
     "current_class": "paper",
@@ -71,46 +67,6 @@ def watchdog_thread():
                 kill()
 
 
-def data_manager_thread():
-    thread = threading.current_thread()
-    thread.setName("Data Manager")
-    global data_ready
-    while True:
-        time.sleep(20)
-        ping(thread)
-        if data_ready:
-            if len(data_buffer) == 0:
-                print("[WARN] Data buffer is empty")
-                data_ready = False
-                continue
-            start = datetime.datetime.now()
-            print("[INFO] Data is ready, saving & uploading...")
-            with data_lock:
-                data = data_buffer.copy()
-                data_buffer.clear()
-                data_ready = False
-            save_buffer = {
-                "riempimento": data["riempimento"][-1],
-                "timestamp_last_svuotamento": str(config_and_data["last_svuotamento"].isoformat()),
-                "wrong_class_counter": data["wrong_class_counter"][-1]
-            }
-            # todo send data to server
-            # todo send data to mqtt
-
-            with open("data.json", "w") as f:
-                json.dump(save_buffer, f)
-
-            add_lines_csv(data)
-            flat_list = [item for sublist in data["images"] for item in sublist]
-            helpers.save_images_linux(flat_list, "images")
-            print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
-            # if time is 12 pm or 6 pm, upload data
-            if datetime.datetime.now().hour in [12, 18]:
-                print("[INFO] Uploading data...")
-                # todo upload
-                print("[INFO] Data uploaded.")
-
-
 def camera_thread(cap: cv.VideoCapture):
     thread = threading.currentThread()
     thread.setName("Camera")
@@ -159,14 +115,6 @@ def grab_buffer():
     return copy
 
 
-def pass_data(data_dict):
-    global data_ready
-    with data_lock:
-        data_ready = True
-        for key, value in data_dict.items():
-            data_buffer[key] = data_buffer.get(key, []) + [value]
-
-
 def grab_background(pixels, return_to_black=True):
     global do_i_shoot
     fill(pixels, (255, 255, 255))
@@ -198,11 +146,10 @@ def get_frame_at_distance(tof_buffer, cap_buffer, distance):
 
 def setup():
     global setup_not_done
-    files_setup()
+    dm = DataManager()
     interpreter = setup_edgetpu()
     cap = setup_camera()
     threading.Thread(target=camera_thread, args=(cap,)).start()
-    threading.Thread(target=data_manager_thread).start()
     vl53 = tof_setup()
     tof_buffer = {}
     setup_not_done = False
@@ -212,11 +159,11 @@ def setup():
     change_to_green(pixels)
     black_from_green(pixels)
     threading.Thread(target=watchdog_thread, daemon=True, name="Watchdog").start()
-    return pixels, interpreter, cap, vl53, background, tof_buffer
+    return pixels, interpreter, cap, vl53, background, tof_buffer, dm
 
 
 def main():
-    pixels, interpreter, cap, vl53, background, tof_buffer = setup()
+    pixels, interpreter, cap, vl53, background, tof_buffer, dm = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
@@ -281,7 +228,7 @@ def main():
                     print(f"[INFO] {avg}mm, {percentage}%")
                     ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
                     print(ddd[0].shape, ddd[-1].shape)
-                    pass_data({"riempimento": percentage,
+                    dm.pass_data({"riempimento": percentage,
                                "wrong_class_counter": config_and_data["wrong_class_counter"],
                                "timestamp": str(now.isoformat()),
                                "images": ddd
