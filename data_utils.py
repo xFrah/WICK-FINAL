@@ -179,8 +179,8 @@ class DataManager:
             self.ftp_client.login()
             self.ftp_client.cwd('ubuntu')
             print("[INFO] Connected to FTP.")
-        except:
-            print("[ERROR] An error occurred while connecting to FTP, exiting...")
+        except Exception as e:
+            print(f"[ERROR] An error occurred while connecting to FTP: \n{e}")
 
     def upload_to_ftp(self):
         """
