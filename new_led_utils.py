@@ -108,7 +108,6 @@ class LEDs:
             self.strip.show()
             time.sleep(0.03)
 
-    # change leds gradually to green
     def black_from_green(self):
         """
         Change the LEDs gradually from green to black
@@ -131,7 +130,7 @@ class LEDs:
 
     def black_from_red(self):
         """
-        Change the LEDs gradually to black from red
+        Change the LEDs gradually from black to red
         """
         for i in range(0, 255, 5)[::-1]:
             for y in range(self.strip.numPixels()):

@@ -151,13 +151,3 @@ class MQTTExtendedClient:
             self.client.connected_flag = True  # set flag
         else:
             print("[MQTT] Bad connection, returned code= ", rc)
-
-
-topic = "wick"
-mqtt_host = "stream.lifesensor.cloud"
-mqtt_client_id = "Beam1"
-port = 9001
-
-valid = {"bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
-
-mqtt_client: mqtt.Client = MQTTExtendedClient(mqtt_host, topic, port=port)
