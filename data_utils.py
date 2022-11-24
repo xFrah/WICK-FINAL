@@ -276,7 +276,7 @@ def check_config_integrity(config, dont_kill=False):
         bin_id = config["bin_id"]
         current_class = config["current_class"]
         bin_height = config["bin_height"]
-        bin_threshold = config["bin_threshold"]
+        bin_threshold = config["bin_thresold"]
         if current_class not in config_and_data["valid_classes"]:
             return deconfigure_and_kill(f'[ERROR] "{current_class}" is not a valid material, deleting config.json and killing...') if not dont_kill else False
         print("[INFO] Config file is valid.")
