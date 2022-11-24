@@ -2,6 +2,7 @@ import datetime
 import json
 import threading
 import time
+from typing import Any
 
 import paho.mqtt.client as mqtt
 
@@ -75,6 +76,10 @@ class MQTTExtendedClient:
         print("[MQTT] Disconnected, returned code= ", rc)
 
     def unload_buffer(self):
+        """
+        If the data is ready, set the data_ready flag to false, and return the data.
+        :return: The data that was received from mqtt.
+        """
         with self.arriving_data_lock:
             if self.data_ready:
                 self.data_ready = False
@@ -88,6 +93,12 @@ class MQTTExtendedClient:
                 return None
 
     def get_next_message(self, timeout=10):
+        """
+        "Wait for the data_ready flag to be set, then return the contents of the buffer."
+
+        :param timeout: The amount of time to wait for a message to arrive, defaults to 10
+        :return: data in the rx_buffer
+        """
         start = datetime.datetime.now()
         while not self.data_ready and (datetime.datetime.now() - start).total_seconds() < timeout:
             time.sleep(0.1)
@@ -106,16 +117,25 @@ class MQTTExtendedClient:
     def __del__(self):
         self.client.loop_stop()
 
-    def is_for_me_uwu(self, config):
+    def is_for_me_uwu(self, config: dict[str, Any]):
+        """
+        Check if the packet matches the MAC address of the device, thus confirming that the packet is for this client.
+
+        :param config: dictionarty to check
+        :return: The mac address of the device.
+        """
         try:
             if config['mac'] == self.mac:
                 return True
             else:
                 return False
-        except KeyError:
+        except KeyError:  # todo must make sure that the thing is a dict, but not here, before this function is called.
             return False
 
     def try_to_disconnect(self):
+        """
+        It tries to disconnect from the MQTT broker and stop the loop
+        """
         try:
             self.client.disconnect()
         except:
