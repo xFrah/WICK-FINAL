@@ -86,6 +86,7 @@ class Camera:
             if frame is not None:
                 ping(thread)
             if self.do_i_shoot:
+                print("[INFO] Shooting")
                 # temp = {datetime.datetime.now(): (frame, 0)}
                 temp = {}
                 while self.do_i_shoot and ram_is_ok:
