@@ -60,6 +60,8 @@ class MQTTExtendedClient:
         if not self.is_connected:
             self.try_to_disconnect()
             print("[ERROR] MQTT connection failed!")
+        else:
+            print("[MQTT] Connected to broker!")
 
     def connected(self):
         return self.is_connected
