@@ -102,7 +102,6 @@ def setup():
     """
     global mqtt_client
     leds = LEDs()
-    leds.start_loading_animation()
     mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
     dm = DataManager(mqtt_client)
     interpreter = setup_edgetpu()

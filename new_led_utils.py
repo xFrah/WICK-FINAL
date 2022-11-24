@@ -35,6 +35,7 @@ class LEDs:
                                 self.LED_CHANNEL)
         # Intialize the library (must be called once before other functions).
         self.strip.begin()
+        self.start_loading_animation()
 
     def async_loading_animation(self):
         """
