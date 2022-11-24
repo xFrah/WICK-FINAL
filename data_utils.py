@@ -152,7 +152,7 @@ class DataManager:
                 helpers.save_images_linux(flat_list, "images")
                 print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
                 # if time is 12 pm or 6 pm, upload data
-                if datetime.datetime.now().hour in [12, 18]:
+                if datetime.datetime.now().hour in [12, 17]:
                     print("[INFO] Uploading data...")
                     self.upload_to_ftp()
                     print("[INFO] Data uploaded.")
