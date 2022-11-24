@@ -6,6 +6,7 @@ import time
 from typing import Any
 
 import paho.mqtt.client as mqtt
+from ftplib import FTP
 
 import helpers
 from helpers import kill
@@ -30,6 +31,7 @@ class DataManager:
         """
         Saves data to local and cloud.
         """
+        self.ftp_client = None
         self.mqtt_client = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
@@ -165,6 +167,41 @@ class DataManager:
             for key, value in data_dict.items():
                 self.data_buffer[key] = self.data_buffer.get(key, []) + [value]
 
+    def connect_to_ftp(self):
+        """
+        It connects to the FTP server.
+        """
+        print("[INFO] Connecting to FTP...")
+        try:
+            self.ftp_client = FTP(host="51.68.231.173", user="ubuntu", passwd="5xNbsHbAy9jf")
+            self.ftp_client.login()
+            self.ftp_client.cwd('ubuntu')
+            print("[INFO] Connected to FTP.")
+        except:
+            print("[ERROR] An error occurred while connecting to FTP, exiting...")
+
+    def upload_to_ftp(self):
+        """
+        It uploads the data to the FTP server.
+        """
+        print("[INFO] Uploading data to FTP...")
+
+        errors = 0
+        imlist = os.listdir("images")
+        last = 0
+        for i, image in enumerate(imlist):
+            try:
+                with open(f"images/{image}", "rb") as f:
+                    self.ftp_client.storbinary(f"STOR {image}", f)
+            except:
+                # print(f"[ERROR] Couldn't upload file {image}...")
+                errors += 1
+            n = int(i / len(imlist) * 10)
+            if n > last:
+                print(f"{n*10}%", end="", flush=True)
+                last = n
+        print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
+
 
 def add_lines_csv(data: dict[str, Any]):
     """
@@ -233,4 +270,3 @@ def check_config_integrity(config, dont_kill=False):
         return bin_id, current_class, bin_height, bin_threshold
     except KeyError:
         return deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...") if not dont_kill else False
-
