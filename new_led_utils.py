@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# NeoPixel library strandtest example
-# Author: Tony DiCola (tony@tonydicola.com)
-#
-# Direct port of the Arduino NeoPixel library strandtest example.  Showcases
-# various animations on a strip of NeoPixels.
 import threading
 import time
 from rpi_ws281x import PixelStrip, Color
@@ -13,7 +8,7 @@ from rpi_ws281x import PixelStrip, Color
 
 
 class LEDs:
-    def __init__(self):
+    def __init__(self, start_yellow_loading=True):
         self.LED_COUNT = 24  # Number of LED pixels.
         self.LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
         # self.LED_PIN = 10        # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
@@ -35,7 +30,8 @@ class LEDs:
                                 self.LED_CHANNEL)
         # Intialize the library (must be called once before other functions).
         self.strip.begin()
-        self.start_loading_animation()
+        if start_yellow_loading:
+            self.start_loading_animation()
 
     def async_loading_animation(self):
         """
