@@ -23,6 +23,7 @@ class LEDs:
         self.LED_INVERT = False  # True to invert the signal (when using NPN transistor level shift)
         self.LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
         self.loading_animation = False
+        self.in_use = False
 
         # Create NeoPixel object with appropriate configuration.
         self.strip = PixelStrip(self.LED_COUNT,
@@ -39,6 +40,7 @@ class LEDs:
         """
         Thread to display yellow blinking animation
         """
+        self.in_use = True
         for i in range(0, 20, 5):
             for y in range(self.strip.numPixels()):
                 self.strip.setPixelColor(y, Color(i, i, 0))
@@ -60,6 +62,13 @@ class LEDs:
                 self.strip.setPixelColor(y, Color(i, i, 0))
             self.strip.show()
             time.sleep(0.06)
+        self.in_use = False
+
+    def in_use(self):
+        """
+        Returns True if the LEDs are in use
+        """
+        return self.in_use
 
     def start_loading_animation(self):
         """

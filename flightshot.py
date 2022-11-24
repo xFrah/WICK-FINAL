@@ -110,9 +110,10 @@ def setup():
     vl53 = tof_setup()
     tof_buffer = {}
     leds.stop_loading_animation()
-    time.sleep(0.2)
+    while leds.in_use():
+        time.sleep(0.1)
     print("[INFO] Setup complete!")
-    background = camera.grab_background()
+    background = camera.grab_background(return_to_black=False)
     print("[INFO] Background grabbed!")
     leds.change_to_green()
     leds.black_from_green()
