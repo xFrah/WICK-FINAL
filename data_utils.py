@@ -187,6 +187,9 @@ class DataManager:
         It uploads the data to the FTP server.
         """
         print("[INFO] Uploading data to FTP...")
+        if not self.ftp_client:
+            print("[INFO] Initializing FTP client and connecting...")
+            self.connect_to_ftp()
 
         errors = 0
         imlist = [os.listdir("images")[5]]
