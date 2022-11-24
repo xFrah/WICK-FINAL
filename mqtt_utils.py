@@ -29,7 +29,7 @@ class MQTTExtendedClient:
         self.conn_init_timeout = timeout
         self.conn_timeout = connection_timeout
         self.arriving_data_lock = threading.Lock()
-        self.data_ready = False
+        self.data_ready_flag = False
         self.rx_buffer = None
         self.mac = get_mac_address()
 
@@ -70,7 +70,7 @@ class MQTTExtendedClient:
         self.client.publish(self.topic, payload)
 
     def data_ready(self):
-        return self.data_ready
+        return self.data_ready_flag
 
     def on_disconnect(self, client, userdata, rc):
         self.is_connected = False
@@ -83,8 +83,8 @@ class MQTTExtendedClient:
         :return: The data that was received from mqtt.
         """
         with self.arriving_data_lock:
-            if self.data_ready:
-                self.data_ready = False
+            if self.data_ready_flag:
+                self.data_ready_flag = False
                 if self.rx_buffer:
                     tmp = self.rx_buffer
                     self.rx_buffer = None
@@ -102,7 +102,7 @@ class MQTTExtendedClient:
         :return: data in the rx_buffer
         """
         start = datetime.datetime.now()
-        while not self.data_ready and (datetime.datetime.now() - start).total_seconds() < timeout:
+        while not self.data_ready_flag and (datetime.datetime.now() - start).total_seconds() < timeout:
             time.sleep(0.1)
         return self.unload_buffer()
 
@@ -113,7 +113,7 @@ class MQTTExtendedClient:
         #     return
         with self.arriving_data_lock:
             self.rx_buffer = py_var
-            self.data_ready = True
+            self.data_ready_flag = True
         print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
 
     def __del__(self):
