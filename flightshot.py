@@ -5,11 +5,10 @@ import numpy
 import threading
 import datetime
 
-from new_led_utils import LEDs
 import paho.mqtt.client as mqtt
 
 pings: dict[threading.Thread, datetime.datetime] = {}
-mqtt_client: mqtt.client = None
+mqtt_client: mqtt.Client = None
 
 print("[INFO] Starting...")
 config_and_data = {
