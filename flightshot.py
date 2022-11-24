@@ -152,8 +152,9 @@ def main():
 
                     tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
 
-                    rect, diff = helpers.get_diff(camera_target_frame, background)
-                    if rect:
+                    diff_result = helpers.get_diff(camera_target_frame, background)
+                    if diff_result:
+                        rect, diff = diff_result
                         x, y, w, h = rect
                         cropped = camera_target_frame.copy()[y:y + h, x:x + w]
                         cv.rectangle(camera_target_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
