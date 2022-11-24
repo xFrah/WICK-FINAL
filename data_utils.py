@@ -265,7 +265,7 @@ def check_config_integrity(config, dont_kill=False):
     :param dont_kill: If True, the program will not kill itself if the config file is corrupted, defaults to False (optional)
     :return: the bin_id, current_class, bin_height, and bin_threshold.
     """
-    default_dict = {"bin_id": str, "current_class": str, "bin_height": int, "bin_threshold": int}
+    default_dict = {"bin_id": str, "current_class": str, "bin_height": int, "bin_thresold": int}
     for key, value_type in default_dict.items():
         if key not in config:
             return deconfigure_and_kill(f"[ERROR] {key} not found in config.json") if not dont_kill else False
