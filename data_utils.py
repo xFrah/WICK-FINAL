@@ -71,8 +71,6 @@ class DataManager:
                     continue
                 elif check_config_integrity(data):
                     break
-                else:
-                    continue
                 #print("[ERROR] Couldn't get config from MQTT, retrying...")
                 #if not self.mqtt_client.connected():
                 #    print("[ERROR] MQTT client is not connected, reinitializing...")
