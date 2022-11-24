@@ -175,6 +175,7 @@ class DataManager:
         It connects to the FTP server.
         """
         self.ftp_client = SFTP(hostname="51.68.231.173", username="ubuntu", password="5xNbsHbAy9jf", port=22)
+        self.ftp_client.connect()
 
     def upload_to_ftp(self):
         """
