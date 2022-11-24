@@ -98,8 +98,10 @@ class LEDs:
             self.strip.setPixelColor(y, color)
         self.strip.show()
 
-    # change leds gradually to green
     def change_to_green(self):
+        """
+        Change the LEDs gradually from black to green
+        """
         for i in range(0, 255, 5):
             for y in range(self.strip.numPixels()):
                 self.strip.setPixelColor(y, Color(0, i, 0))
@@ -108,22 +110,29 @@ class LEDs:
 
     # change leds gradually to green
     def black_from_green(self):
+        """
+        Change the LEDs gradually from green to black
+        """
         for i in range(0, 255, 5)[::-1]:
             for y in range(self.strip.numPixels()):
                 self.strip.setPixelColor(y, Color(0, i, 0))
             self.strip.show()
             time.sleep(0.03)
 
-    # change leds gradually to green
     def change_to_red(self):
+        """
+        Change the LEDs gradually from black to red
+        """
         for i in range(0, 255, 5):
             for y in range(self.strip.numPixels()):
                 self.strip.setPixelColor(y, Color(i, 0, 0))
             self.strip.show()
             time.sleep(0.03)
 
-    # change leds gradually to green
     def black_from_red(self):
+        """
+        Change the LEDs gradually to black from red
+        """
         for i in range(0, 255, 5)[::-1]:
             for y in range(self.strip.numPixels()):
                 self.strip.setPixelColor(y, Color(i, 0, 0))
