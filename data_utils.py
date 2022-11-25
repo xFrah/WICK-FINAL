@@ -247,12 +247,13 @@ def check_config_integrity(config, dont_kill=False):
     :param dont_kill: If True, the program will not kill itself if the config file is corrupted, defaults to False (optional)
     :return: the bin_id, current_class, bin_height, and bin_threshold.
     """
+    func = print if dont_kill else deconfigure_and_kill
     for key, value_type in config_and_data["integrity_dict"].items():
         if key not in config:
-            return deconfigure_and_kill(f"[ERROR] {key} not found in config.json") if not dont_kill else False
+            return func(f"[ERROR] {key} not found in config.json")
         if not isinstance(config[key], value_type):
-            return deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...") if not dont_kill else False
+            return func(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...")
     if config["current_class"] not in config_and_data["valid_classes"]:
-        return deconfigure_and_kill(f'[ERROR] "{config["current_class"]}" is not a valid material, deleting config.json and killing...') if not dont_kill else False
+        return func(f'[ERROR] "{config["current_class"]}" is not a valid material, deleting config.json and killing...')
     print("[INFO] Config file is valid.")
     return True
