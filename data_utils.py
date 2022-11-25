@@ -149,11 +149,14 @@ class DataManager:
                 if self.mqtt_client.connected():
                     try:
                         self.mqtt_client.publish(json.dumps(save_buffer))
-                    except:
-                        print("[ERROR] An error occurred while publishing MQTT packet, skipping...")
+                    except Exception as e:
+                        print(f"[ERROR] An error occurred while publishing MQTT packet\n{e}")
                 else:
-                    self.mqtt_client = MQTTExtendedClient()
-                    self.mqtt_client.publish(json.dumps(save_buffer))
+                    try:
+                        self.mqtt_client = MQTTExtendedClient()
+                        self.mqtt_client.publish(json.dumps(save_buffer))
+                    except Exception as e:
+                        print(f"[ERROR] Couldn't reinitialize MQTT Client: \n{e}")
 
                 with open("data.json", "w") as f:
                     json.dump(save_buffer, f)
