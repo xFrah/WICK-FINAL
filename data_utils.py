@@ -157,10 +157,10 @@ class DataManager:
                 # if time is 12 pm or 6 pm, upload data
                 # if datetime.datetime.now().hour in [12, 17]:
                 print("[INFO] Uploading data:", end=" ", flush=True)
-                #   ignore.add(thread)
-                #   self.upload_to_ftp()  # this makes the thread get killed by the watchdog, because no pings
-                #   ping(thread)
-                #   ignore.remove(thread)
+                ignore.add(thread)
+                self.upload_to_ftp()  # this makes the thread get killed by the watchdog, because no pings
+                ping(thread)
+                ignore.remove(thread)
                 print("Done.")
 
     def pass_data(self, data_dict: dict[str, Any]):
