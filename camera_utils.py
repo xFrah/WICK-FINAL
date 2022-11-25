@@ -50,7 +50,7 @@ class Camera:
         self.do_i_shoot = True
         if timer > 0:
             time.sleep(timer)
-            self.stop_shooting(turn_black=return_to_black)
+            return self.stop_shooting(turn_black=return_to_black)
 
     def stop_shooting(self, turn_black=True):
         self.do_i_shoot = False
@@ -69,9 +69,8 @@ class Camera:
 
     def grab_background(self, return_to_black=True):
         self.flash.fill((255, 255, 255))
-        self.shoot(timer=0.125, return_to_black=return_to_black)
-        buffer = self.grab_buffer()
-        if len(buffer) > 0:
+        buffer = self.shoot(timer=0.125, return_to_black=return_to_black)
+        if buffer:
             print(f"[INFO] Background frame count: {len(buffer)}")
             return max(buffer.values(), key=lambda d: d[1])[0]
         else:
