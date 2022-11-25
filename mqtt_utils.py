@@ -14,7 +14,7 @@ def on_log(client, userdata, level, buf):
 
 
 class MQTTExtendedClient:
-    def __init__(self, host, topic, port=1883, timeout=30, connection_timeout=5):
+    def __init__(self, host="stream.lifesensor.cloud", topic="wick", port=9001, timeout=30, connection_timeout=5):
         self.host = host
         self.port = port
         self.topic = topic
@@ -118,6 +118,7 @@ class MQTTExtendedClient:
             print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
 
     def __del__(self):
+        print("[MQTT] Client killed.")
         self.client.loop_stop()
 
     def is_for_me_uwu(self, config):

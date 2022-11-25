@@ -23,10 +23,6 @@ import cv2 as cv
 mqtt_client: mqtt.Client = None
 
 print("[INFO] Starting...")
-topic = "wick"
-mqtt_host = "stream.lifesensor.cloud"
-mqtt_client_id = "Beam1"
-port = 9001
 
 valid = {"name": str, "bin_id": int, "current_class": str, "bin_height": int, "bin_threshold": int}
 
@@ -107,7 +103,7 @@ def setup():
     print(f"[INFO] Process ID: {get_process_id}")
     with open(f"pid.txt", "w") as f:
         f.write(str(get_process_id))
-    mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
+    mqtt_client = MQTTExtendedClient()
     mqtt_client.try_to_connect()
     dm = DataManager(mqtt_client)
     interpreter = setup_edgetpu()

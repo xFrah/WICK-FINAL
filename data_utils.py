@@ -7,6 +7,7 @@ from typing import Any
 
 import helpers
 from helpers import kill
+from mqtt_utils import MQTTExtendedClient
 from sftp_utils import SFTP, upload_files
 from watchdog import ping, ignore
 
@@ -145,7 +146,14 @@ class DataManager:
                     "current_class": config_and_data["current_class"],
                     "config": False
                 }
-                self.mqtt_client.publish(json.dumps(save_buffer))
+                if self.mqtt_client.connected():
+                    try:
+                        self.mqtt_client.publish(json.dumps(save_buffer))
+                    except:
+                        print("[ERROR] An error occurred while publishing MQTT packet, skipping...")
+                else:
+                    self.mqtt_client = MQTTExtendedClient()
+                    self.mqtt_client.publish(json.dumps(save_buffer))
 
                 with open("data.json", "w") as f:
                     json.dump(save_buffer, f)
