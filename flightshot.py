@@ -104,6 +104,8 @@ def setup():
     leds = LEDs()
     get_process_id = os.getpid()
     print(f"[INFO] Process ID: {get_process_id}")
+    with open(f"pid.txt", "w") as f:
+        f.write(str(get_process_id))
     mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
     mqtt_client.try_to_connect()
     dm = DataManager(mqtt_client)
