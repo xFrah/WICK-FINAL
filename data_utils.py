@@ -79,7 +79,7 @@ class DataManager:
                 else:
                     print("[INFO] Config is outdated, updating...", end=" ", flush=True)
                     with open("config.json", "w") as f:
-                        json.dump(data, f)
+                        json.dump(received, f)
                     data = received
                     print("Done.")
                 update_cached_config(data)
