@@ -9,7 +9,7 @@ from rpi_ws281x import PixelStrip, Color
 
 class LEDs:
     def __init__(self, start_yellow_loading=True):
-        self.LED_COUNT = 10  # Number of LED pixels.
+        self.LED_COUNT = 24  # Number of LED pixels.
         self.LED_PIN = 18  # GPIO pin connected to the pixels (18 uses PWM!).
         # self.LED_PIN = 10        # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
         self.LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
