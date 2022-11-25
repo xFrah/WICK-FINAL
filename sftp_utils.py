@@ -50,15 +50,11 @@ class SFTP:
     def connect(self):
         """Connects to the sftp server and returns the sftp connection object"""
 
-        try:
-            self.connection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.connection.connect(self.hostname, self.port, self.username, self.password)
-            sftp = self.connection.open_sftp()
-            return sftp
-        except Exception as err:
-            raise Exception(err)
-        finally:
-            print(f"[SFTP] Connected to {self.hostname} as {self.username}.")
+        self.connection.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.connection.connect(self.hostname, self.port, self.username, self.password)
+        sftp = self.connection.open_sftp()
+        print(f"[SFTP] Connected to {self.hostname} as {self.username}.")
+        return sftp
 
     def disconnect(self):
         """Closes the sftp connection"""

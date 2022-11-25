@@ -180,12 +180,16 @@ class DataManager:
         It uploads the data to the FTP server.
         """
         print("[INFO] Opening SFTP connection...")
-        sftp = self.ftp_client.connect()
+        try:
+            sftp = self.ftp_client.connect()
 
-        imlist = os.listdir("images")
-        errors = upload_files(sftp, imlist, "images", "/home/ubuntu/images")
-        print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
-        self.ftp_client.disconnect()
+            imlist = os.listdir("images")
+            errors = upload_files(sftp, imlist, "images", "/home/ubuntu/images")
+            print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
+            self.ftp_client.disconnect()
+        except Exception as e:
+            print(f"[ERROR] An error occurred while uploading data... \n{e}")
+
 
 
 def add_lines_csv(data: dict[str, Any]):
