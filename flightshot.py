@@ -156,15 +156,16 @@ def main():
                     rect, diff = helpers.get_diff(camera_target_frame, background)
                     if rect is not None:
                         x, y, w, h = rect
-                        cropped = camera_target_frame.copy()[y:y + h, x:x + w]
-                        cv.rectangle(camera_target_frame, (x, y), (x + w - 1, y + h - 1), 255, 2)
+                        imgcopy = camera_target_frame.copy()
+                        cropped = imgcopy[y:y + h, x:x + w]
+                        cv.rectangle(imgcopy, (x, y), (x + w - 1, y + h - 1), 255, 2)
 
                         if cropped.shape[0] > 0 and cropped.shape[1] > 0:
                             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
                             label, score = inference(cropped, interpreter)
                             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
-                            show_results(tof_target_frame, camera_target_frame, diff, cropped=cropped)
+                            show_results(tof_target_frame, imgcopy, diff, cropped=cropped)
 
                             if label == "paper":
                                 leds.change_to_green()
