@@ -193,7 +193,8 @@ def main():
                     count = 0
                     print("[INFO] Waiting for movement...")
                 else:
-                    tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
+                    if len(asd) > 0:
+                        tof_buffer[datetime.datetime.now()] = (data.distance_mm[0][:16], sum(asd) / len(asd))
                     count += 1
             ping(thread)
 
