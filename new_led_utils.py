@@ -14,7 +14,7 @@ class LEDs:
         # self.LED_PIN = 10        # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
         self.LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
         self.LED_DMA = 10  # DMA channel to use for generating signal (try 10)
-        self.LED_BRIGHTNESS = 255  # Set to 0 for darkest and 255 for brightest
+        self.LED_BRIGHTNESS = 220  # Set to 0 for darkest and 255 for brightest
         self.LED_INVERT = False  # True to invert the signal (when using NPN transistor level shift)
         self.LED_CHANNEL = 0  # set to '1' for GPIOs 13, 19, 41, 45 or 53
         self.loading_animation = False

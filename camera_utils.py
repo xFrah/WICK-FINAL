@@ -59,11 +59,10 @@ class Camera:
         return self.grab_buffer()
 
     def grab_buffer(self):
-        while len(self.camera_buffer) == 0 and not self.broken:
-            pass
-        with self.camera_lock:
+        while len(self.camera_buffer) == 0:
             if self.broken:
-                return None
+                return
+        with self.camera_lock:
             copy = self.camera_buffer.copy()
             self.camera_buffer = {}
         return copy
