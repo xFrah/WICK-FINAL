@@ -92,15 +92,16 @@ class Camera:
                     lentemp = len(temp)
                     temp[datetime.datetime.now()] = frame, lentemp
                     if virtual_memory()[2] > 70:
-                        self.do_i_shoot = False
                         print("[WARN] RAM is full, skipping frames")
                         self.broken = True
-                if not self.broken:
-                    with self.camera_lock:
+                        break
+                with self.camera_lock:
+                    if not self.broken:
                         print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
                         if len(temp) == 0:
                             self.broken = True
                         else:
                             self.camera_buffer = temp.copy()
-                else:
-                    print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
+                    else:
+                        self.do_i_shoot = False
+                        print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
