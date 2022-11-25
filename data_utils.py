@@ -109,7 +109,7 @@ class DataManager:
                     received = self.mqtt_client.unload_buffer()
                     for msg in received:
                         if (data := self.mqtt_client.is_for_me_uwu(msg)) and check_config_integrity(data, dont_kill=True):
-                            #self.mqtt_client.stop_buffering()
+                            self.mqtt_client.stop_buffering()
                             return data
                 time.sleep(0.1)
 
