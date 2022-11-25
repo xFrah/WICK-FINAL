@@ -25,9 +25,10 @@ class MQTTExtendedClient:
         self.client.on_message = self.on_message
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
-        #self.client.on_log = on_log
+        self.client.on_log = on_log
         self.conn_init_timeout = timeout
         self.conn_timeout = connection_timeout
+        self.rx_buffer_enabled = True
         self.arriving_data_lock = threading.Lock()
         self.data_ready_flag = False
         self.rx_buffer = []
@@ -62,6 +63,9 @@ class MQTTExtendedClient:
             print("[ERROR] MQTT connection failed!")
         else:
             print("[MQTT] Connected to broker!")
+
+    def stop_buffering(self):
+        self.rx_buffer_enabled = False
 
     def connected(self):
         return self.is_connected
@@ -107,10 +111,11 @@ class MQTTExtendedClient:
         return self.unload_buffer()
 
     def on_message(self, client, userdata, message):
-        with self.arriving_data_lock:
-            self.rx_buffer.append(message.payload)
-            self.data_ready_flag = True
-        print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
+        if self.rx_buffer_enabled:
+            with self.arriving_data_lock:
+                self.rx_buffer.append(message.payload)
+                self.data_ready_flag = True
+            print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
 
     def __del__(self):
         self.client.loop_stop()
