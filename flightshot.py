@@ -139,7 +139,6 @@ def main():
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
                     movement = True
                     print("[INFO] Movement detected")
-                    print(asd, sum(asd) / len(asd))
                     start = datetime.datetime.now()
                     count = 1
             else:
