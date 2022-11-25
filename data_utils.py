@@ -7,7 +7,6 @@ from typing import Any
 
 import helpers
 from helpers import kill
-from mqtt_utils import MQTTExtendedClient
 from sftp_utils import SFTP, upload_files
 from watchdog import ping, ignore
 
@@ -37,12 +36,12 @@ def update_cached_config(data):
 
 class DataManager:
 
-    def __init__(self, mqtt_client: MQTTExtendedClient):
+    def __init__(self, mqtt_client):
         """
         Saves data to local and cloud.
         """
         self.ftp_client: SFTP = SFTP(hostname="51.68.231.173", username="ubuntu", password="5xNbsHbAy9jf", port=22)
-        self.mqtt_client: MQTTExtendedClient = mqtt_client
+        self.mqtt_client = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
         self.data_buffer: dict[str, Any] = {}
