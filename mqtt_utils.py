@@ -125,11 +125,13 @@ class MQTTExtendedClient:
         try:
             config = json.loads(config)
         except json.JSONDecodeError:
+            print("[IS_FOR_ME] Invalid JSON!")
             return False
         try:
-            other_mac = config['mac']
+            other_mac = config['bin_id']
             sender_id = config['sender_id']
         except KeyError:
+            print("[IS_FOR_ME] No bin_id or sender_id!")
             return False
         return config if other_mac == self.mac and sender_id != self.mac else False
 
