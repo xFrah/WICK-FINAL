@@ -129,7 +129,7 @@ class MQTTExtendedClient:
             return False
         try:
             other_mac = config['bin_id']
-            sender_id = config['sender_id']
+            sender_id = config['senderId']
         except KeyError:
             print("[IS_FOR_ME] No bin_id or sender_id!")
             return False
