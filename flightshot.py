@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import time
 
 import numpy
@@ -101,6 +102,8 @@ def setup():
     """
     global mqtt_client
     leds = LEDs()
+    get_process_id = os.getpid()
+    print(f"[INFO] Process ID: {get_process_id}")
     mqtt_client = MQTTExtendedClient(mqtt_host, topic, port)
     mqtt_client.try_to_connect()
     dm = DataManager(mqtt_client)
