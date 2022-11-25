@@ -192,12 +192,13 @@ def main():
 
                             show_results(tof_target_frame, imgcopy, diff, cropped=cropped)
 
-                            if label == "paper":
+                            if label == config_and_data["current_class"]:
                                 leds.change_to_green()
                             else:
                                 leds.change_to_red()
+                                config_and_data["wrong_class_counter"] += 1
                             background = camera.grab_background(return_to_black=False)
-                            if label == "paper":
+                            if label == config_and_data["current_class"]:
                                 leds.black_from_green()
                             else:
                                 leds.black_from_red()
