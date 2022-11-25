@@ -11,6 +11,7 @@ from watchdog import ping
 
 class Camera:
     def __init__(self, flash):
+        self.broken = False
         self.do_i_shoot = False
         self.flash = flash
         self.camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
@@ -55,11 +56,14 @@ class Camera:
         self.do_i_shoot = False
         if turn_black:
             self.flash.fill((0, 0, 0))
+        return self.grab_buffer()
 
     def grab_buffer(self):
-        while len(self.camera_buffer) == 0:
+        while len(self.camera_buffer) == 0 and not self.broken:
             pass
         with self.camera_lock:
+            if self.broken:
+                return None
             copy = self.camera_buffer.copy()
             self.camera_buffer = {}
         return copy
@@ -84,7 +88,7 @@ class Camera:
             if self.do_i_shoot:
                 # temp = {datetime.datetime.now(): (frame, 0)}
                 temp = {}
-                broken = False
+                self.broken = False
                 while self.do_i_shoot:
                     _, frame = self.cap.read()
                     lentemp = len(temp)
@@ -92,8 +96,13 @@ class Camera:
                     if virtual_memory()[2] > 70:
                         self.do_i_shoot = False
                         print("[WARN] RAM is full, skipping frames")
-                        broken = True
-                if not broken:
+                        self.broken = True
+                if not self.broken:
                     with self.camera_lock:
                         print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-                        self.camera_buffer = temp.copy()
+                        if len(temp) == 0:
+                            self.broken = True
+                        else:
+                            self.camera_buffer = temp.copy()
+                else:
+                    print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")

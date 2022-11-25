@@ -144,11 +144,14 @@ def main():
                     count = 1
             else:
                 if len(asd) == 0:
-                    camera.stop_shooting()
                     now = datetime.datetime.now()
-                    buffer = camera.grab_buffer()
-                    buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
                     movement = False
+                    buffer = camera.stop_shooting()
+                    if not buffer:
+                        print("[ERROR] No frames captured or broken session")
+                        continue
+                    # buffer = camera.grab_buffer()
+                    buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
 
                     tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
