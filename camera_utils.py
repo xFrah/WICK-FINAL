@@ -77,7 +77,6 @@ class Camera:
     def camera_thread(self):
         thread = threading.currentThread()
         thread.setName("Camera")
-        ram_is_ok = True
         while True:
             _, frame = self.cap.read()
             if frame is not None:
@@ -85,17 +84,16 @@ class Camera:
             if self.do_i_shoot:
                 # temp = {datetime.datetime.now(): (frame, 0)}
                 temp = {}
-                while self.do_i_shoot and ram_is_ok:
+                broken = False
+                while self.do_i_shoot:
                     _, frame = self.cap.read()
                     lentemp = len(temp)
                     temp[datetime.datetime.now()] = frame, lentemp
-                    ram_is_ok = virtual_memory()[2] < 70
-                if not ram_is_ok:
-                    print("[WARN] RAM is too high, waiting for next session")
-                    while self.do_i_shoot:
-                        pass
-                    print("[WARN] Broken session has finished, waiting for next one...")
-                else:
-                    print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
-                with self.camera_lock:
-                    self.camera_buffer = temp.copy()
+                    if virtual_memory()[2] > 70:
+                        self.do_i_shoot = False
+                        print("[WARN] RAM is full, skipping frames")
+                        broken = True
+                if not broken:
+                    with self.camera_lock:
+                        print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
+                        self.camera_buffer = temp.copy()
