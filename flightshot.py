@@ -142,8 +142,7 @@ def main():
                     start = datetime.datetime.now()
                     count = 1
             else:
-                if len(asd) == 0:
-                    now = datetime.datetime.now()
+                if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.1:
                     movement = False
                     buffer = camera.stop_shooting()
                     if not buffer:
@@ -187,10 +186,10 @@ def main():
                     ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
                     print(ddd[0].shape, ddd[-1].shape)
                     dm.pass_data({"riempimento": percentage,
-                               "wrong_class_counter": config_and_data["wrong_class_counter"],
-                               "timestamp": str(now.isoformat()),
-                               "images": ddd
-                               })
+                                  "wrong_class_counter": config_and_data["wrong_class_counter"],
+                                  "timestamp": str(now.isoformat()),
+                                  "images": ddd
+                                  })
                     count = 0
                     print("[INFO] Waiting for movement...")
                 else:
