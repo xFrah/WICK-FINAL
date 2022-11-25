@@ -5,11 +5,10 @@ import threading
 import time
 from typing import Any
 
-import paho.mqtt.client as mqtt
-
 import helpers
 from helpers import kill
-from sftp_utils import SFTP
+from mqtt_utils import MQTTExtendedClient
+from sftp_utils import SFTP, upload_files
 from watchdog import ping, ignore
 
 config_and_data = {
@@ -38,12 +37,12 @@ def update_cached_config(data):
 
 class DataManager:
 
-    def __init__(self, mqtt_client: mqtt.Client):
+    def __init__(self, mqtt_client: MQTTExtendedClient):
         """
         Saves data to local and cloud.
         """
-        self.ftp_client: SFTP = None
-        self.mqtt_client = mqtt_client
+        self.ftp_client: SFTP = SFTP(hostname="51.68.231.173", username="ubuntu", password="5xNbsHbAy9jf", port=22)
+        self.mqtt_client: MQTTExtendedClient = mqtt_client
         self.data_lock = threading.Lock()
         self.data_ready = False
         self.data_buffer: dict[str, Any] = {}
@@ -60,7 +59,6 @@ class DataManager:
 
         if not os.path.exists("config.json"):
             print("[INFO] Trying to get config through MQTT")
-            # todo check if mqtt is initialized, initialize if it isn't
             data = self.il_fantastico_viaggio_del_bagarozzo_mark()
             if not data:
                 print("[ERROR] Wizard failed to get config through MQTT, killing...")
@@ -112,7 +110,7 @@ class DataManager:
                     received = self.mqtt_client.unload_buffer()
                     for msg in received:
                         if (data := self.mqtt_client.is_for_me_uwu(msg)) and check_config_integrity(data, dont_kill=True):
-                            self.mqtt_client.try_to_disconnect()
+                            self.mqtt_client.client.loop_stop()
                             return data
                 time.sleep(0.1)
 
@@ -178,24 +176,17 @@ class DataManager:
             for key, value in data_dict.items():
                 self.data_buffer[key] = self.data_buffer.get(key, []) + [value]
 
-    def connect_to_ftp(self):
-        """
-        It connects to the FTP server.
-        """
-        self.ftp_client = SFTP(hostname="51.68.231.173", username="ubuntu", password="5xNbsHbAy9jf", port=22)
-        self.ftp_client.connect()
-
     def upload_to_ftp(self):
         """
         It uploads the data to the FTP server.
         """
-        if not self.ftp_client:
-            print("[INFO] Initializing FTP client and connecting...")
-            self.connect_to_ftp()
+        print("[INFO] Opening SFTP connection...")
+        sftp = self.ftp_client.connect()
 
         imlist = os.listdir("images")
-        errors = self.ftp_client.upload_files(imlist, "images", "/home/ubuntu/images")
+        errors = upload_files(sftp, imlist, "images", "/home/ubuntu/images")
         print(f"\n[INFO] Uploaded {len(imlist) - errors} images out of {len(imlist)}.")
+        self.ftp_client.disconnect()
 
 
 def add_lines_csv(data: dict[str, Any]):
@@ -240,7 +231,7 @@ def deconfigure_and_kill(cause: str):
     kill()
 
 
-def check_config_integrity(config, dont_kill=False):
+def check_config_integrity(config: dict[str, Any], dont_kill=False):
     """
     If the config file is valid, return resulting tuple. If the config file is invalid, delete it and kill the program, unless dont_kill==True.
 
