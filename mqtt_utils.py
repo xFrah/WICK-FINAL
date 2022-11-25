@@ -123,7 +123,7 @@ class MQTTExtendedClient:
         :return: The mac address of the device.
         """
         try:
-            config = json.loads(config)
+            config: dict[str, Any] = json.loads(config)
         except json.JSONDecodeError:
             print("[IS_FOR_ME] Invalid JSON!")
             return False
@@ -133,6 +133,7 @@ class MQTTExtendedClient:
         except KeyError:
             print("[IS_FOR_ME] No bin_id or sender_id!")
             return False
+        del config['senderId']
         return config if other_mac == self.mac and sender_id != self.mac else False
 
     def try_to_disconnect(self):
