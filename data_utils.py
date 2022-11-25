@@ -6,12 +6,11 @@ import time
 from typing import Any
 
 import paho.mqtt.client as mqtt
-from ftplib import FTP
 
 import helpers
 from helpers import kill
 from sftp_utils import SFTP
-from watchdog import ping
+from watchdog import ping, ignore
 
 config_and_data = {
     "name": None,
@@ -160,9 +159,12 @@ class DataManager:
                 print(f"[INFO] Data saved in {(datetime.datetime.now() - start).total_seconds()}s.")
                 # if time is 12 pm or 6 pm, upload data
                 # if datetime.datetime.now().hour in [12, 17]:
-                # print("[INFO] Uploading data...")
-                # self.upload_to_ftp() # this makes the thread get killed by the watchdog, because no pings
-                # print("[INFO] Data uploaded.")
+                print("[INFO] Uploading data:", end=" ", flush=True)
+                ignore.add(thread)
+                self.upload_to_ftp()  # this makes the thread get killed by the watchdog, because no pings
+                ping(thread)
+                ignore.remove(thread)
+                print("Done.")
 
     def pass_data(self, data_dict: dict[str, Any]):
         """
@@ -187,7 +189,6 @@ class DataManager:
         """
         It uploads the data to the FTP server.
         """
-        print("[INFO] Uploading data to FTP...")
         if not self.ftp_client:
             print("[INFO] Initializing FTP client and connecting...")
             self.connect_to_ftp()

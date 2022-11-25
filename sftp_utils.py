@@ -1,6 +1,4 @@
 import paramiko
-import pysftp
-from urllib.parse import urlparse
 import os
 
 
@@ -42,6 +40,14 @@ class SFTP:
             raise Exception(err)
 
     def upload_files(self, files, source_local_path, remote_path):
+        """
+        It uploads a list of files from a local directory to a remote directory
+
+        :param files: A list of files to upload
+        :param source_local_path: The local path where the files are located
+        :param remote_path: The path on the remote server where the files will be uploaded
+        :return: The number of errors that occurred during the upload.
+        """
         try:
             sftp = self.connection.open_sftp()
         except Exception as err:

@@ -15,7 +15,7 @@ from edgetpu_utils import inference, setup_edgetpu
 from mqtt_utils import MQTTExtendedClient
 from new_led_utils import LEDs
 from tof_utils import tof_setup, render_tof, get_trash_level
-from watchdog import ping, pings
+from watchdog import ping, pings, ignore
 import cv2 as cv
 
 mqtt_client: mqtt.Client = None
@@ -36,7 +36,7 @@ def watchdog_thread():
     while True:
         time.sleep(5)
         for key, value in pings.items():
-            if (datetime.datetime.now() - value).total_seconds() > 70:
+            if (datetime.datetime.now() - value).total_seconds() > 70 and key not in ignore:
                 print(f"[ERROR] Thread [{key.getName()}] is not responding, killing...")
                 helpers.kill()
             elif not key.is_alive():
