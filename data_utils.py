@@ -23,19 +23,17 @@ config_and_data = {
     "bin_height": None,
     "bin_threshold": None,
     "label_dict": {0: "plastic", 1: "paper"},
-    "valid_classes": ["plastic", "paper"]
+    "valid_classes": ["plastic", "paper"],
+    "integrity_dict": {"name": str, "bin_id": str, "current_class": str, "bin_height": int, "bin_threshold": int}
 }
 
 
 def update_cached_config(data):
-    try:
-        config_and_data["name"] = data["name"]
-        config_and_data["bin_id"] = data["bin_id"]
-        config_and_data["bin_height"] = data["bin_height"]
-        config_and_data["bin_threshold"] = data["bin_thresold"]
-        config_and_data["current_class"] = data["current_class"]
-    except KeyError:
-        deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...")
+    for key in config_and_data["integrity_dict"]:
+        try:
+            config_and_data[key] = data[key]
+        except KeyError:
+            return deconfigure_and_kill(f"[ERROR] Key {key} couldn't be cached in configuration dictionary, deleting...")
     print("[INFO] Set cached config")
 
 
@@ -63,19 +61,8 @@ class DataManager:
 
         if not os.path.exists("config.json"):
             print("[INFO] Trying to get config through MQTT")
-            data = None
-            start = datetime.datetime.now()
-            while (datetime.datetime.now() - start).total_seconds() < 60:
-                data = self.il_fantastico_viaggio_del_bagarozzo_mark()
-                if not data:
-                    continue
-                elif check_config_integrity(data):
-                    break
-                time.sleep(2)
-                #print("[ERROR] Couldn't get config from MQTT, retrying...")
-                #if not self.mqtt_client.connected():
-                #    print("[ERROR] MQTT client is not connected, reinitializing...")
-                    # todo reinitialize setup_mqtt()
+            # todo check if mqtt is initialized, initialize if it isn't
+            data = self.il_fantastico_viaggio_del_bagarozzo_mark()
             if not data:
                 print("[ERROR] Wizard failed to get config through MQTT, killing...")
                 kill()
@@ -88,31 +75,25 @@ class DataManager:
             with open("config.json", "r") as f:
                 data = json.load(f)
 
-            check_config_integrity(data)  # it crashes anyway if it can't unpack
-            if self.mqtt_client.connected():
-                received = self.il_fantastico_viaggio_del_bagarozzo_mark()  # todo why does it return null?
-                if received:
-                    if check_config_integrity(received, dont_kill=True):
-                        if received == data:
-                            print("[INFO] Config is up to date.")
-                        else:
-                            print("[INFO] Config is outdated, updating...", end=" ", flush=True)
-                            with open("config.json", "w") as f:
-                                json.dump(data, f)
-                            data = received
-                            print("Done.")
-                        update_cached_config(data)
-                    else:
-                        print("[ERROR] Downloaded config is corrupted, not updating...")
+            check_config_integrity(data)
+
+            if received := self.il_fantastico_viaggio_del_bagarozzo_mark():
+                if received == data:
+                    print("[INFO] Config is up to date.")
                 else:
-                    print("[ERROR] Wizard failed to get config through MQTT.")
+                    print("[INFO] Config is outdated, updating...", end=" ", flush=True)
+                    with open("config.json", "w") as f:
+                        json.dump(data, f)
+                    data = received
+                    print("Done.")
+                update_cached_config(data)
             else:
                 print("[INFO] MQTT client is not connected, skipping config update.")
 
         printable_list = "\n".join(["- " + key + ": " + str(value) for key, value in data.items()])
         print(f"[INFO] Configuration data:\n{printable_list}")
 
-    def il_fantastico_viaggio_del_bagarozzo_mark(self):
+    def il_fantastico_viaggio_del_bagarozzo_mark(self, timeout=30):
         """
         It gets the config from the MQTT server
         :return: The received config.
@@ -121,20 +102,21 @@ class DataManager:
         try:
             if not self.mqtt_client.connected():
                 return print("[ERROR] MQTT client is not connected, exiting wizard...")
-
             try:
                 self.mqtt_client.publish(json.dumps({"bin_id": helpers.get_mac_address(), "config": True}))
             except:
                 return print("[ERROR] An error occurred while publishing MQTT packet, exiting wizard...")
 
             start = datetime.datetime.now()
-            while (datetime.datetime.now() - start).total_seconds() < 10:
+            while (datetime.datetime.now() - start).total_seconds() < timeout:  # this can lose packets in congested network
                 if self.mqtt_client.data_ready():
-                    received_config = self.mqtt_client.unload_buffer()
-                    return received_config
+                    received = self.mqtt_client.unload_buffer()
+                    for msg in received:
+                        if (data := self.mqtt_client.is_for_me_uwu(msg)) and check_config_integrity(data, dont_kill=True):
+                            self.mqtt_client.try_to_disconnect()
+                            return data
+                time.sleep(0.1)
 
-            if not self.mqtt_client.connected():
-                return print("[ERROR] MQTT connection lost during wizard setup, exiting wizard...")
         except Exception as e:
             return print(f"[ERROR] An error occurred in wizard setup... \n{e}")
 
@@ -265,21 +247,12 @@ def check_config_integrity(config, dont_kill=False):
     :param dont_kill: If True, the program will not kill itself if the config file is corrupted, defaults to False (optional)
     :return: the bin_id, current_class, bin_height, and bin_threshold.
     """
-    default_dict = {"bin_id": str, "current_class": str, "bin_height": int, "bin_thresold": int}
-    for key, value_type in default_dict.items():
+    for key, value_type in config_and_data["integrity_dict"].items():
         if key not in config:
             return deconfigure_and_kill(f"[ERROR] {key} not found in config.json") if not dont_kill else False
         if not isinstance(config[key], value_type):
             return deconfigure_and_kill(f"[ERROR] Config file is corrupted, {key} is not a {value_type}, deleting config.json and killing...") if not dont_kill else False
-    try:
-        name = config["name"]
-        bin_id = config["bin_id"]
-        current_class = config["current_class"]
-        bin_height = config["bin_height"]
-        bin_threshold = config["bin_thresold"]
-        if current_class not in config_and_data["valid_classes"]:
-            return deconfigure_and_kill(f'[ERROR] "{current_class}" is not a valid material, deleting config.json and killing...') if not dont_kill else False
-        print("[INFO] Config file is valid.")
-        return bin_id, current_class, bin_height, bin_threshold
-    except KeyError:
-        return deconfigure_and_kill("[ERROR] config.json is corrupted, deleting...") if not dont_kill else False
+    if config["current_class"] not in config_and_data["valid_classes"]:
+        return deconfigure_and_kill(f'[ERROR] "{config["current_class"]}" is not a valid material, deleting config.json and killing...') if not dont_kill else False
+    print("[INFO] Config file is valid.")
+    return True

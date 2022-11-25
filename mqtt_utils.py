@@ -30,7 +30,7 @@ class MQTTExtendedClient:
         self.conn_timeout = connection_timeout
         self.arriving_data_lock = threading.Lock()
         self.data_ready_flag = False
-        self.rx_buffer = None
+        self.rx_buffer = []
         self.mac = get_mac_address()
 
     def try_to_connect(self):
@@ -87,12 +87,12 @@ class MQTTExtendedClient:
                 self.data_ready_flag = False
                 if self.rx_buffer:
                     tmp = self.rx_buffer
-                    self.rx_buffer = None
+                    self.rx_buffer = []
                     return tmp
                 else:
-                    return None
+                    return []
             else:
-                return None
+                return []
 
     def get_next_message(self, timeout=10):
         """
@@ -107,23 +107,15 @@ class MQTTExtendedClient:
         return self.unload_buffer()
 
     def on_message(self, client, userdata, message):
-        py_var = json.loads(message.payload)
-        print(message)
-        if not len(py_var) > 2:
-            return
-
-        # todo activate this
-        # if not is_for_me_uwu(py_var):
-        #     return
         with self.arriving_data_lock:
-            self.rx_buffer = py_var
+            self.rx_buffer.append(message.payload)
             self.data_ready_flag = True
-        print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
+        #print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
 
     def __del__(self):
         self.client.loop_stop()
 
-    def is_for_me_uwu(self, config: dict[str, Any]):
+    def is_for_me_uwu(self, config):
         """
         Check if the packet matches the MAC address of the device, thus confirming that the packet is for this client.
 
@@ -131,12 +123,15 @@ class MQTTExtendedClient:
         :return: The mac address of the device.
         """
         try:
-            if config['mac'] == self.mac:
-                return True
-            else:
-                return False
-        except KeyError:  # todo must make sure that the thing is a dict, but not here, before this function is called.
+            config = json.loads(config)
+        except json.JSONDecodeError:
             return False
+        try:
+            other_mac = config['mac']
+            sender_id = config['sender_id']
+        except KeyError:
+            return False
+        return config if other_mac == self.mac and sender_id != self.mac else False
 
     def try_to_disconnect(self):
         """
@@ -150,6 +145,8 @@ class MQTTExtendedClient:
             self.client.loop_stop()
         except:
             pass
+        self.is_connected = False
+        self.client.connected_flag = False
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
