@@ -21,6 +21,12 @@ def tof_setup():
 
 
 def get_trash_level(vl53):
+    """
+    It takes the data from the VL53L0X sensor and returns the maximum distance measured and the level of trash, as percentage.
+
+    :param vl53: the VL53L0X object
+    :return: level_in_mm, level_in_percentage
+    """
     while True:
         if vl53.data_ready():
             data = [e for e in vl53.get_data().distance_mm[0][:16] if e > 0]

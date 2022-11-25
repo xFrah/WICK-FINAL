@@ -113,7 +113,7 @@ def setup():
     interpreter = setup_edgetpu()
     camera = Camera(leds)
     vl53 = tof_setup()
-    level = get_trash_level(vl53)
+    _, level = get_trash_level(vl53)
     # check if file exist, if it does get json from it
     if os.path.isfile("data.json"):
         with open("data.json", "r") as f:
