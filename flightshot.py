@@ -118,16 +118,19 @@ def setup():
     if os.path.isfile("data.json"):
         with open("data.json", "r") as f:
             data = json.load(f)
-    if "filling" in data:
+    if "filling" in data and "wrong_class_counter" in data:
         prev_filling = data["filling"]
         if level < prev_filling - 30:
             print(f"[INFO] Current level is higher than the previous one ({level} > {prev_filling}), resetting svuotamento timestamp.")
             config_and_data["last_svuotamento"] = datetime.datetime.now()
+            config_and_data["wrong_class_counter"] = 0
         else:
             print(f"[INFO] Current trash level: {level}, previous: {prev_filling}")
+            config_and_data["wrong_class_counter"] = data["wrong_class_counter"]
     elif level < 20:
         print(f"[INFO] Initial level is lower than 20%, resetting svuotamento timestamp.")
         config_and_data["last_svuotamento"] = datetime.datetime.now()
+        config_and_data["wrong_class_counter"] = 0
     tof_buffer = {}
     leds.stop_loading_animation()
     while leds.in_use():
