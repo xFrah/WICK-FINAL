@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import os
 import time
 
@@ -112,6 +113,21 @@ def setup():
     interpreter = setup_edgetpu()
     camera = Camera(leds)
     vl53 = tof_setup()
+    level = get_trash_level(vl53)
+    # check if file exist, if it does get json from it
+    if os.path.isfile("data.json"):
+        with open("data.json", "r") as f:
+            data = json.load(f)
+    if "filling" in data:
+        prev_filling = data["filling"]
+        if level < prev_filling - 30:
+            print(f"[INFO] Current level is higher than the previous one ({level} > {prev_filling}), resetting svuotamento timestamp.")
+            config_and_data["last_svuotamento"] = datetime.datetime.now()
+        else:
+            print(f"[INFO] Current trash level: {level}, previous: {prev_filling}")
+    elif level < 20:
+        print(f"[INFO] Initial level is lower than 20%, resetting svuotamento timestamp.")
+        config_and_data["last_svuotamento"] = datetime.datetime.now()
     tof_buffer = {}
     leds.stop_loading_animation()
     while leds.in_use():

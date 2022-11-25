@@ -191,7 +191,6 @@ class DataManager:
             print(f"[ERROR] An error occurred while uploading data... \n{e}")
 
 
-
 def add_lines_csv(data: dict[str, Any]):
     """
     If the file exceeds 200 lines, delete the first 100 lines
