@@ -104,6 +104,7 @@ class Camera:
                             self.camera_buffer = temp.copy()
                     else:
                         self.do_i_shoot = False
-                        temp.clear()
                         self.flash.fill((0, 0, 0))
                         print(f"[INFO] Shutting off leds and skipping {len(temp)} frames")
+                        temp.clear()
+
