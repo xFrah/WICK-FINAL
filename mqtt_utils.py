@@ -110,7 +110,7 @@ class MQTTExtendedClient:
         with self.arriving_data_lock:
             self.rx_buffer.append(message.payload)
             self.data_ready_flag = True
-        #print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
+        print("[MQTT] Message received ", str(message.payload.decode("utf-8")))
 
     def __del__(self):
         self.client.loop_stop()
