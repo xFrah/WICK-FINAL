@@ -25,7 +25,7 @@ class MQTTExtendedClient:
         self.client.on_message = self.on_message
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
-        #self.client.on_log = on_log
+        self.client.on_log = on_log
         self.conn_init_timeout = timeout
         self.conn_timeout = connection_timeout
         self.arriving_data_lock = threading.Lock()
