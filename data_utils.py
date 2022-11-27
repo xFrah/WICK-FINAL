@@ -154,6 +154,7 @@ class DataManager:
                 else:
                     try:
                         self.mqtt_client = MQTTExtendedClient()
+                        self.mqtt_client.try_to_connect()
                         self.mqtt_client.publish(json.dumps(save_buffer))
                     except Exception as e:
                         print(f"[ERROR] Couldn't reinitialize MQTT Client: \n{e}")
