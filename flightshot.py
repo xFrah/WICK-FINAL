@@ -183,24 +183,24 @@ def main():
 
                         if cropped.shape[0] > 0 and cropped.shape[1] > 0:
                             cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
-                            #label, score = inference(cropped, interpreter)
-                            #print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
+                            label, score = inference(cropped, interpreter)
+                            print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
                             show_results(tof_target_frame, imgcopy, diff, cropped=cropped)
 
-                            leds.change_to_white()
-                            background = camera.grab_background(return_to_black=False)
-                            leds.black_from_white()
-                            # if label == config_and_data["current_class"]:
-                            #     leds.change_to_green()
-                            # else:
-                            #     leds.change_to_red()
-                            #     config_and_data["wrong_class_counter"] += 1
+                            # leds.change_to_white()
                             # background = camera.grab_background(return_to_black=False)
-                            # if label == config_and_data["current_class"]:
-                            #     leds.black_from_green()
-                            # else:
-                            #     leds.black_from_red()
+                            # leds.black_from_white()
+                            if label == config_and_data["current_class"]:
+                                leds.change_to_green()
+                            else:
+                                leds.change_to_red()
+                                config_and_data["wrong_class_counter"] += 1
+                            background = camera.grab_background(return_to_black=False)
+                            if label == config_and_data["current_class"]:
+                                leds.black_from_green()
+                            else:
+                                leds.black_from_red()
                     else:
                         print("[INFO] Object not found.")
                         show_results(tof_target_frame, camera_target_frame, diff)
