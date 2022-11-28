@@ -143,3 +143,23 @@ class LEDs:
                 self.strip.setPixelColor(y, Color(i, 0, 0))
             self.strip.show()
             time.sleep(0.03)
+
+    def change_to_white(self):
+        """
+        Change the LEDs gradually from black to white
+        """
+        for i in range(0, 255, 5):
+            for y in range(self.strip.numPixels()):
+                self.strip.setPixelColor(y, Color(i, i, i))
+            self.strip.show()
+            time.sleep(0.03)
+
+    def black_from_white(self):
+        """
+        Change the LEDs gradually from white to black
+        """
+        for i in range(0, 255, 5)[::-1]:
+            for y in range(self.strip.numPixels()):
+                self.strip.setPixelColor(y, Color(i, i, i))
+            self.strip.show()
+            time.sleep(0.03)
