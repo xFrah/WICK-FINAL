@@ -155,8 +155,8 @@ def main():
             asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
             if not movement:
                 if len(asd) > 0:
-                    camera.shoot()
                     tof_buffer = {datetime.datetime.now(): (data.distance_mm[0][:16], sum(asd) / len(asd))}
+                    camera.shoot()
                     movement = True
                     print("[INFO] Movement detected")
                     start = datetime.datetime.now()

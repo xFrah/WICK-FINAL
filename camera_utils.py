@@ -101,10 +101,11 @@ class Camera:
                         print(f"[INFO] Session has finished, saving to buffer {len(temp)} frames")
                         if len(temp) == 0:
                             self.broken = True
+                            self.camera_buffer.clear()
                         else:
                             self.camera_buffer = temp.copy()
                     else:
                         self.do_i_shoot = False
                         self.flash.fill((0, 0, 0))
                         print(f"[INFO] Shutting off leds and skipping {len(temp)} frames")
-                        temp.clear()
+                    temp.clear()
