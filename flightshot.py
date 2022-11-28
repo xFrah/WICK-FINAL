@@ -188,19 +188,19 @@ def main():
 
                             show_results(tof_target_frame, imgcopy, diff, cropped=cropped)
 
-                            # leds.change_to_white()
-                            # background = camera.grab_background(return_to_black=False)
-                            # leds.black_from_white()
-                            if label == config_and_data["current_class"]:
-                                leds.change_to_green()
-                            else:
-                                leds.change_to_red()
-                                config_and_data["wrong_class_counter"] += 1
+                            leds.change_to_white()
                             background = camera.grab_background(return_to_black=False)
-                            if label == config_and_data["current_class"]:
-                                leds.black_from_green()
-                            else:
-                                leds.black_from_red()
+                            leds.black_from_white()
+                            # if label == config_and_data["current_class"]:
+                            #     leds.change_to_green()
+                            # else:
+                            #     leds.change_to_red()
+                            #     config_and_data["wrong_class_counter"] += 1
+                            # background = camera.grab_background(return_to_black=False)
+                            # if label == config_and_data["current_class"]:
+                            #     leds.black_from_green()
+                            # else:
+                            #     leds.black_from_red()
                     else:
                         print("[INFO] Object not found.")
                         show_results(tof_target_frame, camera_target_frame, diff)
@@ -212,7 +212,7 @@ def main():
                     dm.pass_data({"riempimento": percentage,
                                   "wrong_class_counter": config_and_data["wrong_class_counter"],
                                   "timestamp": str(now.isoformat()),
-                                  "images": ddd
+                                  "images": ddd if len(ddd) < 20 else ddd[:20],
                                   })
                     count = 0
                     buffer.clear()
