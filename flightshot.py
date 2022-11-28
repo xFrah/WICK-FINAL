@@ -215,6 +215,8 @@ def main():
                                   "images": ddd
                                   })
                     count = 0
+                    buffer.clear()
+                    tof_buffer.clear()
                     print("[INFO] Waiting for movement...")
                 else:
                     if len(asd) > 0:

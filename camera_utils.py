@@ -16,7 +16,7 @@ class Camera:
         self.flash = flash
         self.camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
         self.camera_lock = threading.Lock()
-        self.cap = cv.VideoCapture(0)
+        self.cap = cv.VideoCapture(0, cv.CAP_V4L2)
         print("[INFO] Configuring camera:", end=" ", flush=True)
 
         succ = self.apply_configuration()
