@@ -39,7 +39,7 @@ class Camera:
         # time.sleep(2)
         succ[cv.CAP_PROP_AUTO_EXPOSURE] = self.cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
         time.sleep(2)
-        succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
+        succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, -9)
         succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
         # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
