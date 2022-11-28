@@ -61,6 +61,7 @@ class Camera:
     def grab_buffer(self):
         while len(self.camera_buffer) == 0:
             if self.broken:
+                self.broken = False
                 return
         with self.camera_lock:
             copy = self.camera_buffer.copy()
@@ -107,4 +108,3 @@ class Camera:
                         self.flash.fill((0, 0, 0))
                         print(f"[INFO] Shutting off leds and skipping {len(temp)} frames")
                         temp.clear()
-
