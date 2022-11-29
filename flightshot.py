@@ -186,6 +186,7 @@ def main():
                     tof_target_frame, camera_target_frame, camera_target_frame_index = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
                     rect, diff = helpers.get_diff(camera_target_frame, background)
                     buffer_indexes = sorted(buffer.values(), key=lambda d: d[1])
+                    original = camera_target_frame_index + 0
                     while not helpers.is_rect_good(rect, background):
                         camera_target_frame_index += 1
                         if camera_target_frame_index == len(buffer_indexes):
@@ -194,6 +195,7 @@ def main():
                             break
                         camera_target_frame = buffer_indexes[camera_target_frame_index][0]
                         rect, diff = helpers.get_diff(camera_target_frame, background)
+                    print(f"[INFO] Original index: {original}, Revised index: {camera_target_frame_index}")
                     if (rect is not None) and (diff is not None):
                         x, y, w, h = rect
                         imgcopy = camera_target_frame.copy()
