@@ -181,6 +181,7 @@ def main():
                         buffer.clear()
                         tof_buffer.clear()
                         continue
+                    print(f"[INFO] Max bad index: {max_bad_index}\n[INFO] Buffer length: {len(buffer)}")
                     tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, {key: value for key, value in buffer.items() if value[1] > max_bad_index}, config_and_data["target_distance"])
 
                     rect, diff = helpers.get_diff(camera_target_frame, background)
