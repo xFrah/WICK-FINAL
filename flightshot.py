@@ -234,6 +234,7 @@ def main():
                     else:
                         print("[INFO] Object not found.")
                         show_results(tof_target_frame, camera_target_frame, diff)
+                        background = camera.grab_background(return_to_black=False)
 
                     avg, percentage = get_trash_level(vl53)
                     print(f"[INFO] {avg}mm, {percentage}%")
