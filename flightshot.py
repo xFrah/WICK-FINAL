@@ -167,12 +167,21 @@ def main():
                     buffer = camera.stop_shooting()
                     if not buffer:
                         print("[ERROR] No frames captured or broken session")
+                        count = 0
+                        buffer.clear()
+                        tof_buffer.clear()
                         continue
                     # buffer = camera.grab_buffer()
-                    buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
+                    max_bad_index = max([i for rect, i in [(helpers.get_diff(value[0], background), value[1]) for value in buffer.values()] if rect is not None and rect[2] < 0.95 * background.shape[1]])
+                    # buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
-
-                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
+                    if max_bad_index == len(buffer) - 1:
+                        print("[INFO] Last frame is bad, skipping")
+                        count = 0
+                        buffer.clear()
+                        tof_buffer.clear()
+                        continue
+                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, {key: value for key, value in buffer.items() if value[1] > max_bad_index}, config_and_data["target_distance"])
 
                     rect, diff = helpers.get_diff(camera_target_frame, background)
                     if rect is not None:
