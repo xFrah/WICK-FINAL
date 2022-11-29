@@ -190,8 +190,6 @@ def main():
                         camera_target_frame_index += 1
                         if camera_target_frame_index == len(buffer_indexes):
                             print("[ERROR] No good frame found, skipping")
-                            buffer.clear()
-                            tof_buffer.clear()
                             rect = None
                             break
                         camera_target_frame = buffer_indexes[camera_target_frame_index][0]
