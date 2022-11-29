@@ -239,6 +239,13 @@ def get_mac_address():
     return mac_address
 
 
+def is_rect_good(rect, background):
+    try:
+        return rect is not None and rect[2] > 0.95 * background.shape[1]
+    except:
+        return False
+
+
 # function to save list of images in new folder in current working directory linux
 def save_images_linux(images, folder_name):
     path = os.getcwd() + "/" + folder_name

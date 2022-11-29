@@ -82,7 +82,7 @@ def get_frame_at_distance(tof_buffer: dict[datetime.datetime, tuple[numpy.array,
     print(f"[INFO] Distances: {[(round(dist[0].microsecond / 1000, 2), dist[1][1]) for dist in tof_buffer.items()]}")
     print(f"[INFO] Frames: {[(round(frame[0].microsecond / 1000, 2), frame[1][1]) for frame in cap_buffer.items()]}")
     print(f"[INFO] Time distance: {round(abs(time_target_item[0] - closest_frame_item[0]).total_seconds() * 1000, 2)}ms")
-    return time_target_item[1][0], closest_frame_item[1][0]
+    return time_target_item[1][0], closest_frame_item[1][0], closest_frame_item[1][1]
 
 
 def get_mqtt_client():
@@ -172,20 +172,31 @@ def main():
                         tof_buffer.clear()
                         continue
                     # buffer = camera.grab_buffer()
-                    max_bad_index = max([i for rect, i in [(helpers.get_diff(value[0], background)[0], value[1]) for value in buffer.values()] if rect is not None and rect[2] > 0.95 * background.shape[1]])
+                    # max_bad_index = max([i for rect, i in [(helpers.get_diff(value[0], background)[0], value[1]) for value in buffer.values()] if rect is not None and rect[2] > 0.95 * background.shape[1]])
                     # buffer = dict(sorted(buffer.items(), key=lambda d: d[1][1])[1:]) if len(buffer) > 1 else buffer
                     print(f"[INFO] Stopped, FPS: {(count / (now - start).total_seconds(), len(buffer) / (now - start).total_seconds())}")
-                    if max_bad_index == len(buffer) - 1:
-                        print("[INFO] Last frame is bad, skipping")
-                        count = 0
-                        buffer.clear()
-                        tof_buffer.clear()
-                        continue
-                    print(f"[INFO] Max bad index: {max_bad_index}\n[INFO] Buffer length: {len(buffer)}")
-                    tof_target_frame, camera_target_frame = get_frame_at_distance(tof_buffer, {key: value for key, value in buffer.items() if value[1] > max_bad_index}, config_and_data["target_distance"])
+                    # if max_bad_index == len(buffer) - 1:
+                    #     print("[INFO] Last frame is bad, skipping")
+                    #     count = 0
+                    #     buffer.clear()
+                    #     tof_buffer.clear()
+                    #     continue
 
+                    # print(f"[INFO] Max bad index: {max_bad_index}\n[INFO] Buffer length: {len(buffer)}")
+                    tof_target_frame, camera_target_frame, camera_target_frame_index = get_frame_at_distance(tof_buffer, buffer, config_and_data["target_distance"])
                     rect, diff = helpers.get_diff(camera_target_frame, background)
-                    if rect is not None:
+                    buffer_indexes = sorted(buffer.values(), key=lambda d: d[1])
+                    while not helpers.is_rect_good(rect, background):
+                        camera_target_frame_index += 1
+                        if camera_target_frame_index == len(buffer_indexes):
+                            print("[ERROR] No good frame found, skipping")
+                            buffer.clear()
+                            tof_buffer.clear()
+                            rect = None
+                            break
+                        camera_target_frame = buffer_indexes[camera_target_frame_index][0]
+                        rect, diff = helpers.get_diff(camera_target_frame, background)
+                    if (rect is not None) and (diff is not None):
                         x, y, w, h = rect
                         imgcopy = camera_target_frame.copy()
                         cropped = imgcopy[y:y + h, x:x + w]
