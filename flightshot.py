@@ -184,7 +184,6 @@ def main():
                         if cropped.shape[0] > 0 and cropped.shape[1] > 0:
                             try:
                                 cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
-
                             except:
                                 print("[ERROR] Cropped image is not a valid image")
                                 count = 0
