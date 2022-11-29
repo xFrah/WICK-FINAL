@@ -182,7 +182,17 @@ def main():
                         cv.rectangle(imgcopy, (x, y), (x + w - 1, y + h - 1), 255, 2)
 
                         if cropped.shape[0] > 0 and cropped.shape[1] > 0:
-                            cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
+                            try:
+                                cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
+
+                            except:
+                                print("[ERROR] Cropped image is not a valid image")
+                                count = 0
+                                buffer.clear()
+                                tof_buffer.clear()
+                                print("[INFO] Waiting for movement...")
+                                continue
+
                             label, score = inference(cropped, interpreter)
                             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
