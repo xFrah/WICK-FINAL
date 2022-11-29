@@ -16,7 +16,7 @@ class Camera:
         self.flash = flash
         self.camera_buffer: dict[datetime.datetime, tuple[numpy.array, int]] = {}
         self.camera_lock = threading.Lock()
-        self.cap = cv.VideoCapture(0, cv.CAP_V4L2)
+        self.cap = cv.VideoCapture(0)
         print("[INFO] Configuring camera:", end=" ", flush=True)
 
         succ = self.apply_configuration()
@@ -39,6 +39,7 @@ class Camera:
         # time.sleep(2)
         succ[cv.CAP_PROP_AUTO_EXPOSURE] = self.cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
         time.sleep(2)
+        succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
         succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
         succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
         # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
