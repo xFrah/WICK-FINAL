@@ -165,6 +165,7 @@ def main():
                 if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.1:
                     movement = False
                     buffer = camera.stop_shooting()
+                    imgcopy = None
                     if not buffer:
                         print("[ERROR] No frames captured or broken session")
                         count = 0
@@ -243,7 +244,7 @@ def main():
                     dm.pass_data({"riempimento": percentage,
                                   "wrong_class_counter": config_and_data["wrong_class_counter"],
                                   "timestamp": str(now.isoformat()),
-                                  "images": ddd if len(ddd) < 20 else ddd[:20],
+                                  "images": (ddd if len(ddd) < 20 else ddd[:20])# + ([imgcopy] if imgcopy is not None else []),
                                   })
                     count = 0
                     buffer.clear()

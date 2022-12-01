@@ -71,7 +71,11 @@ def walk_through_images(path):
             if file.endswith(".jpg") or file.endswith(".png"):
                 frame = add_bottom_padding(cv.imread(os.path.join(root, file)))
                 print(f"[INFO] Showing {file} from {root}")
-                frame_copy = frame.copy()
+                try:
+                    frame_copy = frame.copy()
+                except AttributeError:
+                    print(f"[ERROR] {file} is not a valid image")
+                    continue
                 cv.namedWindow('image')
                 cv.setMouseCallback('image', mouse_callback)
                 while True:
@@ -97,4 +101,4 @@ def walk_through_images(path):
                 x_init, y_init, x_final, y_final = 0, 0, 0, 0
 
 
-walk_through_images("dataset")
+walk_through_images(r"C:\Users\fdimo\Desktop\Nuova cartella")
