@@ -20,7 +20,7 @@ buffer = []
 start = datetime.datetime.now()
 while True:
     random_floats = list(np.random.rand(16))
-    buffer.append(random_floats)
+    buffer.append(absolute_diff(random_floats, vector))
     if len(buffer) == 10000:
         print(f"FPS: {10000 / (datetime.datetime.now() - start).total_seconds():.2f}")
         buffer.clear()
