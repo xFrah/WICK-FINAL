@@ -162,7 +162,7 @@ def main():
                     start = datetime.datetime.now()
                     count = 1
             else:
-                if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.1:
+                if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.3:
                     movement = False
                     buffer = camera.stop_shooting()
                     imgcopy = None
