@@ -152,7 +152,7 @@ def main():
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = [e for e in data.distance_mm[0][:16] if 200 > e > 0]
+            asd = [e for e in data.distance_mm[0][:16] if 150 > e > 0]
             if not movement:
                 if len(asd) > 0:
                     camera.shoot()
