@@ -18,11 +18,6 @@ pca.frequency = 50
 # but the PCA9685 will only actually give 12 bits of resolution.
 pca.channels[0].duty_cycle = 0x7FFF
 
-
-# We sleep in the loops to give the servo time to move into position.
-for i in range(70):
-    pca.channels[0].angle = i
-    time.sleep(0.03)
-for i in range(70)[::-1]:
-    pca.channels[0].angle = i
-    time.sleep(0.03)
+while True:
+    pca.channels[0].angle = input("Angle: ")
+    time.sleep(0.05)
