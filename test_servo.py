@@ -15,7 +15,7 @@ pca = PCA9685(i2c_bus)
 # Set the PWM frequency to 60hz.
 pca.frequency = 50
 
-servo0 = servo.Servo(pca.channels[0])
+servo0 = servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400)
 
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
