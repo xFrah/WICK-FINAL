@@ -15,9 +15,19 @@ pca = PCA9685(i2c_bus)
 # Set the PWM frequency to 60hz.
 pca.frequency = 50
 
-servos = [servo.Servo(pca.channels[i], min_pulse=600, max_pulse=2400) for i in range(3)]
+servos = [servo.Servo(pca.channels[i], min_pulse=600, max_pulse=2400) for i in range(4)]
 
 open_servo = None
+
+
+def vibrato(servo):
+    angle0 = 30
+    angle1 = 40
+    for i in range(20):
+        servo.angle = angle0 if servo.angle == angle1 else angle1
+        servo.angle = i
+        time.sleep(0.1)
+
 
 def change_open(servo):
     global open_servo
@@ -29,11 +39,15 @@ def change_open(servo):
     else:
         open_servo = None
 
+
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
-#pca.channels[1].duty_cycle = 0x7FFF
+# pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    chn = int(input("Servo to open: "))
-    change_open(servos[chn] if chn != "None" else None)
+    chn = input("Servo to open: ")
+    if chn.startswith("vibrato"):
+        vibrato(servos[int(chn[-1])])
+    else:
+        change_open(servos[int(chn)] if chn != "None" else None)
     time.sleep(0.05)
