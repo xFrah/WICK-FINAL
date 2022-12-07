@@ -27,10 +27,10 @@ def vibrato(servo):
     print(servo.angle)
     slightly_open = False
     for i in range(20):
-        angle = 40 if slightly_open else 60
+        angle = 40 if slightly_open else 45
         slightly_open = not slightly_open
         servo.angle = angle
-        time.sleep(0.3)
+        time.sleep(0.1)
         print(servo.angle)
 
 
