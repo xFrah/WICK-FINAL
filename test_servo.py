@@ -16,11 +16,16 @@ pca = PCA9685(i2c_bus)
 pca.frequency = 50
 
 servo0 = servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400)
+servo1 = servo.Servo(pca.channels[1], min_pulse=600, max_pulse=2400)
+servo2 = servo.Servo(pca.channels[2], min_pulse=600, max_pulse=2400)
 
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
 #pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    servo0.angle = int(input("Angle: "))
+    angle = int(input("Angle: "))
+    servo0.angle = angle
+    servo1.angle = angle
+    servo2.angle = angle
     time.sleep(0.05)
