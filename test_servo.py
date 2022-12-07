@@ -30,6 +30,7 @@ def vibrato(servo):
         angle = 40 if angle == 60 else 40
         servo.angle = angle
         time.sleep(0.3)
+        print(servo.angle)
 
 
 def close_all():
