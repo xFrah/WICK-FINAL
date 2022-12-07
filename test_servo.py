@@ -32,6 +32,10 @@ def vibrato(servo):
         servo.angle = i
         time.sleep(0.1)
 
+def close_all():
+    for servo in servos:
+        servo.angle = 30
+
 
 def change_open(servo):
     global open_servo
@@ -52,6 +56,8 @@ while True:
     chn = input("Servo to open: ")
     if chn.startswith("vibrato"):
         vibrato(servos[int(chn[-1])])
+    elif chn.startswith("closeall"):
+        close_all()
     else:
         change_open(servos[int(chn)] if chn != "None" else None)
     time.sleep(0.05)
