@@ -32,7 +32,6 @@ def vibrato(servo):
         for t_servo in servos:
             if servo != t_servo:
                 t_servo.angle = angle
-        servo.angle = angle
         time.sleep(0.1)
         print(servo.angle)
 
