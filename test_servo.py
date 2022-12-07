@@ -15,7 +15,11 @@ pca = PCA9685(i2c_bus)
 # Set the PWM frequency to 60hz.
 pca.frequency = 50
 
-servos = [servo.Servo(pca.channels[i], min_pulse=600, max_pulse=2400) for i in range(4)]
+servos = [servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400),
+          servo.Servo(pca.channels[1], min_pulse=600, max_pulse=2400),
+          servo.Servo(pca.channels[3], min_pulse=600, max_pulse=2400),
+          servo.Servo(pca.channels[15], min_pulse=600, max_pulse=2400)
+          ]
 
 open_servo = None
 
