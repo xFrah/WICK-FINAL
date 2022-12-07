@@ -16,8 +16,8 @@ pca.frequency = 50
 
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
-pca.channels[0].duty_cycle = 0x7FFF
+pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    pca.channels[0].angle = input("Angle: ")
+    pca.channels[1].angle = input("Angle: ")
     time.sleep(0.05)
