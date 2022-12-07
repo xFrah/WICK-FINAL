@@ -15,9 +15,7 @@ pca = PCA9685(i2c_bus)
 # Set the PWM frequency to 60hz.
 pca.frequency = 50
 
-servo0 = servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400)
-servo1 = servo.Servo(pca.channels[1], min_pulse=600, max_pulse=2400)
-servo2 = servo.Servo(pca.channels[2], min_pulse=600, max_pulse=2400)
+servos = [servo.Servo(pca.channels[i], min_pulse=600, max_pulse=2400) for i in range(3)]
 
 open_servo = None
 
@@ -25,16 +23,17 @@ def change_open(servo):
     global open_servo
     if open_servo is not None:
         open_servo.angle = 30
-    open_servo = servo
-    servo.angle = 120
+    if servo is not None:
+        open_servo = servo
+        servo.angle = 120
+    else:
+        open_servo = None
 
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
 #pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    angle = int(input("Angle: "))
-    servo0.angle = angle
-    servo1.angle = angle
-    servo2.angle = angle
+    chn = int(input("Servo to open: "))
+    change_open(servos[chn] if chn != "None" else None)
     time.sleep(0.05)
