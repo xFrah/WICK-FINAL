@@ -27,7 +27,7 @@ def vibrato(servo):
     angle1 = 60
     for i in range(20):
         servo.angle = angle0 if servo.angle == angle1 else angle1
-        time.sleep(0.1)
+        time.sleep(0.3)
 
 
 def close_all():
