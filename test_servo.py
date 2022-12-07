@@ -19,6 +19,15 @@ servo0 = servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400)
 servo1 = servo.Servo(pca.channels[1], min_pulse=600, max_pulse=2400)
 servo2 = servo.Servo(pca.channels[2], min_pulse=600, max_pulse=2400)
 
+open_servo = None
+
+def change_open(servo):
+    global open_servo
+    if open_servo is not None:
+        open_servo.angle = 30
+    open_servo = servo
+    servo.angle = 120
+
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
 #pca.channels[1].duty_cycle = 0x7FFF
