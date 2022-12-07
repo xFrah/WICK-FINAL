@@ -6,7 +6,7 @@ import busio
 from adafruit_pca9685 import PCA9685
 
 # Create the I2C bus interface.
-i2c_bus = busio.I2C(0, 0)
+i2c_bus = busio.I2C(SCL, SDA)
 
 # Create a simple PCA9685 class instance.
 pca = PCA9685(i2c_bus)
