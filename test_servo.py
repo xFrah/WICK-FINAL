@@ -19,5 +19,5 @@ pca.frequency = 60
 #pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    pca.channels[2].angle = input("Angle: ")
+    pca.channels[0].angle = input("Angle: ")
     time.sleep(0.05)
