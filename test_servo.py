@@ -22,5 +22,5 @@ servo0 = servo.Servo(pca.channels[0])
 #pca.channels[1].duty_cycle = 0x7FFF
 
 while True:
-    servo0.angle = input("Angle: ")
+    servo0.angle = int(input("Angle: "))
     time.sleep(0.05)
