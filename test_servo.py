@@ -34,7 +34,7 @@ def vibrato(servo):
 
 def close_all():
     for servo in servos:
-        servo.angle = 30
+        servo.angle = 40
 
 
 def change_open(servo):
