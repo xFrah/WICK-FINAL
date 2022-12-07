@@ -23,11 +23,9 @@ servos = [servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400),
 
 
 def vibrato(servo):
-    angle0 = 40
-    angle1 = 60
     for i in range(20):
-        servo.angle = angle0 if servo.angle == angle1 else angle1
-        time.sleep(1)
+        servo.angle = 40 if servo.angle == 60 else 40
+        time.sleep(0.3)
 
 
 def close_all():
