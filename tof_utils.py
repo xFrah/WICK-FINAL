@@ -20,6 +20,21 @@ def tof_setup():
     return vl53
 
 
+def absolute_diff(vector, base_vector, diff_threshold=2):
+    """
+    If the absolute difference between any two elements in the two vectors is greater than diff_threshold(default=2), return True, otherwise return False
+
+    :param vector: the vector we're comparing to the base vector
+    :param base_vector: The vector that we are comparing the other vectors to
+    :param diff_threshold: The threshold for the absolute difference in centimeters
+    :return: True or False
+    """
+    for i, y in zip(vector, base_vector):
+        if abs(i - y) > diff_threshold and (i != 0 and y != 0):
+            return True
+    return False
+
+
 def get_trash_level(vl53):
     """
     It takes the data from the VL53L0X sensor and returns the maximum distance measured and the level of trash, as percentage.

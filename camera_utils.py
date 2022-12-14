@@ -10,7 +10,7 @@ from watchdog import ping
 
 
 class Camera:
-    def __init__(self, flash):
+    def __init__(self, flash, no_camera_thread=False):
         self.broken = False
         self.do_i_shoot = False
         self.flash = flash
@@ -27,7 +27,8 @@ class Camera:
             _, frame = self.cap.read()
             c += 1
         print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(self.cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
-        threading.Thread(target=self.camera_thread).start()
+        if not no_camera_thread:
+            threading.Thread(target=self.camera_thread).start()
 
     def apply_configuration(self):
         succ = dict()
@@ -42,7 +43,7 @@ class Camera:
         succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
         succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
         succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
-        # succ[cv.CAP_PROP_BUFFERSIZE] = cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
+        # succ[cv.CAP_PROP_BUFFERSIZE] = self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1) # TODO TEST IF THIS WORKS PLEASE
 
         return succ
 
@@ -77,6 +78,9 @@ class Camera:
             return max(buffer.values(), key=lambda d: d[1])[0]
         else:
             print("[WARN] No background frames")
+
+    def snap(self):
+        return self.cap.read()[0]
 
     def camera_thread(self):
         thread = threading.currentThread()
