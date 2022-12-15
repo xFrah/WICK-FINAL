@@ -4,11 +4,11 @@ import time
 
 import cv2 as cv
 
-#import helpers
+# import helpers
 import tof_utils
-#from data_utils import config_and_data
-#from edgetpu_utils import inference
-#from tof_utils import get_trash_level
+# from data_utils import config_and_data
+# from edgetpu_utils import inference
+# from tof_utils import get_trash_level
 from watchdog import ping
 
 
@@ -33,15 +33,14 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
         if len(tof_buffer) == 100:
             tof_buffer.append(new_matrix)
             thrown_out = tof_buffer.pop(0)
-            for i in range(4):
-                for j in range(4):
-                    average_matrix[i][j] += (-thrown_out[i][j] + new_matrix[i][j]) / 100
+            for i in range(16):
+                average_matrix[i] += (-thrown_out[i] + new_matrix[i]) / 100
         else:
             tof_buffer.append(new_matrix)
-            for i in range(4):
-                for j in range(4):
-                    average_matrix[i][j] += new_matrix[i][j] / len(tof_buffer)
+            for i in range(16):
+                average_matrix[i] += new_matrix[i] / len(tof_buffer)
     return average_matrix
+
 
 def setup():
     """
@@ -50,7 +49,7 @@ def setup():
     """
     vl53 = tof_utils.tof_setup()
     print("[INFO] Setup complete!")
-    #background = camera.grab_background(return_to_black=False)
+    # background = camera.grab_background(return_to_black=False)
     print("[INFO] Background grabbed!")
     return vl53
 
