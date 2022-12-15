@@ -73,13 +73,13 @@ def main():
             new_matrix = data.distance_mm[0][:16]
             if not movement:
                 average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
-                if tof_utils.absolute_diff(average_matrix, new_matrix, 150):
+                if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     movement = True
                     last_movement = datetime.datetime.now()
                     print(average_matrix, new_matrix)
                     print("[INFO] Movement detected")
             else:
-                if tof_utils.absolute_diff(average_matrix, new_matrix, 150):
+                if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     last_movement = datetime.datetime.now()
                 elif (datetime.datetime.now() - last_movement).total_seconds() > 1:
                     last_movement = datetime.datetime.now()
