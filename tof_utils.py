@@ -33,7 +33,7 @@ def absolute_diff(vector, base_vector, diff_threshold=2):
     for i, y in zip(vector, base_vector):
         if abs(i - y) > diff_threshold and (i != 0 and y != 0):
             count += 1
-            if count > 2:
+            if count > 4:
                 return True
     return False
 
