@@ -30,8 +30,8 @@ def absolute_diff(vector, base_vector, diff_threshold=2):
     :return: True or False
     """
     count = 0
-    for i, y in zip(vector, base_vector):
-        if abs(i - y) > diff_threshold and (i != 0 and y != 0):
+    for index, (i, y) in enumerate(zip(vector, base_vector)):
+        if index in [3, 6, 7, 10, 11, 14, 15] and abs(i - y) > diff_threshold and (i != 0 and y != 0):
             count += 1
             if count > 4:
                 return True
