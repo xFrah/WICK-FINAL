@@ -76,6 +76,7 @@ def main():
                 if tof_utils.absolute_diff(average_matrix, new_matrix):
                     movement = True
                     last_movement = datetime.datetime.now()
+                    print(average_matrix, new_matrix)
                     print("[INFO] Movement detected")
             else:
                 if tof_utils.absolute_diff(average_matrix, new_matrix):
