@@ -17,8 +17,8 @@ pca.frequency = 50
 
 servos = [servo.Servo(pca.channels[0], min_pulse=600, max_pulse=2400),
           servo.Servo(pca.channels[1], min_pulse=600, max_pulse=2400),
-          servo.Servo(pca.channels[10], min_pulse=600, max_pulse=2400),
-          servo.Servo(pca.channels[15], min_pulse=600, max_pulse=2400)
+          servo.Servo(pca.channels[2], min_pulse=600, max_pulse=2400),
+          servo.Servo(pca.channels[3], min_pulse=600, max_pulse=2400)
           ]
 
 

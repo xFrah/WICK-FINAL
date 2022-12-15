@@ -69,6 +69,7 @@ def main():
                 if tof_utils.absolute_diff(average_matrix, new_matrix):
                     last_movement = datetime.datetime.now()
                 elif (datetime.datetime.now() - last_movement).total_seconds() > 1:
+                    last_movement = datetime.datetime.now()
                     movement = False
                     print("[INFO] Movement stopped")
                     buffer = camera.grab_background()
