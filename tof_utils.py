@@ -31,9 +31,9 @@ def absolute_diff(vector, base_vector, diff_threshold=2):
     """
     count = 0
     for index, (i, y) in enumerate(zip(vector, base_vector)):
-        if index in [3, 6, 7, 10, 11, 14, 15] and abs(i - y) > diff_threshold and (i != 0 and y != 0):
+        if index in [6, 7, 10, 11, 14, 15] and abs(i - y) > diff_threshold and (i != 0 and y != 0):
             count += 1
-            if count > 4:
+            if count > 3:
                 return True
     return False
 
