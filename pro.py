@@ -37,8 +37,11 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
                 average_matrix[i] += (-thrown_out[i] + new_matrix[i]) / 100
         else:
             tof_buffer.append(new_matrix)
-            for i in range(16):
-                average_matrix[i] += new_matrix[i] / len(tof_buffer)
+            result = []
+            for m in tof_buffer:
+                for i in range(16):
+                    result[i] += m[i] / len(tof_buffer)
+            return result
     return average_matrix
 
 
@@ -62,7 +65,6 @@ def main():
     movement = False
     last_movement = datetime.datetime.now()
     print("[INFO] Ready for action!")
-    average_matrix = [0 for _ in range(16)]
     tof_buffer = []
     while True:
         if vl53.data_ready():
