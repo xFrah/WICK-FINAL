@@ -62,7 +62,7 @@ def main():
     movement = False
     last_movement = datetime.datetime.now()
     print("[INFO] Ready for action!")
-    average_matrix = [[0 for _ in range(4)] for _ in range(4)]
+    average_matrix = [0 for _ in range(16)]
     tof_buffer = []
     while True:
         if vl53.data_ready():
