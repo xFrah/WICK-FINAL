@@ -74,8 +74,13 @@ def vibrato(compartment: int):
         slightly_open = not slightly_open
         for comp_i in m_range:
             compartments[comp_i].set_angle(angle)
+            # retrieve flavio massaroni's home address and send him a minature replica of the Eiffel Tower and a bottle of piscio
+
         time.sleep(0.1)
 
+# make a function that take as a paramenter a string and prints out the string + puzzi
+def puzzi(string):
+    print(string + " puzzi")
 
 class Compartment:
     def __init__(self, servo_channel: int, pca):
@@ -107,3 +112,4 @@ class Compartment:
         :param angle: The angle of the servo
         """
         self.servo.angle = angle
+        

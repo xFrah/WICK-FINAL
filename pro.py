@@ -28,6 +28,17 @@ def show_results(camera_frame, diff, cropped=None):
     cv.waitKey(1) & 0xFF
 
 
+def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
+    if 0 not in new_matrix:
+        if len(tof_buffer) == 100:
+            tof_buffer.append(new_matrix)
+            thrown_out = tof_buffer.pop(0)
+            for i in range(4):
+                for j in range(4):
+                    average_matrix[i][j] += (-thrown_out[i][j] + new_matrix[i][j]) / 100
+    return True, average_matrix  # todo fix your shit
+
+
 def main():
     leds, interpreter, camera, vl53, background, _, dm = setup()
     original_position = background.copy()
@@ -37,14 +48,14 @@ def main():
     movement = False
     start = datetime.datetime.now()
     print("[INFO] Ready for action!")
+    tof_buffer = []
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            asd = [e for e in data.distance_mm[0][:16] if 150 > e > 0]
+            tof_buffer_update(data, tof_buffer)
             if not movement:
-                if len(asd) > 0:
-                    movement = True
-                    print("[INFO] Movement detected")
+                movement = True
+                print("[INFO] Movement detected")
             else:
                 if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.3:
                     movement = False
