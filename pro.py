@@ -5,6 +5,7 @@ import time
 import cv2 as cv
 
 import helpers
+import tof_utils
 from data_utils import config_and_data
 from edgetpu_utils import inference
 from flightshot import setup
@@ -36,29 +37,40 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
             for i in range(4):
                 for j in range(4):
                     average_matrix[i][j] += (-thrown_out[i][j] + new_matrix[i][j]) / 100
-    return True, average_matrix  # todo fix your shit
+        else:
+            tof_buffer.append(new_matrix)
+            for i in range(4):
+                for j in range(4):
+                    average_matrix[i][j] += new_matrix[i][j] / len(tof_buffer)
+    return average_matrix
 
 
 def main():
     leds, interpreter, camera, vl53, background, _, dm = setup()
-    original_position = background.copy()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
     movement = False
-    start = datetime.datetime.now()
+    last_movement = datetime.datetime.now()
     print("[INFO] Ready for action!")
+    average_matrix = [[0 for _ in range(4)] for _ in range(4)]
     tof_buffer = []
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
-            tof_buffer_update(data, tof_buffer)
+            new_matrix = data.distance_mm[0][:16]
             if not movement:
-                movement = True
-                print("[INFO] Movement detected")
+                average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
+                if tof_utils.absolute_diff(average_matrix, new_matrix):
+                    movement = True
+                    last_movement = datetime.datetime.now()
+                    print("[INFO] Movement detected")
             else:
-                if len(asd) == 0 and ((now := datetime.datetime.now()) - start).total_seconds() > 0.3:
+                if tof_utils.absolute_diff(average_matrix, new_matrix):
+                    last_movement = datetime.datetime.now()
+                elif (datetime.datetime.now() - last_movement).total_seconds() > 1:
                     movement = False
+                    print("[INFO] Movement stopped")
                     buffer = camera.grab_background()
                     if buffer is not None and len(buffer) > 0:
                         frame = buffer[-1]
@@ -104,20 +116,17 @@ def main():
                             show_results(frame, diff)
                             background = camera.grab_background(return_to_black=True)
 
-                    avg, percentage = get_trash_level(vl53)
-                    print(f"[INFO] {avg}mm, {percentage}%")
-                    ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
-                    print(ddd[0].shape, ddd[-1].shape)
-                    dm.pass_data({"riempimento": percentage,  # todo multiple percentages
-                                  "wrong_class_counter": config_and_data["wrong_class_counter"],
-                                  "timestamp": str(now.isoformat()),
-                                  "images": (ddd if len(ddd) < 20 else ddd[:20])  # + ([imgcopy] if imgcopy is not None else []),
-                                  })
+                    # avg, percentage = get_trash_level(vl53)
+                    # print(f"[INFO] {avg}mm, {percentage}%")
+                    # ddd = [t[0] for t in sorted(buffer.values(), key=lambda d: d[1])]
+                    # print(ddd[0].shape, ddd[-1].shape)
+                    # dm.pass_data({"riempimento": percentage,  # todo multiple percentages
+                    #               "wrong_class_counter": config_and_data["wrong_class_counter"],
+                    #               "timestamp": str(now.isoformat()),
+                    #               "images": (ddd if len(ddd) < 20 else ddd[:20])  # + ([imgcopy] if imgcopy is not None else []),
+                    #               })
                     buffer.clear()
                     print("[INFO] Waiting for movement...")
-                else:
-                    # todo update tof buffer
-                    pass
             ping(thread)
 
         time.sleep(0.003)  # Avoid polling *too* fast
