@@ -37,7 +37,7 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
                 average_matrix[i] += (-thrown_out[i] + new_matrix[i]) / 100
         else:
             tof_buffer.append(new_matrix)
-            result = []
+            result = [0] * 16
             for m in tof_buffer:
                 for i in range(16):
                     result[i] += m[i] / len(tof_buffer)
