@@ -84,6 +84,7 @@ def main():
                 elif (datetime.datetime.now() - last_movement).total_seconds() > 1:
                     last_movement = datetime.datetime.now()
                     movement = False
+                    tof_buffer = []
                     print("[INFO] Movement stopped")
                     # buffer = camera.grab_background()
                     # if buffer is not None and len(buffer) > 0:
