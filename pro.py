@@ -69,6 +69,7 @@ def main():
             data = vl53.get_data()
             new_matrix = data.distance_mm[0][:16]
             if not movement:
+                print(new_matrix, average_matrix)
                 average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
                 if tof_utils.absolute_diff(average_matrix, new_matrix):
                     movement = True
