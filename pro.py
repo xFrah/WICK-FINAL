@@ -71,6 +71,8 @@ def main():
         if vl53.data_ready():
             data = vl53.get_data()
             new_matrix = data.distance_mm[0][:16]
+            print(new_matrix)
+            continue
             if not movement:
                 average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
                 if tof_utils.absolute_diff(average_matrix, new_matrix, 100):
