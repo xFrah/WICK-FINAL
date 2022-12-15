@@ -29,9 +29,12 @@ def absolute_diff(vector, base_vector, diff_threshold=2):
     :param diff_threshold: The threshold for the absolute difference in centimeters
     :return: True or False
     """
+    count = 0
     for i, y in zip(vector, base_vector):
         if abs(i - y) > diff_threshold and (i != 0 and y != 0):
-            return True
+            count += 1
+            if count > 2:
+                return True
     return False
 
 
