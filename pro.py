@@ -73,7 +73,7 @@ def main():
                 if len(tof_buffer) == 100 and tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     movement = True
                     last_movement = datetime.datetime.now()
-                    print([x for y, x in enumerate(average_matrix) if y in [6, 7, 10, 11, 14, 15]], [x for y, x in enumerate(new_matrix) if y in [6, 7, 10, 11, 14, 15]])
+                    print([int(x) for y, x in enumerate(average_matrix) if y in [6, 7, 10, 11, 14, 15]], [int(x) for y, x in enumerate(new_matrix) if y in [6, 7, 10, 11, 14, 15]])
                     print("[INFO] Movement detected")
             else:
                 if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
