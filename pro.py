@@ -61,16 +61,24 @@ def main():
     print(f'[INFO] Main thread "{thread}" started.')
     movement = False
     average_matrix = [0] * 16
+    c = 0
+    while c != 100:
+        if vl53.data_ready():
+            data = vl53.get_data().distance_mm[0][:16]
+            if 0 not in data:
+                for i in range(16):
+                    average_matrix[i] += data[i] / 100
+                c += 1
+    print(f"[INFO] Average matrix: {[int(x) for y, x in enumerate(average_matrix) if y in [6, 7, 10, 11, 14, 15]]}")
     last_movement = datetime.datetime.now()
     print("[INFO] Ready for action!")
-    tof_buffer = []
     while True:
         if vl53.data_ready():
             data = vl53.get_data()
             new_matrix = data.distance_mm[0][:16]
             if not movement:
-                average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
-                if len(tof_buffer) == 100 and tof_utils.absolute_diff(average_matrix, new_matrix, 50):
+                # average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
+                if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     movement = True
                     last_movement = datetime.datetime.now()
                     print([int(x) for y, x in enumerate(average_matrix) if y in [6, 7, 10, 11, 14, 15]], [int(x) for y, x in enumerate(new_matrix) if y in [6, 7, 10, 11, 14, 15]])
@@ -81,7 +89,6 @@ def main():
                 elif (datetime.datetime.now() - last_movement).total_seconds() > 1:
                     last_movement = datetime.datetime.now()
                     movement = False
-                    tof_buffer = []
                     print("[INFO] Movement stopped")
                     # buffer = camera.grab_background()
                     # if buffer is not None and len(buffer) > 0:
