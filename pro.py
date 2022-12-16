@@ -34,11 +34,11 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
             tof_buffer.append(new_matrix)
             thrown_out = tof_buffer.pop(0)
             for i in range(16):
-                average_matrix[i] += int((-thrown_out[i] + new_matrix[i]) / 100)
+                average_matrix[i] += (-thrown_out[i] + new_matrix[i]) / 100
         else:
             tof_buffer.append(new_matrix)
             for i in range(16):
-                average_matrix[i] += int(new_matrix[i] / 100)
+                average_matrix[i] += new_matrix[i] / 100
     return average_matrix
 
 
@@ -73,7 +73,7 @@ def main():
                 if len(tof_buffer) == 100 and tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     movement = True
                     last_movement = datetime.datetime.now()
-                    print(average_matrix, new_matrix)
+                    print([x for y, x in enumerate(average_matrix) if y in [6, 7, 10, 11, 14, 15]], [x for y, x in enumerate(new_matrix) if y in [6, 7, 10, 11, 14, 15]])
                     print("[INFO] Movement detected")
             else:
                 if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
