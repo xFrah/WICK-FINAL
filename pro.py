@@ -70,7 +70,7 @@ def main():
             new_matrix = data.distance_mm[0][:16]
             if not movement:
                 average_matrix = tof_buffer_update(new_matrix, tof_buffer, average_matrix)
-                if tof_utils.absolute_diff(average_matrix, new_matrix, 50):
+                if len(tof_buffer) == 100 and tof_utils.absolute_diff(average_matrix, new_matrix, 50):
                     movement = True
                     last_movement = datetime.datetime.now()
                     print(average_matrix, new_matrix)
