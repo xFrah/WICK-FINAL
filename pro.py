@@ -37,7 +37,8 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
                 average_matrix[i] += int((-thrown_out[i] + new_matrix[i]) / 100)
         else:
             tof_buffer.append(new_matrix)
-            return new_matrix
+            for i in range(16):
+                average_matrix[i] += int(new_matrix[i] / 100)
     return average_matrix
 
 
@@ -59,7 +60,7 @@ def main():
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
     movement = False
-    average_matrix = None
+    average_matrix = [0] * 16
     last_movement = datetime.datetime.now()
     print("[INFO] Ready for action!")
     tof_buffer = []
