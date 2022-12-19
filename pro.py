@@ -59,7 +59,13 @@ def setup():
     print("[INFO] Setup complete!")
     background = camera.grab_background(return_to_black=False)
     print("[INFO] Background grabbed!")
-    munnezza_manager = mech_utils.CompartmentManager([0, 1, 2, 3])
+    servo_calibration = {
+        0: 35,
+        1: 20,
+        2: 30,
+        3: 20,
+    }
+    munnezza_manager = mech_utils.CompartmentManager(servo_calibration)
     munnezza_manager.close_all()
     return vl53, camera, background, munnezza_manager
 

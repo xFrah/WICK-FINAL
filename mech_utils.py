@@ -10,11 +10,11 @@ import helpers
 
 
 class CompartmentManager:
-    def __init__(self, args: list[int]):
+    def __init__(self, args: dict[int, int]):
         self.compartments = []
         self.setup_compartments(args)
 
-    def setup_compartments(self, args: list[int]):
+    def setup_compartments(self, args: dict[int, int]):
         """
         It creates a list of Compartment objects, one for each id in the given list.
 
@@ -30,7 +30,7 @@ class CompartmentManager:
             print("[MECH] No arguments passed to setup_compartments, aborting...")
             time.sleep(1)
             helpers.kill()
-        self.compartments = [Compartment(i, pca) for i in args]
+        self.compartments = [Compartment(i, closed_angle, pca) for i, closed_angle in args.items()]
 
     def close_all(self, tranne_uno: int = None):
         """
@@ -79,7 +79,7 @@ class CompartmentManager:
 
 
 class Compartment:
-    def __init__(self, servo_channel: int, pca):
+    def __init__(self, servo_channel: int, closed_angle: int, pca):
         """
         Wrapper class for servo motors.
 
@@ -88,12 +88,13 @@ class Compartment:
         :param pca: The PCA9685 object that the servo is connected to
         """
         self.servo = servo.Servo(pca.channels[servo_channel], min_pulse=600, max_pulse=2400)
+        self.closed_angle = closed_angle
 
     def close(self):
         """
         The function sets the angle of the servo to 40 degrees.
         """
-        self.servo.angle = 40
+        self.servo.angle = self.closed_angle
 
     def open(self):
         """
