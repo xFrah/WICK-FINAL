@@ -80,7 +80,6 @@ class CompartmentManager:
             self.compartments[opposite].set_angle(opposite_angle)
             time.sleep(0.1)
 
-
 class Compartment:
     def __init__(self, servo_channel: int, closed_angle: int, pca):
         """

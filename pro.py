@@ -148,8 +148,8 @@ def main():
                                     while (datetime.datetime.now() - start).total_seconds() < 15:
                                         munnezza_manager.open_compartment(comp)
                                         munnezza_manager.vibrato(comp)
-                                        munnezza_manager.close_all()
-                                        time.sleep(0.5)
+                                        munnezza_manager.close_all(tranne_uno=comp)
+                                        time.sleep(1)
                                         frame = camera.grab_background()
                                         show_results(frame, diff)
                                         print("[INFO] Frame after vibrating grabbed")
