@@ -99,9 +99,8 @@ def main():
                     last_movement = datetime.datetime.now()
                     movement = False
                     print("[INFO] Movement stopped")
-                    buffer = camera.grab_background()
-                    if buffer is not None and len(buffer) > 0:
-                        frame = buffer[-1]
+                    frame = camera.grab_background()
+                    if frame is not None:
                         rect, diff = helpers.get_diff(frame, background)
                         if (rect is not None) and (diff is not None):
                             x, y, w, h = rect
@@ -115,7 +114,6 @@ def main():
                                 cropped = cv.cvtColor(cropped, cv.COLOR_BGR2RGB)
                             except:
                                 print("[ERROR] Cropped image is not a valid image")
-                                buffer.clear()
                                 print("[INFO] Waiting for movement...")
                                 continue
 
