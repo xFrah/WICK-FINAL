@@ -134,10 +134,11 @@ def main():
                             show_results(imgcopy, diff, cropped=cropped)
 
                             comp = random.randint(0, 3)
+                            frame = camera.grab_background()
                             munnezza_manager.open_compartment(comp)
 
                             time.sleep(2)
-                            frame = camera.grab_background()
+
                             print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
