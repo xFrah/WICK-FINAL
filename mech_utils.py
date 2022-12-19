@@ -72,7 +72,7 @@ class CompartmentManager:
         m_range = set(range(len(self.compartments))) - {compartment} - {opposite}
         for i in range(20):
             angle = 35 if slightly_open else 45
-            opposite_angle = 10 if slightly_open else 45
+            opposite_angle = 0 if slightly_open else 45
             slightly_open = not slightly_open
             for comp_i in m_range:
                 self.compartments[comp_i].set_angle(angle)
