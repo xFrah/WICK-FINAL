@@ -67,6 +67,7 @@ while True:
         open_all()
     elif chn.startswith("angle"):
         args = chn.split(" ")
+        print(args)
         one_angle(servos[int(args[2])], int(args[1]))
     else:
         change_open(servos[int(chn)] if chn != "None" else None)
