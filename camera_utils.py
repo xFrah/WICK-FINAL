@@ -49,8 +49,8 @@ class Camera:
             return succ
         else:
             succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
-            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
-            succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
+            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 0)
+            succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 0)
             return succ
         # self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
