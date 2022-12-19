@@ -93,12 +93,14 @@ class Compartment:
         The function sets the angle of the servo to 40 degrees.
         """
         self.servo.angle = 40
+        print("[MECH] Closed Compartment")
 
     def open(self):
         """
         The function open() takes the servo object and sets the angle to 120 degrees.
         """
         self.servo.angle = 120
+        print("[MECH] Opened Compartment")
 
     def set_angle(self, angle):
         """
