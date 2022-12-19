@@ -68,6 +68,7 @@ class CompartmentManager:
         """
         slightly_open = False
         opposite = self.compartments.index(self.compartments[compartment - 2])
+        print(f"[MECH] Current: {compartment}, Opposite: {opposite}")
         m_range = set(range(len(self.compartments))) - {compartment} - {opposite}
         for i in range(20):
             angle = 35 if slightly_open else 45
