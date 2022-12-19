@@ -10,11 +10,11 @@ import helpers
 
 
 class CompartmentManager:
-    def __init__(self, *args: list[int]):
+    def __init__(self, args: list[int]):
         self.compartments = []
-        self.setup_compartments(*args)
+        self.setup_compartments(args)
 
-    def setup_compartments(self, *args: int):
+    def setup_compartments(self, args: list[int]):
         """
         It creates a list of Compartment objects, each of which is associated with a specific servo motor
 
