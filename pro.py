@@ -1,10 +1,12 @@
 import datetime
+import random
 import threading
 import time
 
 import cv2 as cv
 
 import helpers
+import mech_utils
 # import helpers
 import tof_utils
 from camera_utils import Camera
@@ -13,6 +15,7 @@ from new_led_utils import LEDs
 # from edgetpu_utils import inference
 # from tof_utils import get_trash_level
 from watchdog import ping
+from mech_utils import *
 
 
 def show_results(camera_frame, diff, cropped=None):
@@ -56,7 +59,9 @@ def setup():
     print("[INFO] Setup complete!")
     background = camera.grab_background(return_to_black=False)
     print("[INFO] Background grabbed!")
-    return vl53, camera, background
+    munnezza_manager = mech_utils.CompartmentManager()
+    munnezza_manager.close_all()
+    return vl53, camera, background, munnezza_manager
 
 
 def normalize_shit_matrix(matrix):
@@ -64,7 +69,7 @@ def normalize_shit_matrix(matrix):
 
 
 def main():
-    vl53, camera, background = setup()
+    vl53, camera, background, munnezza_manager = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
@@ -119,6 +124,10 @@ def main():
 
                             # label, score = inference(cropped, interpreter)
                             # print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
+
+                            munnezza_manager.open_compartment(random.randint(0, 3))
+                            time.sleep(2)
+                            munnezza_manager.close_all()
 
                             show_results(imgcopy, diff, cropped=cropped)
 
