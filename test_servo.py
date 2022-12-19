@@ -68,7 +68,7 @@ while True:
     elif chn.startswith("angle"):
         args = chn.split(" ")
         print(args)
-        one_angle(servos[int(args[2])], int(args[1]))
+        one_angle(servos[int(args[1])], int(args[2]))
     else:
         change_open(servos[int(chn)] if chn != "None" else None)
     time.sleep(0.05)
