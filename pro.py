@@ -129,7 +129,7 @@ def main():
 
                             comp = random.randint(0, 3)
                             start = datetime.datetime.now()
-                            while (datetime.datetime.now() - start).total_seconds() < 10:
+                            while (datetime.datetime.now() - start).total_seconds() < 30:
                                 munnezza_manager.open_compartment(comp)
                                 munnezza_manager.vibrato(comp)
                                 munnezza_manager.close_all()
