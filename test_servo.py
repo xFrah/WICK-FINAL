@@ -38,6 +38,11 @@ def close_all():
         servo.angle = 40
 
 
+def open_all():
+    for servo in servos:
+        servo.angle = 120
+
+
 def change_open(servo):
     close_all()
     if servo is not None:
