@@ -133,6 +133,7 @@ def main():
                                 munnezza_manager.open_compartment(comp)
                                 munnezza_manager.vibrato(comp)
                                 munnezza_manager.close_all()
+                                time.sleep(0.5)
                                 frame = camera.grab_background()
                                 if frame is not None:
                                     rect, diff = helpers.get_diff(frame, background)

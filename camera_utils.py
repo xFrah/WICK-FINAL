@@ -26,16 +26,13 @@ class Camera:
         while c < 100:
             _, frame = self.cap.read()
             c += 1
-        if fast_mode:
-            print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(self.cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
-        else:
-            print("Done.")
+        print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(self.cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
         if not no_camera_thread:
             threading.Thread(target=self.camera_thread).start()
 
     def apply_configuration(self, fast_mode):
+        succ = dict()
         if fast_mode:
-            succ = dict()
             succ[cv.CAP_PROP_FRAME_WIDTH] = self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
             succ[cv.CAP_PROP_FRAME_HEIGHT] = self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
             succ[cv.CAP_PROP_FPS] = self.cap.set(cv.CAP_PROP_FPS, 120)
@@ -50,6 +47,12 @@ class Camera:
             # succ[cv.CAP_PROP_BUFFERSIZE] = self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1) # TODO TEST IF THIS WORKS PLEASE
 
             return succ
+        else:
+            succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
+            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
+            succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
+            return succ
+        # self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
 
     def shoot(self, timer=0.0, return_to_black=True):
         self.flash.fill((255, 255, 255))
