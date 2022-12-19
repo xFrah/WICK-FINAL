@@ -146,6 +146,7 @@ def main():
                                     print("[INFO] Object has not fallen, vibrating...")
                                     start = datetime.datetime.now()
                                     while (datetime.datetime.now() - start).total_seconds() < 15:
+                                        munnezza_manager.open_compartment(comp)
                                         munnezza_manager.vibrato(comp)
                                         munnezza_manager.close_all()
                                         time.sleep(0.5)
