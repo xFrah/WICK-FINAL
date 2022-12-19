@@ -49,6 +49,10 @@ def change_open(servo):
         servo.angle = 120
 
 
+def one_angle(servo, angle):
+    servo.angle = angle
+
+
 # Set the PWM duty cycle for channel zero to 50%. duty_cycle is 16 bits to match other PWM objects
 # but the PCA9685 will only actually give 12 bits of resolution.
 # pca.channels[1].duty_cycle = 0x7FFF
@@ -61,6 +65,9 @@ while True:
         close_all()
     elif chn.startswith("openall"):
         open_all()
+    elif chn.startswith("angle"):
+        args = chn.split(" ")
+        one_angle(servos[int(args[2])], int(args[1]))
     else:
         change_open(servos[int(chn)] if chn != "None" else None)
     time.sleep(0.05)
