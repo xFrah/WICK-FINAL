@@ -151,7 +151,7 @@ def main():
                                                 print("[INFO] Object has finally fallen...")
                                                 break
                                         munnezza_manager.vibrato(comp)
-                                        munnezza_manager.close_all()
+                            munnezza_manager.close_all()
 
 
                             # leds.change_to_white()
