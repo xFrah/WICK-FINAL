@@ -143,7 +143,7 @@ def main():
                                 frame = camera.grab_background()
                                 if frame is not None:
                                     rect, diff = helpers.get_diff(frame, background)
-                                    if (rect is not None) or (diff is not None):
+                                    if rect is None or diff is not None:
                                         break
 
 
