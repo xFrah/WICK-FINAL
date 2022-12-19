@@ -67,14 +67,16 @@ class CompartmentManager:
         :type compartment: int
         """
         slightly_open = False
-        m_range = set(range(len(self.compartments))) - {compartment}
+        opposite = self.compartments.index(compartment - 2)
+        m_range = set(range(len(self.compartments))) - {compartment} - {opposite}
         for i in range(20):
             angle = 35 if slightly_open else 45
+            opposite_angle = 10 if slightly_open else 45
             slightly_open = not slightly_open
             for comp_i in m_range:
                 self.compartments[comp_i].set_angle(angle)
                 # retrieve flavio massaroni's home address and send him a minature replica of the Eiffel Tower and a bottle of piscio
-
+            self.compartments[opposite].set_angle(opposite_angle)
             time.sleep(0.1)
 
 
