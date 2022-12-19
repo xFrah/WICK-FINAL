@@ -10,7 +10,7 @@ from watchdog import ping
 
 
 class Camera:
-    def __init__(self, flash, no_camera_thread=False):
+    def __init__(self, flash, no_camera_thread=False, fast_mode=False):
         self.broken = False
         self.do_i_shoot = False
         self.flash = flash
@@ -19,33 +19,38 @@ class Camera:
         self.cap = cv.VideoCapture(0)
         print("[INFO] Configuring camera:", end=" ", flush=True)
 
-        succ = self.apply_configuration()
+        succ = self.apply_configuration(fast_mode)
 
         c = 0
         start = datetime.datetime.now()
         while c < 100:
             _, frame = self.cap.read()
             c += 1
-        print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(self.cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
+        if fast_mode:
+            print(f"Done, {str(tuple([round(100 / (datetime.datetime.now() - start).total_seconds(), 2)] + [round(self.cap.get(item), 2) if value else 'FAILED' for item, value in succ.items()]))}")
+        else:
+            print("Done.")
         if not no_camera_thread:
             threading.Thread(target=self.camera_thread).start()
 
-    def apply_configuration(self):
-        succ = dict()
-        succ[cv.CAP_PROP_FRAME_WIDTH] = self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
-        succ[cv.CAP_PROP_FRAME_HEIGHT] = self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
-        succ[cv.CAP_PROP_FPS] = self.cap.set(cv.CAP_PROP_FPS, 120)
-        time.sleep(2)
-        succ[cv.CAP_PROP_FOURCC] = self.cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
-        # time.sleep(2)
-        succ[cv.CAP_PROP_AUTO_EXPOSURE] = self.cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
-        time.sleep(2)
-        succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
-        succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
-        succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
-        # succ[cv.CAP_PROP_BUFFERSIZE] = self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1) # TODO TEST IF THIS WORKS PLEASE
+    def apply_configuration(self, fast_mode):
+        if fast_mode:
+            succ = dict()
+            succ[cv.CAP_PROP_FRAME_WIDTH] = self.cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
+            succ[cv.CAP_PROP_FRAME_HEIGHT] = self.cap.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
+            succ[cv.CAP_PROP_FPS] = self.cap.set(cv.CAP_PROP_FPS, 120)
+            time.sleep(2)
+            succ[cv.CAP_PROP_FOURCC] = self.cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+            # time.sleep(2)
+            succ[cv.CAP_PROP_AUTO_EXPOSURE] = self.cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+            time.sleep(2)
+            succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
+            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 12)
+            succ[cv.CAP_PROP_GAIN] = self.cap.set(cv.CAP_PROP_GAIN, 100)
+            # succ[cv.CAP_PROP_BUFFERSIZE] = self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1) # TODO TEST IF THIS WORKS PLEASE
 
-        return succ
+            return succ
+
 
     def shoot(self, timer=0.0, return_to_black=True):
         self.flash.fill((255, 255, 255))
