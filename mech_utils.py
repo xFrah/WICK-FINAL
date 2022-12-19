@@ -67,7 +67,7 @@ class CompartmentManager:
         :type compartment: int
         """
         slightly_open = False
-        opposite = self.compartments.index(compartment - 2)
+        opposite = self.compartments.index(self.compartments[compartment - 2])
         m_range = set(range(len(self.compartments))) - {compartment} - {opposite}
         for i in range(20):
             angle = 35 if slightly_open else 45
