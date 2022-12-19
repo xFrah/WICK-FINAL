@@ -32,7 +32,8 @@ class CompartmentManager:
 
         if len(args) == 0:
             print("[MECH] No arguments passed to setup_compartments, aborting...")
-        helpers.kill()
+            time.sleep(1)
+            helpers.kill()
         self.compartments = [Compartment(i, pca) for i in args]
 
     def close_all(self, tranne_uno: int = None):
