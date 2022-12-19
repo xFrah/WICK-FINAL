@@ -16,15 +16,11 @@ class CompartmentManager:
 
     def setup_compartments(self, args: list[int]):
         """
-        It creates a list of Compartment objects, each of which is associated with a specific servo motor
+        It creates a list of Compartment objects, one for each id in the given list.
 
-        :param : SCL: The pin number for the I2C clock line
-        :type : int
+        :param args: List of the servo channels to use
         """
-        # Create the I2C bus interface.
         i2c_bus = busio.I2C(SCL, SDA)
-
-        # Create a simple PCA9685 class instance.
         pca = PCA9685(i2c_bus)
 
         # Set the PWM frequency to 60hz.
@@ -60,7 +56,6 @@ class CompartmentManager:
         :type close_others: bool (optional)
         """
         if close_others:
-            print("[MECH] Trying to close all except for compartment {}".format(compartment))
             self.close_all(compartment)
         self.compartments[compartment].open()
 
@@ -99,14 +94,12 @@ class Compartment:
         The function sets the angle of the servo to 40 degrees.
         """
         self.servo.angle = 40
-        print("[MECH] Closed Compartment")
 
     def open(self):
         """
         The function open() takes the servo object and sets the angle to 120 degrees.
         """
         self.servo.angle = 120
-        print("[MECH] Opened Compartment")
 
     def set_angle(self, angle):
         """

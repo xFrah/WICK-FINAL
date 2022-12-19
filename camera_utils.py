@@ -51,7 +51,6 @@ class Camera:
 
             return succ
 
-
     def shoot(self, timer=0.0, return_to_black=True):
         self.flash.fill((255, 255, 255))
         self.do_i_shoot = True

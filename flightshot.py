@@ -107,7 +107,7 @@ def setup():
     mqtt_client.try_to_connect()
     dm = DataManager(mqtt_client)
     interpreter = setup_edgetpu()
-    camera = Camera(leds)
+    camera = Camera(leds, fast_mode=True)
     vl53 = tof_setup()
     _, level = get_trash_level(vl53)
     # check if file exist, if it does get json from it
