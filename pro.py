@@ -134,17 +134,24 @@ def main():
                             show_results(imgcopy, diff, cropped=cropped)
 
                             comp = random.randint(0, 3)
-                            start = datetime.datetime.now()
-                            while (datetime.datetime.now() - start).total_seconds() < 30:
-                                munnezza_manager.open_compartment(comp)
-                                munnezza_manager.vibrato(comp)
-                                munnezza_manager.close_all()
-                                time.sleep(0.5)
-                                frame = camera.grab_background()
-                                if frame is not None:
-                                    rect, diff = helpers.get_diff(frame, background)
-                                    if rect is None or diff is not None:
-                                        break
+                            munnezza_manager.open_compartment(comp)
+
+                            time.sleep(2)
+                            frame = camera.grab_background()
+                            if frame is not None:
+                                rect, diff = helpers.get_diff(frame, background)
+                                if rect is not None or diff is not None:
+                                    start = datetime.datetime.now()
+                                    while (datetime.datetime.now() - start).total_seconds() < 30:
+                                        print("[INFO] Object has not fallen yet, retrying...")
+                                        frame = camera.grab_background()
+                                        if frame is not None:
+                                            rect, diff = helpers.get_diff(frame, background)
+                                            if rect is None or diff is None:
+                                                print("[INFO] Object has finally fallen...")
+                                                break
+                                        munnezza_manager.vibrato(comp)
+                                        munnezza_manager.close_all()
 
 
                             # leds.change_to_white()
