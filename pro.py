@@ -125,13 +125,20 @@ def main():
                             # label, score = inference(cropped, interpreter)
                             # print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
-                            munnezza_manager.open_compartment(random.randint(0, 3))
-                            time.sleep(2)
-                            munnezza_manager.close_all()
-
                             show_results(imgcopy, diff, cropped=cropped)
 
-                            # todo open servos and make thing fall
+                            comp = random.randint(0, 3)
+                            start = datetime.datetime.now()
+                            while (datetime.datetime.now() - start).total_seconds() < 10:
+                                munnezza_manager.open_compartment(comp)
+                                munnezza_manager.vibrato(comp)
+                                munnezza_manager.close_all()
+                                frame = camera.grab_background()
+                                if frame is not None:
+                                    rect, diff = helpers.get_diff(frame, background)
+                                    if (rect is not None) or (diff is not None):
+                                        break
+
 
                             # leds.change_to_white()
                             background = camera.grab_background(return_to_black=False)
