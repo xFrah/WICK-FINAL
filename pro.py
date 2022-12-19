@@ -169,9 +169,6 @@ def main():
                             #     leds.black_from_red()
                         else:
                             print("[INFO] Object not found.")
-                            munnezza_manager.open_compartment(random.randint(0, 3))
-                            time.sleep(2)
-                            munnezza_manager.close_all()
                             show_results(frame, diff)
                             background = camera.grab_background(return_to_black=True)
 
