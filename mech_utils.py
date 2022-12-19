@@ -55,6 +55,7 @@ class CompartmentManager:
         :type close_others: bool (optional)
         """
         if close_others:
+            print("[MECH] Trying to close all except for compartment {}".format(compartment))
             self.close_all(compartment)
         self.compartments[compartment].open()
 
