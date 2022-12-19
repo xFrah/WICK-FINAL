@@ -59,6 +59,8 @@ while True:
         vibrato(servos[int(chn[-1])])
     elif chn.startswith("closeall"):
         close_all()
+    elif chn.startswith("openall"):
+        open_all()
     else:
         change_open(servos[int(chn)] if chn != "None" else None)
     time.sleep(0.05)
