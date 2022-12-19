@@ -6,9 +6,11 @@ import busio
 
 from adafruit_pca9685 import PCA9685
 
+import helpers
+
 
 class CompartmentManager:
-    def __init__(self, *args: int):
+    def __init__(self, *args: list[int]):
         self.compartments = []
         self.setup_compartments(*args)
 
@@ -28,8 +30,10 @@ class CompartmentManager:
         # Set the PWM frequency to 60hz.
         pca.frequency = 50
 
-        for i in args:
-            self.compartments.append(Compartment(i, pca))
+        if len(args) == 0:
+            print("[MECH] No arguments passed to setup_compartments, aborting...")
+        helpers.kill()
+        self.compartments = [Compartment(i, pca) for i in args]
 
     def close_all(self, tranne_uno: int = None):
         """
