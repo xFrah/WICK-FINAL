@@ -138,19 +138,22 @@ def main():
 
                             time.sleep(2)
                             frame = camera.grab_background()
+                            print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
+                                print("[INFO] Diff computed")
                                 if rect is not None or diff is not None:
+                                    print("[INFO] Object has not fallen, vibrating...")
                                     start = datetime.datetime.now()
-                                    while (datetime.datetime.now() - start).total_seconds() < 30:
-                                        print("[INFO] Object has not fallen yet, retrying...")
+                                    while (datetime.datetime.now() - start).total_seconds() < 15:
+                                        munnezza_manager.vibrato(comp)
                                         frame = camera.grab_background()
                                         if frame is not None:
                                             rect, diff = helpers.get_diff(frame, background)
                                             if rect is None or diff is None:
                                                 print("[INFO] Object has finally fallen...")
                                                 break
-                                        munnezza_manager.vibrato(comp)
+                                        print("[INFO] Object has not fallen yet, retrying...")
                             munnezza_manager.close_all()
 
 
