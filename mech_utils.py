@@ -11,12 +11,19 @@ import helpers
 
 class CompartmentManager:
     def __init__(self, args: dict[int, int]):
+        """
+        This object is used for initializing and managing the compartments.
+        Useful for group/synchronized operations.
+
+        :param args: A dictionary of the servo channels to use, and the angle to use when closing them.
+        :type args: dict[int, int]
+        """
         self.compartments = []
         self.setup_compartments(args)
 
     def setup_compartments(self, args: dict[int, int]):
         """
-        It creates a list of Compartment objects, one for each id in the given list.
+        Initializes Compartment objects, one for each id in the given list.
 
         :param args: List of the servo channels to use
         """
@@ -34,7 +41,7 @@ class CompartmentManager:
 
     def close_all(self, tranne_uno: int = None):
         """
-        "Close all compartments except for the one with the given index."
+        Closes all compartments.
 
         If parameter 'tranne_uno' is set, it will not close the compartment with that index.
 
@@ -48,7 +55,7 @@ class CompartmentManager:
 
     def open_compartment(self, compartment: int, close_others: bool = True):
         """
-        "Open the compartment with the given number, and close all other compartments if the close_others parameter is True."
+        Opens the compartment with the given number, and closes all other compartments if the close_others parameter is True.
 
         :param compartment: The compartment to open
         :type compartment: int
@@ -80,6 +87,7 @@ class CompartmentManager:
             self.compartments[opposite].set_angle(opposite_angle)
             time.sleep(0.1)
 
+
 class Compartment:
     def __init__(self, servo_channel: int, closed_angle: int, pca):
         """
@@ -94,19 +102,19 @@ class Compartment:
 
     def close(self):
         """
-        The function sets the angle of the servo to 40 degrees.
+        Sets the angle of the servo to the value of closed_angle.
         """
         self.servo.angle = self.closed_angle
 
     def open(self):
         """
-        The function open() takes the servo object and sets the angle to 120 degrees.
+        Takes the servo object and sets the angle to 120 degrees.
         """
         self.servo.angle = 120
 
     def set_angle(self, angle):
         """
-        The function set_angle() takes in an angle as an argument and sets the servo's angle to that value
+        Sets the servo's angle to the given value.
 
         :param angle: The angle of the servo
         """
