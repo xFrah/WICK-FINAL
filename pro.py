@@ -167,6 +167,8 @@ def main():
 
                             # leds.change_to_white()
                             background = camera.grab_background(custom_timer=1, return_to_black=False)
+                            show_results(background, diff)
+                            time.sleep(1)
                             leds.fill((0, 0, 0))
                             # leds.black_from_white()
                             # if label == config_and_data["current_class"]:
@@ -181,8 +183,10 @@ def main():
                             #     leds.black_from_red()
                         else:
                             print("[INFO] Object not found.")
-                            show_results(frame, diff)
-                            background = camera.grab_background(return_to_black=True)
+                            background = camera.grab_background(custom_timer=1, return_to_black=False)
+                            show_results(background, diff)
+                            time.sleep(1)
+                            leds.fill((0, 0, 0))
 
                     # avg, percentage = get_trash_level(vl53)
                     # print(f"[INFO] {avg}mm, {percentage}%")
