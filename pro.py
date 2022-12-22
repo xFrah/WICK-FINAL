@@ -158,6 +158,7 @@ def main():
                                         print("[INFO] Frame after vibrating grabbed")
                                         if frame is not None:
                                             rect, diff = helpers.get_diff(frame, background)
+                                            show_results(frame, diff)
                                             if rect is None or diff is None:
                                                 print("[INFO] Object has finally fallen...")
                                                 break
