@@ -66,7 +66,7 @@ def setup():
     munnezza_manager = mech_utils.CompartmentManager(servo_calibration)
     munnezza_manager.close_all()
     leds.stop_loading_animation()
-    background = camera.grab_background(return_to_black=False)
+    background = camera.grab_background(return_to_black=False, custom_timer=1)
     print("[INFO] Background grabbed!")
     return vl53, camera, background, munnezza_manager
 
@@ -111,7 +111,7 @@ def main():
                     last_movement = datetime.datetime.now()
                     movement = False
                     print("[INFO] Movement stopped")
-                    frame = camera.grab_background()
+                    frame = camera.grab_background(custom_timer=1)
                     if frame is not None:
                         rect, diff = helpers.get_diff(frame, background)
                         if (rect is not None) and (diff is not None):
@@ -135,7 +135,7 @@ def main():
                             show_results(imgcopy, diff, cropped=cropped)
 
                             comp = random.randint(0, 3)
-                            frame = camera.grab_background()
+                            frame = camera.grab_background(custom_timer=1)
                             munnezza_manager.open_compartment(comp)
 
                             time.sleep(2)
@@ -152,7 +152,7 @@ def main():
                                         munnezza_manager.vibrato(comp)
                                         munnezza_manager.close_all()
                                         time.sleep(1)
-                                        frame = camera.grab_background()
+                                        frame = camera.grab_background(custom_timer=1)
                                         show_results(frame, diff)
                                         print("[INFO] Frame after vibrating grabbed")
                                         if frame is not None:
@@ -165,7 +165,7 @@ def main():
 
 
                             # leds.change_to_white()
-                            background = camera.grab_background(return_to_black=False)
+                            background = camera.grab_background(return_to_black=False, custom_timer=1)
                             # leds.black_from_white()
                             # if label == config_and_data["current_class"]:
                             #     leds.change_to_green()
