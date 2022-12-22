@@ -66,6 +66,7 @@ def setup():
     munnezza_manager = mech_utils.CompartmentManager(servo_calibration)
     munnezza_manager.close_all()
     leds.stop_loading_animation()
+    time.sleep(3)
     background = camera.grab_background(custom_timer=1)
     print("[INFO] Background grabbed!")
     return vl53, camera, background, munnezza_manager, leds
