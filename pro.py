@@ -58,13 +58,14 @@ def setup():
     vl53 = tof_utils.tof_setup()
     print("[INFO] Setup complete!")
     servo_calibration = {
-        0: 35,
-        1: 20,
-        2: 30,
-        3: 20,
+        0: 15,
+        1: 30,
+        2: 20,
+        3: 35,
     }
     munnezza_manager = mech_utils.CompartmentManager(servo_calibration)
     munnezza_manager.close_all()
+    leds.stop_loading_animation()
     background = camera.grab_background(return_to_black=False)
     print("[INFO] Background grabbed!")
     return vl53, camera, background, munnezza_manager
