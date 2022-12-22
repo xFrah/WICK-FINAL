@@ -144,6 +144,7 @@ def main():
                             print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
+                                original_white_pixels_count = helpers.count_white_pixels(diff)
                                 print("[INFO] Diff computed")
                                 if rect is not None or diff is not None:
                                     print("[INFO] Object has not fallen, vibrating...")
@@ -158,13 +159,13 @@ def main():
                                         print("[INFO] Frame after vibrating grabbed")
                                         if frame is not None:
                                             rect, diff = helpers.get_diff(frame, background)
+                                            white_pixels_count = helpers.count_white_pixels(diff)
                                             show_results(frame, diff)
-                                            if rect is None or diff is None:
+                                            if rect is None or diff is None and original_white_pixels_count * 0.2 > white_pixels_count:
                                                 print("[INFO] Object has finally fallen...")
                                                 break
                                         print("[INFO] Object has not fallen yet, retrying...")
                             munnezza_manager.close_all()
-
 
                             # leds.change_to_white()
                             background = camera.grab_background(custom_timer=1, return_to_black=False)
