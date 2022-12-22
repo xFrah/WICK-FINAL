@@ -67,6 +67,7 @@ def setup():
     munnezza_manager.close_all()
     leds.stop_loading_animation()
     time.sleep(1.5)
+    background = camera.grab_background(custom_timer=0.5, return_to_black=False)
     background = camera.grab_background(custom_timer=1, return_to_black=False)
     time.sleep(1)
     print("[INFO] Background grabbed!")
