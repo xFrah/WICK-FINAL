@@ -165,7 +165,7 @@ def main():
 
 
                             # leds.change_to_white()
-                            background = camera.grab_background(return_to_black=False, custom_timer=1)
+                            background = camera.grab_background(custom_timer=1)
                             # leds.black_from_white()
                             # if label == config_and_data["current_class"]:
                             #     leds.change_to_green()
