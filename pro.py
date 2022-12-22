@@ -68,7 +68,9 @@ def setup():
     leds.stop_loading_animation()
     time.sleep(1.5)
     background = camera.grab_background(custom_timer=0.5, return_to_black=False)
+    show_results(background, background)
     background = camera.grab_background(custom_timer=1, return_to_black=False)
+    show_results(background, background)
     time.sleep(1)
     print("[INFO] Background grabbed!")
     return vl53, camera, background, munnezza_manager, leds
