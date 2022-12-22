@@ -161,6 +161,7 @@ def main():
                                             rect, diff = helpers.get_diff(frame, background)
                                             white_pixels_count = helpers.count_white_pixels(diff)
                                             show_results(frame, diff)
+                                            print(f"[INFO] {original_white_pixels_count * 0.2} > {white_pixels_count}?")
                                             if rect is None or diff is None and original_white_pixels_count * 0.2 > white_pixels_count:
                                                 print("[INFO] Object has finally fallen...")
                                                 break
