@@ -92,10 +92,8 @@ def get_diff_2(i1, i2):
         area = cv.contourArea(c)
         if area > 40:
             print("Countour area: " + str(area))
-            cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
-    #filled_after = cv.bitwise_and(i1, i1, mask=dilation)
-    # filled_after = cv.bitwise_and(thresh, i1)
-    return filled_after
+            cv.drawContours(mask, [c], 0, (255, 255, 255), -1)
+    return cv.bitwise_and(i1, i1, mask=mask)
 
 
 def setup():
