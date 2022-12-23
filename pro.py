@@ -4,6 +4,7 @@ import threading
 import time
 
 import cv2 as cv
+import numpy as np
 
 import helpers
 import mech_utils
@@ -66,7 +67,21 @@ def get_diff_2(image1, image2):
     # obtain the regions of the two input images that differ
     diff = (diff * 255).astype("uint8")
     thresh = cv.threshold(diff, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
-    return thresh
+    contours = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
+
+    mask = np.zeros(image1.shape, dtype='uint8')
+    filled_after = image2.copy()
+
+    for c in contours:
+        area = cv.contourArea(c)
+        if area > 40:
+            x, y, w, h = cv.boundingRect(c)
+            #cv.rectangle(image1, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            #cv.rectangle(image2, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            cv.drawContours(mask, [c], 0, (0, 255, 0), -1)
+            cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
+    return filled_after
 
 
 def setup():
