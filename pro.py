@@ -155,7 +155,7 @@ def main():
                             label, score = inference(cropped, interpreter)
                             print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
-                            show_results(imgcopy, diff, cropped=cropped)
+                            show_results(imgcopy, diff, diff2, cropped=cropped)
 
                             comp = random.randint(0, 3)
                             frame = camera.grab_background(custom_timer=1, return_to_black=False)
