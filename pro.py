@@ -66,7 +66,7 @@ def get_diff_2(i1, i2):
     # Threshold the difference image, followed by finding contours to
     # obtain the regions of the two input images that differ
     diff = (diff * 255).astype("uint8")
-    thresh = cv.threshold(diff, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
+    thresh = cv.threshold(diff, 0, 20, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
     contours = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = contours[0] if len(contours) == 2 else contours[1]
 
