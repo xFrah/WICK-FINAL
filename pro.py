@@ -212,7 +212,7 @@ def main():
                         else:
                             print("[INFO] Object not found.")
                             background = camera.grab_background(custom_timer=1, return_to_black=False)
-                            show_results(background, diff)
+                            show_results(background, diff, diff2)
                             time.sleep(1)
                             leds.fill((0, 0, 0))
 
