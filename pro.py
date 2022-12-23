@@ -71,7 +71,7 @@ def get_diff_2(i1, i2):
     contours = contours[0] if len(contours) == 2 else contours[1]
 
     mask = np.zeros(i1.shape, dtype='uint8')
-    filled_after = i2.copy()
+    filled_after = i1.copy()
 
     for c in contours:
         area = cv.contourArea(c)
