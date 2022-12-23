@@ -78,10 +78,10 @@ def get_diff_2(i1, i2):
         if area > 40:
             print("Countour area: " + str(area))
             x, y, w, h = cv.boundingRect(c)
-            cv.rectangle(mask, (x, y), (x + w, y + h), (36, 255, 12), 2)
-            # cv.rectangle(image2, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            #cv.rectangle(image1, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            #cv.rectangle(image2, (x, y), (x + w, y + h), (36, 255, 12), 2)
             cv.drawContours(mask, [c], 0, (0, 255, 0), 3)
-            cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
+            #cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
     return mask
 
 
