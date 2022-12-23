@@ -17,9 +17,10 @@ from new_led_utils import LEDs
 # from tof_utils import get_trash_level
 from watchdog import ping
 from mech_utils import *
+from skimage.metrics import structural_similarity
 
 
-def show_results(camera_frame, diff, cropped=None):
+def show_results(camera_frame, diff, diff2, cropped=None):
     """
     Displays things on the screen
 
@@ -32,6 +33,7 @@ def show_results(camera_frame, diff, cropped=None):
     # cv.imshow("Cropped", cropped)
     cv.imshow("Camera", camera_frame)
     cv.imshow("Diff", diff)
+    cv.imshow("Diff2", diff2)
     cv.waitKey(1) & 0xFF
 
 
@@ -47,6 +49,18 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
             for i in range(16):
                 average_matrix[i] += new_matrix[i] / 100
     return average_matrix
+
+
+def get_diff_2(image1, image2):
+
+    # Compute SSIM between the two images
+    (score, diff) = structural_similarity(image1, image2, full=True, channel_axis=2)
+
+    # The diff image contains the actual image differences between the two images
+    # and is represented as a floating point data type in the range [0,1]
+    # so we must convert the array to 8-bit unsigned integers in the range
+    # [0,255] image1 we can use it with OpenCV
+    return (diff * 255).astype("uint8")
 
 
 def setup():
@@ -121,6 +135,7 @@ def main():
                     frame = camera.grab_background(custom_timer=1, return_to_black=False)
                     if frame is not None:
                         rect, diff = helpers.get_diff(frame, background)
+                        diff2 = get_diff_2(frame, background)
                         if (rect is not None) and (diff is not None):
                             original_white_pixels_count = helpers.count_white_pixels(diff)
                             x, y, w, h = rect
@@ -151,6 +166,7 @@ def main():
                             print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
+                                diff2 = get_diff_2(frame, background)
                                 white_pixels_count = helpers.count_white_pixels(diff)
                                 print("[INFO] Diff computed")
                                 if rect is not None or diff is not None and original_white_pixels_count * 0.2 > white_pixels_count:
@@ -163,12 +179,13 @@ def main():
                                         munnezza_manager.close_all()
                                         time.sleep(1)
                                         frame = camera.grab_background(custom_timer=1, return_to_black=False)
-                                        show_results(frame, diff)
+                                        show_results(frame, diff, diff2)
                                         print("[INFO] Frame after vibrating grabbed")
                                         if frame is not None:
                                             rect, diff = helpers.get_diff(frame, background)
+                                            diff2 = get_diff_2(frame, background)
                                             white_pixels_count = helpers.count_white_pixels(diff)
-                                            show_results(frame, diff)
+                                            show_results(frame, diff, diff2)
                                             print(f"[INFO] {original_white_pixels_count * 0.2} > {white_pixels_count}?")
                                             if original_white_pixels_count * 0.2 > white_pixels_count:
                                                 print("[INFO] Object has finally fallen...")
@@ -178,7 +195,7 @@ def main():
 
                             # leds.change_to_white()
                             background = camera.grab_background(custom_timer=1, return_to_black=False)
-                            show_results(background, diff)
+                            show_results(background, diff, diff2)
                             time.sleep(1)
                             leds.fill((0, 0, 0))
                             # leds.black_from_white()
