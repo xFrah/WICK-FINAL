@@ -85,7 +85,15 @@ def get_diff_2(i1, i2):
     # apply mask thresh to filled_after
     kernel = np.ones((5, 5), np.uint8)
     dilation = cv.dilate(thresh, kernel, iterations=2)
-    filled_after = cv.bitwise_and(i1, i1, mask=dilation)
+    # find contours in dilation and fill them
+    contours = cv.findContours(dilation.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
+    for c in contours:
+        area = cv.contourArea(c)
+        if area > 40:
+            print("Countour area: " + str(area))
+            cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
+    #filled_after = cv.bitwise_and(i1, i1, mask=dilation)
     # filled_after = cv.bitwise_and(thresh, i1)
     return filled_after
 
