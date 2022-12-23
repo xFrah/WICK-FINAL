@@ -85,7 +85,7 @@ def setup():
     time.sleep(3)
     background = camera.grab_background(custom_timer=0.5, return_to_black=False)
     background = camera.grab_background(custom_timer=1, return_to_black=False)
-    show_results(background, background)
+    show_results(background, background, background)
     time.sleep(1)
     leds.fill((0, 0, 0))
     print("[INFO] Background grabbed!")
