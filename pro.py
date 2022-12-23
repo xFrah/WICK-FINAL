@@ -70,8 +70,8 @@ def get_diff_2(i1, i2):
     contours = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = contours[0] if len(contours) == 2 else contours[1]
 
-    mask = np.zeros(image1.shape, dtype='uint8')
-    filled_after = image2.copy()
+    mask = np.zeros(i1.shape, dtype='uint8')
+    filled_after = i2.copy()
 
     for c in contours:
         area = cv.contourArea(c)
