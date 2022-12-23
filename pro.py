@@ -82,7 +82,7 @@ def get_diff_2(i1, i2):
             #cv.rectangle(image2, (x, y), (x + w, y + h), (36, 255, 12), 2)
             cv.drawContours(mask, [c], 0, (0, 255, 0), 3)
             #cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
-    return diff
+    return thresh
 
 
 def setup():
