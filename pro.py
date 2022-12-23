@@ -83,7 +83,9 @@ def get_diff_2(i1, i2):
             # cv.drawContours(mask, [c], 0, (0, 255, 0), 3)
             # cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
     # apply mask thresh to filled_after
-    filled_after = cv.bitwise_and(i1, i1, mask=thresh)
+    kernel = np.ones((5, 5), np.uint8)
+    erosion = cv.erode(thresh, kernel, iterations=1)
+    filled_after = cv.bitwise_and(i1, i1, mask=erosion)
     # filled_after = cv.bitwise_and(thresh, i1)
     return filled_after
 
