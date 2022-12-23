@@ -52,15 +52,21 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
 
 
 def get_diff_2(image1, image2):
+    image1 = cv.cvtColor(image1, cv.COLOR_BGR2GRAY)
+    image2 = cv.cvtColor(image2, cv.COLOR_BGR2GRAY)
 
     # Compute SSIM between the two images
-    (score, diff) = structural_similarity(image1, image2, full=True, channel_axis=2)
+    (score, diff) = structural_similarity(image1, image2, full=True)
 
     # The diff image contains the actual image differences between the two images
     # and is represented as a floating point data type in the range [0,1]
     # so we must convert the array to 8-bit unsigned integers in the range
     # [0,255] image1 we can use it with OpenCV
-    return (diff * 255).astype("uint8")
+    # Threshold the difference image, followed by finding contours to
+    # obtain the regions of the two input images that differ
+    diff = (diff * 255).astype("uint8")
+    #thresh = cv.threshold(diff, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
+    return diff
 
 
 def setup():
