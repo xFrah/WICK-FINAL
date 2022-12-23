@@ -83,7 +83,7 @@ def get_diff_2(i1, i2):
             #cv.drawContours(mask, [c], 0, (0, 255, 0), 3)
             #cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
     # apply mask thresh to filled_after
-    filled_after = cv.bitwise_and(filled_after, i1)
+    filled_after = cv.bitwise_and(thresh, i1)
     return filled_after
 
 
