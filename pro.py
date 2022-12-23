@@ -52,9 +52,9 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
     return average_matrix
 
 
-def get_diff_2(image1, image2):
-    image1 = cv.cvtColor(image1, cv.COLOR_BGR2GRAY)
-    image2 = cv.cvtColor(image2, cv.COLOR_BGR2GRAY)
+def get_diff_2(i1, i2):
+    image1 = cv.cvtColor(i1, cv.COLOR_BGR2GRAY)
+    image2 = cv.cvtColor(i2, cv.COLOR_BGR2GRAY)
 
     # Compute SSIM between the two images
     (score, diff) = structural_similarity(image1, image2, full=True)
