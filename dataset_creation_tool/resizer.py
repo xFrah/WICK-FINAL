@@ -101,4 +101,4 @@ def walk_through_images(path):
                 x_init, y_init, x_final, y_final = 0, 0, 0, 0
 
 
-walk_through_images(r"C:\Users\fdimo\Desktop\Nuova cartella")
+walk_through_images(r"C:\Users\fdimo\Desktop\wick_images\images_fra")

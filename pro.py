@@ -10,6 +10,7 @@ import mech_utils
 # import helpers
 import tof_utils
 from camera_utils import Camera
+from edgetpu_utils import setup_edgetpu, inference
 from new_led_utils import LEDs
 # from data_utils import config_and_data
 # from edgetpu_utils import inference
@@ -56,6 +57,7 @@ def setup():
     leds = LEDs()
     camera = Camera(leds)
     vl53 = tof_utils.tof_setup()
+    interpreter = setup_edgetpu()
     print("[INFO] Setup complete!")
     servo_calibration = {
         0: 15,
@@ -73,7 +75,7 @@ def setup():
     time.sleep(1)
     leds.fill((0, 0, 0))
     print("[INFO] Background grabbed!")
-    return vl53, camera, background, munnezza_manager, leds
+    return vl53, camera, background, munnezza_manager, leds, interpreter
 
 
 def normalize_shit_matrix(matrix):
@@ -81,7 +83,7 @@ def normalize_shit_matrix(matrix):
 
 
 def main():
-    vl53, camera, background, munnezza_manager, leds = setup()
+    vl53, camera, background, munnezza_manager, leds, interpreter = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
@@ -120,6 +122,7 @@ def main():
                     if frame is not None:
                         rect, diff = helpers.get_diff(frame, background)
                         if (rect is not None) and (diff is not None):
+                            original_white_pixels_count = helpers.count_white_pixels(diff)
                             x, y, w, h = rect
                             imgcopy = frame.copy()
                             cropped = imgcopy[y:y + h, x:x + w]
@@ -134,8 +137,8 @@ def main():
                                 print("[INFO] Waiting for movement...")
                                 continue
 
-                            # label, score = inference(cropped, interpreter)
-                            # print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
+                            label, score = inference(cropped, interpreter)
+                            print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
                             show_results(imgcopy, diff, cropped=cropped)
 
@@ -148,12 +151,13 @@ def main():
                             print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
-                                original_white_pixels_count = helpers.count_white_pixels(diff)
+                                white_pixels_count = helpers.count_white_pixels(diff)
                                 print("[INFO] Diff computed")
-                                if rect is not None or diff is not None:
+                                if rect is not None or diff is not None and original_white_pixels_count * 0.2 > white_pixels_count:
                                     print("[INFO] Object has not fallen, vibrating...")
                                     start = datetime.datetime.now()
-                                    while (datetime.datetime.now() - start).total_seconds() < 15:
+                                    fallen = False
+                                    while not fallen and (datetime.datetime.now() - start).total_seconds() < 15:
                                         munnezza_manager.open_compartment(comp)
                                         munnezza_manager.vibrato(comp)
                                         munnezza_manager.close_all()
