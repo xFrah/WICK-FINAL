@@ -93,8 +93,12 @@ def get_diff_2(i1, i2):
         if area > 40:
             print("Countour area: " + str(area))
             cv.drawContours(mask, [c], 0, (255, 255, 255), -1)
-    mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)
-    return cv.bitwise_and(i1, i1, mask=mask)
+    # mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)
+    x, y, w, h = cv.boundingRect(
+        np.concatenate(np.array(c)))
+    cv.rectangle(filled_after, (x, y), (x + w, y + h), (36, 255, 12), 2)
+    return filled_after
+    # return cv.bitwise_and(i1, i1, mask=mask)
 
 
 def setup():
