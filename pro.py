@@ -84,9 +84,9 @@ def get_diff_2(i1, i2):
             # cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
     # apply mask thresh to filled_after
     kernel = np.ones((5, 5), np.uint8)
-    dilation = cv.dilate(thresh, kernel, iterations=2)
+    opening = cv.morphologyEx(thresh, cv.MORPH_OPEN, kernel, iterations=2)
     # find contours in dilation and fill them
-    contours = cv.findContours(dilation.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours = cv.findContours(opening.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = contours[0] if len(contours) == 2 else contours[1]
     for c in contours:
         area = cv.contourArea(c)
