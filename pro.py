@@ -4,21 +4,24 @@ import threading
 import time
 
 import cv2 as cv
+import numpy as np
 
 import helpers
 import mech_utils
 # import helpers
 import tof_utils
 from camera_utils import Camera
+from edgetpu_utils import setup_edgetpu, inference
 from new_led_utils import LEDs
 # from data_utils import config_and_data
 # from edgetpu_utils import inference
 # from tof_utils import get_trash_level
 from watchdog import ping
 from mech_utils import *
+from skimage.metrics import structural_similarity
 
 
-def show_results(camera_frame, diff, cropped=None):
+def show_results(camera_frame, diff, diff2, cropped=None):
     """
     Displays things on the screen
 
@@ -31,6 +34,7 @@ def show_results(camera_frame, diff, cropped=None):
     # cv.imshow("Cropped", cropped)
     cv.imshow("Camera", camera_frame)
     cv.imshow("Diff", diff)
+    cv.imshow("Diff2", diff2)
     cv.waitKey(1) & 0xFF
 
 
@@ -48,6 +52,55 @@ def tof_buffer_update(new_matrix, tof_buffer, average_matrix):
     return average_matrix
 
 
+def get_diff_2(i1, i2):
+    image1 = cv.cvtColor(i1, cv.COLOR_BGR2GRAY)
+    image2 = cv.cvtColor(i2, cv.COLOR_BGR2GRAY)
+
+    # Compute SSIM between the two images
+    (score, diff) = structural_similarity(image1, image2, full=True)
+
+    # The diff image contains the actual image differences between the two images
+    # and is represented as a floating point data type in the range [0,1]
+    # so we must convert the array to 8-bit unsigned integers in the range
+    # [0,255] image1 we can use it with OpenCV
+    # Threshold the difference image, followed by finding contours to
+    # obtain the regions of the two input images that differ
+    diff = (diff * 255).astype("uint8")
+    thresh = cv.threshold(diff, 10, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
+    contours = cv.findContours(thresh.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
+
+    mask = np.zeros(i1.shape, dtype='uint8')
+    filled_after = i1.copy()
+
+    for c in contours:
+        area = cv.contourArea(c)
+        if area > 40:
+            print("Countour area: " + str(area))
+            # x, y, w, h = cv.boundingRect(c)
+            # cv.rectangle(image1, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            # cv.rectangle(image2, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            # cv.drawContours(mask, [c], 0, (0, 255, 0), 3)
+            # cv.drawContours(filled_after, [c], 0, (0, 255, 0), -1)
+    # apply mask thresh to filled_after
+    kernel = np.ones((5, 5), np.uint8)
+    opening = cv.morphologyEx(thresh, cv.MORPH_OPEN, kernel, iterations=1)
+    # find contours in dilation and fill them
+    contours = cv.findContours(opening.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    contours = contours[0] if len(contours) == 2 else contours[1]
+    for c in contours:
+        area = cv.contourArea(c)
+        if area > 40:
+            print("Countour area: " + str(area))
+            cv.drawContours(mask, [c], 0, (255, 255, 255), -1)
+    # mask = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)
+    x, y, w, h = cv.boundingRect(
+        np.concatenate(np.array(c)))
+    cv.rectangle(filled_after, (x, y), (x + w, y + h), (36, 255, 12), 2)
+    return filled_after
+    # return cv.bitwise_and(i1, i1, mask=mask)
+
+
 def setup():
     """
     It sets up the camera, the LED strip, the VL53L0X sensor, the MQTT client, the TensorFlow interpreter, and the data manager
@@ -56,18 +109,25 @@ def setup():
     leds = LEDs()
     camera = Camera(leds)
     vl53 = tof_utils.tof_setup()
+    interpreter = setup_edgetpu()
     print("[INFO] Setup complete!")
     servo_calibration = {
-        0: 35,
-        1: 20,
-        2: 30,
-        3: 20,
+        0: 15,
+        1: 30,
+        2: 20,
+        3: 35,
     }
     munnezza_manager = mech_utils.CompartmentManager(servo_calibration)
     munnezza_manager.close_all()
-    background = camera.grab_background(return_to_black=False)
+    leds.stop_loading_animation()
+    time.sleep(3)
+    background = camera.grab_background(custom_timer=0.5, return_to_black=False)
+    background = camera.grab_background(custom_timer=1, return_to_black=False)
+    show_results(background, background, background)
+    time.sleep(1)
+    leds.fill((0, 0, 0))
     print("[INFO] Background grabbed!")
-    return vl53, camera, background, munnezza_manager
+    return vl53, camera, background, munnezza_manager, leds, interpreter
 
 
 def normalize_shit_matrix(matrix):
@@ -75,7 +135,7 @@ def normalize_shit_matrix(matrix):
 
 
 def main():
-    vl53, camera, background, munnezza_manager = setup()
+    vl53, camera, background, munnezza_manager, leds, interpreter = setup()
     thread = threading.current_thread()
     thread.setName("Main")
     print(f'[INFO] Main thread "{thread}" started.')
@@ -110,10 +170,12 @@ def main():
                     last_movement = datetime.datetime.now()
                     movement = False
                     print("[INFO] Movement stopped")
-                    frame = camera.grab_background()
+                    frame = camera.grab_background(custom_timer=1, return_to_black=False)
                     if frame is not None:
                         rect, diff = helpers.get_diff(frame, background)
+                        diff2 = get_diff_2(frame, background)
                         if (rect is not None) and (diff is not None):
+                            original_white_pixels_count = helpers.count_white_pixels(diff)
                             x, y, w, h = rect
                             imgcopy = frame.copy()
                             cropped = imgcopy[y:y + h, x:x + w]
@@ -128,13 +190,13 @@ def main():
                                 print("[INFO] Waiting for movement...")
                                 continue
 
-                            # label, score = inference(cropped, interpreter)
-                            # print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
+                            label, score = inference(cropped, interpreter)
+                            print(f"[INFO] Class: {label}, score: {int(score * 100)}%")
 
-                            show_results(imgcopy, diff, cropped=cropped)
+                            show_results(imgcopy, diff, diff2, cropped=cropped)
 
                             comp = random.randint(0, 3)
-                            frame = camera.grab_background()
+                            frame = camera.grab_background(custom_timer=1, return_to_black=False)
                             munnezza_manager.open_compartment(comp)
 
                             time.sleep(2)
@@ -142,29 +204,38 @@ def main():
                             print("[INFO] First frame after opening compartment grabbed")
                             if frame is not None:
                                 rect, diff = helpers.get_diff(frame, background)
+                                diff2 = get_diff_2(frame, background)
+                                white_pixels_count = helpers.count_white_pixels(diff)
                                 print("[INFO] Diff computed")
-                                if rect is not None or diff is not None:
+                                if rect is not None or diff is not None and original_white_pixels_count * 0.2 > white_pixels_count:
                                     print("[INFO] Object has not fallen, vibrating...")
                                     start = datetime.datetime.now()
-                                    while (datetime.datetime.now() - start).total_seconds() < 15:
+                                    fallen = False
+                                    while not fallen and (datetime.datetime.now() - start).total_seconds() < 15:
                                         munnezza_manager.open_compartment(comp)
                                         munnezza_manager.vibrato(comp)
                                         munnezza_manager.close_all()
                                         time.sleep(1)
-                                        frame = camera.grab_background()
-                                        show_results(frame, diff)
+                                        frame = camera.grab_background(custom_timer=1, return_to_black=False)
+                                        show_results(frame, diff, diff2)
                                         print("[INFO] Frame after vibrating grabbed")
                                         if frame is not None:
                                             rect, diff = helpers.get_diff(frame, background)
-                                            if rect is None or diff is None:
+                                            diff2 = get_diff_2(frame, background)
+                                            white_pixels_count = helpers.count_white_pixels(diff)
+                                            show_results(frame, diff, diff2)
+                                            print(f"[INFO] {original_white_pixels_count * 0.2} > {white_pixels_count}?")
+                                            if original_white_pixels_count * 0.2 > white_pixels_count:
                                                 print("[INFO] Object has finally fallen...")
                                                 break
                                         print("[INFO] Object has not fallen yet, retrying...")
                             munnezza_manager.close_all()
 
-
                             # leds.change_to_white()
-                            background = camera.grab_background(return_to_black=False)
+                            background = camera.grab_background(custom_timer=1, return_to_black=False)
+                            show_results(background, diff, diff2)
+                            time.sleep(1)
+                            leds.fill((0, 0, 0))
                             # leds.black_from_white()
                             # if label == config_and_data["current_class"]:
                             #     leds.change_to_green()
@@ -178,8 +249,10 @@ def main():
                             #     leds.black_from_red()
                         else:
                             print("[INFO] Object not found.")
-                            show_results(frame, diff)
-                            background = camera.grab_background(return_to_black=True)
+                            background = camera.grab_background(custom_timer=1, return_to_black=False)
+                            show_results(background, diff, diff2)
+                            time.sleep(1)
+                            leds.fill((0, 0, 0))
 
                     # avg, percentage = get_trash_level(vl53)
                     # print(f"[INFO] {avg}mm, {percentage}%")

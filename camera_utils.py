@@ -49,7 +49,7 @@ class Camera:
             return succ
         else:
             succ[cv.CAP_PROP_AUTO_WB] = self.cap.set(cv.CAP_PROP_AUTO_WB, 0)
-            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 600)
+            succ[cv.CAP_PROP_EXPOSURE] = self.cap.set(cv.CAP_PROP_EXPOSURE, 200)
             succ[cv.CAP_PROP_AUTO_EXPOSURE] = self.cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
             return succ
         # self.cap.set(cv.CAP_PROP_BUFFERSIZE, 1)
@@ -77,9 +77,9 @@ class Camera:
             self.camera_buffer = {}
         return copy
 
-    def grab_background(self, return_to_black=True):
+    def grab_background(self, return_to_black=True, custom_timer=0.125):
         self.flash.fill((255, 255, 255))
-        buffer = self.shoot(timer=0.125, return_to_black=return_to_black)
+        buffer = self.shoot(timer=custom_timer, return_to_black=return_to_black)
         if buffer:
             print(f"[INFO] Background frame count: {len(buffer)}")
             return max(buffer.values(), key=lambda d: d[1])[0]
