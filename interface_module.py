@@ -55,6 +55,7 @@ class GUI:
         self.pages[page.name] = page
 
     def set_page(self, page_name):
+        self.screen.fill((0, 0, 0))
         self.current_page = self.pages[page_name]
 
 
